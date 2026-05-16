@@ -1,0 +1,40 @@
+import request from '@/utils/request'
+
+export function getLedgers(params: {
+  month?: string
+  member_id?: number
+  category_id?: number
+  creator_id?: number
+  page?: number
+  page_size?: number
+}) {
+  return request.get('/ledgers', { params })
+}
+
+export function getLedgerById(id: number) {
+  return request.get(`/ledgers/${id}`)
+}
+
+export function createLedger(data: {
+  amount: number
+  note?: string
+  category_id: number
+  member_ids: number[]
+  occurred_at?: string
+}) {
+  return request.post('/ledgers', data)
+}
+
+export function updateLedger(id: number, data: {
+  amount?: number
+  note?: string
+  category_id?: number
+  member_ids?: number[]
+  occurred_at?: string
+}) {
+  return request.put(`/ledgers/${id}`, data)
+}
+
+export function deleteLedger(id: number) {
+  return request.delete(`/ledgers/${id}`)
+}

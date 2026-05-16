@@ -14,6 +14,7 @@ func Register(r *gin.Engine) {
 	init := handler.NewInitHandler()
 	member := handler.NewMemberHandler()
 	category := handler.NewCategoryHandler()
+	ledger := handler.NewLedgerHandler()
 
 	// Auth & Init
 	api.GET("/init/check", auth.InitCheck)
@@ -41,4 +42,11 @@ func Register(r *gin.Engine) {
 	api.POST("/categories", authRequired, adminRequired, category.Create)
 	api.PUT("/categories/:id", authRequired, adminRequired, category.Update)
 	api.DELETE("/categories/:id", authRequired, adminRequired, category.Delete)
+
+	// Ledger management
+	api.GET("/ledgers", authRequired, ledger.List)
+	api.POST("/ledgers", authRequired, ledger.Create)
+	api.GET("/ledgers/:id", authRequired, ledger.GetByID)
+	api.PUT("/ledgers/:id", authRequired, ledger.Update)
+	api.DELETE("/ledgers/:id", authRequired, ledger.Delete)
 }
