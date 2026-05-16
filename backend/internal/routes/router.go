@@ -18,6 +18,8 @@ func Register(r *gin.Engine) {
 	dashboard := handler.NewDashboardHandler()
 	todo := handler.NewTodoHandler()
 	wish := handler.NewWishHandler()
+	forum := handler.NewForumHandler()
+	tag := handler.NewTagHandler()
 
 	// Auth & Init
 	api.GET("/init/check", auth.InitCheck)
@@ -77,4 +79,39 @@ func Register(r *gin.Engine) {
 	api.PUT("/wishes/:id/status", authRequired, wish.UpdateStatus)
 	api.POST("/wishes/:id/vote", authRequired, wish.Vote)
 	api.DELETE("/wishes/:id/vote", authRequired, wish.Unvote)
+
+	// Forum - feed
+	api.GET("/feed", authRequired, forum.Feed)
+
+	// Forum - posts
+	api.POST("/posts", authRequired, forum.CreatePost)
+	api.PUT("/posts/:id", authRequired, forum.UpdatePost)
+	api.DELETE("/posts/:id", authRequired, forum.DeletePost)
+
+	// Forum - topics
+	api.POST("/topics", authRequired, forum.CreateTopic)
+	api.PUT("/topics/:id", authRequired, forum.UpdateTopic)
+	api.DELETE("/topics/:id", authRequired, forum.DeleteTopic)
+	api.PUT("/topics/:id/pin", authRequired, adminRequired, forum.TogglePin)
+	api.GET("/topics/:id", authRequired, forum.GetTopic)
+
+	// Forum - comments
+	api.GET("/comments", authRequired, forum.ListComments)
+	api.POST("/comments", authRequired, forum.CreateComment)
+	api.DELETE("/comments/:id", authRequired, forum.DeleteComment)
+
+	// Forum - likes
+	api.POST("/likes", authRequired, forum.ToggleLike)
+
+	// Forum - votes
+	api.POST("/votes", authRequired, forum.CreateVote)
+	api.DELETE("/votes/:id", authRequired, forum.DeleteVote)
+	api.POST("/votes/:id/vote", authRequired, forum.Vote)
+	api.GET("/votes/:id", authRequired, forum.GetVote)
+
+	// Forum - tags
+	api.GET("/tags", authRequired, tag.List)
+	api.POST("/tags", authRequired, adminRequired, tag.Create)
+	api.PUT("/tags/:id", authRequired, adminRequired, tag.Update)
+	api.DELETE("/tags/:id", authRequired, adminRequired, tag.Delete)
 }
