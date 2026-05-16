@@ -17,6 +17,7 @@ func Register(r *gin.Engine) {
 	ledger := handler.NewLedgerHandler()
 	dashboard := handler.NewDashboardHandler()
 	todo := handler.NewTodoHandler()
+	wish := handler.NewWishHandler()
 
 	// Auth & Init
 	api.GET("/init/check", auth.InitCheck)
@@ -66,4 +67,14 @@ func Register(r *gin.Engine) {
 	api.DELETE("/todos/:id", authRequired, todo.Delete)
 	api.PUT("/todos/:id/toggle", authRequired, todo.Toggle)
 	api.PUT("/todos/:id/claim", authRequired, todo.Claim)
+
+	// Wish management
+	api.GET("/wishes", authRequired, wish.List)
+	api.POST("/wishes", authRequired, wish.Create)
+	api.PUT("/wishes/:id", authRequired, wish.Update)
+	api.DELETE("/wishes/:id", authRequired, wish.Delete)
+	api.POST("/wishes/:id/promote", authRequired, wish.Promote)
+	api.PUT("/wishes/:id/status", authRequired, wish.UpdateStatus)
+	api.POST("/wishes/:id/vote", authRequired, wish.Vote)
+	api.DELETE("/wishes/:id/vote", authRequired, wish.Unvote)
 }
