@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"home-center/internal/model"
+	"home-center/internal/pkg"
 )
 
 func main() {
@@ -15,9 +18,50 @@ func main() {
 
 	switch os.Args[1] {
 	case "reset-password":
-		fmt.Println("reset-password: not yet implemented")
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: cli reset-password <username>")
+			os.Exit(1)
+		}
+		resetPassword(os.Args[2])
 	default:
 		fmt.Printf("Unknown command: %s\n", os.Args[1])
 		os.Exit(1)
 	}
+}
+
+func resetPassword(username string) {
+	// 初始化数据库
+	dbPath := getEnv("HC_DB_PATH", "./data/home-center.db")
+	if err := pkg.InitDatabase(dbPath); err != nil {
+		fmt.Printf("failed to init database: %v\n", err)
+		os.Exit(1)
+	}
+
+	// 查找用户
+	var member model.Member
+	if err := pkg.DB.Where("username = ?", username).First(&member).Error; err != nil {
+		fmt.Printf("user not found: %s\n", username)
+		os.Exit(1)
+	}
+
+	// 重置密码
+	hash, err := pkg.HashPassword(pkg.DefaultPassword)
+	if err != nil {
+		fmt.Printf("failed to hash password: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := pkg.DB.Model(&member).Update("password", hash).Error; err != nil {
+		fmt.Printf("failed to reset password: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Password for user '%s' has been reset to default: %s\n", username, pkg.DefaultPassword)
+}
+
+func getEnv(key, defaultVal string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return defaultVal
 }
