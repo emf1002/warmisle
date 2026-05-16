@@ -1,5 +1,297 @@
 <template>
-  <div style="padding: 24px">
-    <h2>个人中心</h2>
+  <div class="profile-page">
+    <a-card :bordered="false" class="profile-card">
+      <!-- User Info Header -->
+      <div class="profile-header">
+        <div class="profile-avatar-large">{{ profile.avatar }}</div>
+        <div class="profile-name">{{ profile.name }}</div>
+        <a-tag :color="profile.role === 'admin' ? 'blue' : 'green'" class="profile-role-tag">
+          {{ profile.role === 'admin' ? '管理员' : '普通成员' }}
+        </a-tag>
+        <div class="profile-username">@{{ profile.username }}</div>
+      </div>
+
+      <a-divider />
+
+      <!-- Info Section -->
+      <div class="profile-info">
+        <div class="info-item">
+          <span class="info-label">用户名</span>
+          <span class="info-value">{{ profile.username }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">姓名</span>
+          <span class="info-value">{{ profile.name }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">角色</span>
+          <span class="info-value">
+            <a-tag :color="profile.role === 'admin' ? 'blue' : 'green'">
+              {{ profile.role === 'admin' ? '管理员' : '普通成员' }}
+            </a-tag>
+          </span>
+        </div>
+      </div>
+
+      <a-divider />
+
+      <!-- Actions -->
+      <div class="profile-actions">
+        <a-button type="primary" block size="large" @click="openEdit" :style="{ minHeight: '44px' }">
+          修改个人信息
+        </a-button>
+        <a-button
+          danger
+          block
+          size="large"
+          @click="confirmLogout"
+          :style="{ minHeight: '44px', marginTop: '12px' }"
+        >
+          退出登录
+        </a-button>
+      </div>
+    </a-card>
+
+    <!-- Edit Profile Dialog -->
+    <a-modal
+      v-model:open="dialogOpen"
+      title="修改个人信息"
+      @ok="handleSubmit"
+      :confirm-loading="submitting"
+      cancel-text="取消"
+      ok-text="保存"
+    >
+      <a-form :model="form" layout="vertical">
+        <a-form-item label="姓名">
+          <a-input
+            v-model:value="form.name"
+            placeholder="1-20位显示名称"
+            :maxlength="20"
+          />
+        </a-form-item>
+        <a-form-item label="头像">
+          <div class="emoji-picker">
+            <span
+              v-for="e in emojiList"
+              :key="e"
+              :class="['emoji-item', { active: form.avatar === e }]"
+              @click="form.avatar = e"
+            >{{ e }}</span>
+          </div>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { message, Modal } from 'ant-design-vue'
+import { getProfile, updateProfile } from '@/api/member'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const emojiList = [
+  '👨','👩','👦','👧','👶','👴','👵','🐶','🐱','🏠',
+  '💪','🎯','📚','🎮','🎨','🏀','🏊','🚗','✈️','🎵',
+  '📷','💰','🔑','🌟','🔥','❤️','🍀','⭐','🎪','🐕','🐈','🏸'
+]
+
+const profile = ref<any>({
+  id: 0,
+  username: '',
+  name: '',
+  avatar: '👨',
+  role: 'member',
+})
+
+const dialogOpen = ref(false)
+const submitting = ref(false)
+
+const form = reactive({
+  name: '',
+  avatar: '👨',
+})
+
+onMounted(() => {
+  fetchProfile()
+})
+
+async function fetchProfile() {
+  try {
+    const res: any = await getProfile()
+    if (res.data) {
+      profile.value = res.data
+    }
+  } catch {
+    // error handled by interceptor
+  }
+}
+
+function openEdit() {
+  form.name = profile.value.name
+  form.avatar = profile.value.avatar
+  dialogOpen.value = true
+}
+
+async function handleSubmit() {
+  if (!form.name || form.name.trim().length === 0) {
+    message.error('姓名不能为空')
+    return
+  }
+  submitting.value = true
+  try {
+    const res: any = await updateProfile({
+      name: form.name.trim(),
+      avatar: form.avatar,
+    })
+    if (res.data) {
+      profile.value = res.data
+    }
+    message.success('修改成功')
+    dialogOpen.value = false
+  } catch (e: any) {
+    if (e?.response?.data?.message) {
+      message.error(e.response.data.message)
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+function confirmLogout() {
+  Modal.confirm({
+    title: '确认退出',
+    content: '确定要退出登录吗？',
+    okText: '退出',
+    okType: 'danger',
+    cancelText: '取消',
+    onOk() {
+      authStore.logout()
+      message.success('已退出登录')
+      router.push('/login')
+    },
+  })
+}
+</script>
+
+<style scoped>
+.profile-page {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0 8px;
+}
+
+.profile-avatar-large {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.profile-role-tag {
+  margin-bottom: 6px;
+}
+
+.profile-username {
+  font-size: 13px;
+  color: #999;
+}
+
+/* Info */
+.profile-info {
+  padding: 0 8px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.info-item + .info-item {
+  border-top: 1px solid #f0f0f0;
+}
+
+.info-label {
+  color: #999;
+  font-size: 14px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Actions */
+.profile-actions {
+  padding: 0 8px;
+}
+
+/* Emoji Picker */
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.emoji-item {
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-item:hover {
+  border-color: #d9d9d9;
+}
+
+.emoji-item.active {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+@media (max-width: 767px) {
+  .profile-page {
+    padding: 0;
+  }
+
+  .profile-card {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  :deep(.ant-card) {
+    border-radius: 0;
+  }
+}
+</style>
