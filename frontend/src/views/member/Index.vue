@@ -19,8 +19,8 @@
           <span class="member-username">{{ record.username }}</span>
         </template>
         <template v-if="column.key === 'role'">
-          <a-tag :color="record.role === 'admin' ? 'blue' : 'green'">
-            {{ record.role === 'admin' ? '管理员' : '普通成员' }}
+          <a-tag :color="record.role === 'admin' ? 'blue' : 'default'">
+            {{ record.role === 'admin' ? '管理员' : '成员' }}
           </a-tag>
         </template>
         <template v-if="column.key === 'status'">
@@ -207,10 +207,10 @@ async function handleSubmit() {
         avatar: form.avatar,
         role: form.role,
       })
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       if (!form.username || !form.password) {
-        message.error('用户名和密码不能为空')
+        message.error('❌ 用户名和密码不能为空')
         submitting.value = false
         return
       }
@@ -221,7 +221,7 @@ async function handleSubmit() {
         avatar: form.avatar,
         role: form.role,
       })
-      message.success('添加成功')
+      message.success('✅ 添加成功')
     }
     dialogOpen.value = false
     fetchMembers()
@@ -237,7 +237,7 @@ async function handleSubmit() {
 
 function confirmDelete(record: any) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: `确定要删除成员「${record.name}」吗？如果有活动记录则无法删除。`,
     okText: '删除',
     okType: 'danger',
@@ -245,7 +245,7 @@ function confirmDelete(record: any) {
     async onOk() {
       try {
         await deleteMember(record.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         fetchMembers()
       } catch (e: any) {
         if (e?.response?.data?.message) {
@@ -259,7 +259,7 @@ function confirmDelete(record: any) {
 
 function confirmDisable(record: any) {
   Modal.confirm({
-    title: '确认禁用',
+    title: '❓ 确认禁用',
     content: `确定要禁用成员「${record.name}」吗？`,
     okText: '禁用',
     okType: 'danger',
@@ -267,7 +267,7 @@ function confirmDisable(record: any) {
     async onOk() {
       try {
         await disableMember(record.id)
-        message.success('已禁用')
+        message.success('✅ 已禁用')
         fetchMembers()
       } catch (e: any) {
         if (e?.response?.data?.message) {
@@ -282,7 +282,7 @@ function confirmDisable(record: any) {
 async function handleEnable(id: number) {
   try {
     await enableMember(id)
-    message.success('已启用')
+    message.success('✅ 已启用')
     fetchMembers()
   } catch (e: any) {
     if (e?.response?.data?.message) {
@@ -293,14 +293,14 @@ async function handleEnable(id: number) {
 
 function confirmResetPwd(record: any) {
   Modal.confirm({
-    title: '重置密码',
+    title: '❓ 重置密码',
     content: `确定要将成员「${record.name}」的密码重置为默认密码吗？`,
     okText: '确认',
     cancelText: '取消',
     async onOk() {
       try {
         await resetPassword(record.id)
-        message.success('密码已重置')
+        message.success('✅ 密码已重置')
       } catch (e: any) {
         if (e?.response?.data?.message) {
           message.error(e.response.data.message)

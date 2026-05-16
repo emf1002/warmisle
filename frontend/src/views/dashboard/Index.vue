@@ -39,7 +39,7 @@
       <a-col :xs="24" :lg="14">
         <a-card title="支出分类" class="section-card">
           <div v-if="expenseChart.length === 0" class="empty-section">
-            <a-empty description="暂无数据" />
+            <EmptyState type="no-data" description="暂无数据" />
           </div>
           <div v-else class="expense-chart">
             <div v-for="item in expenseChart" :key="item.category_id" class="chart-row">
@@ -58,7 +58,7 @@
       <a-col :xs="24" :lg="10">
         <a-card title="近期待办" class="section-card">
           <div v-if="upcomingTodos.length === 0" class="empty-section">
-            <a-empty description="暂无待办" />
+            <EmptyState type="no-data" description="暂无待办" />
           </div>
           <a-list v-else :data-source="upcomingTodos" size="small">
             <template #renderItem="{ item: todo }">
@@ -86,7 +86,7 @@
       <a-col :xs="24" :lg="12">
         <a-card title="愿望动态" class="section-card">
           <div v-if="wishTrends.length === 0" class="empty-section">
-            <a-empty description="暂无愿望" />
+            <EmptyState type="no-data" description="暂无愿望" />
           </div>
           <a-list v-else :data-source="wishTrends" size="small">
             <template #renderItem="{ item: trend }">
@@ -114,7 +114,7 @@
       <a-col :xs="24" :lg="12">
         <a-card title="论坛热点" class="section-card">
           <div v-if="forumHot.length === 0" class="empty-section">
-            <a-empty description="暂无动态" />
+            <EmptyState type="no-data" description="暂无动态" />
           </div>
           <a-list v-else :data-source="forumHot" size="small">
             <template #renderItem="{ item: feed }">
@@ -139,6 +139,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getSummary, getExpenseChart, getUpcomingTodos, getWishTrends, getForumHot } from '@/api/dashboard'
+import EmptyState from '@/components/EmptyState.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 
@@ -231,6 +232,16 @@ onMounted(() => {
 
 .stat-card {
   text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.stat-card :deep(.ant-statistic-content-value) {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+
+.stat-card :deep(.ant-statistic-content) {
+  font-size: 28px;
 }
 
 .income-prefix {
@@ -245,6 +256,7 @@ onMounted(() => {
 
 .section-card {
   height: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .expense-chart {
@@ -307,6 +319,20 @@ onMounted(() => {
 
 .todo-item:hover {
   background: #fafafa;
+}
+
+@media (max-width: 767px) {
+  .dashboard {
+    padding: 12px;
+  }
+
+  .stat-card :deep(.ant-statistic-content-value) {
+    font-size: 24px !important;
+  }
+
+  .stat-card :deep(.ant-statistic-content) {
+    font-size: 24px;
+  }
 }
 
 .todo-item-content {

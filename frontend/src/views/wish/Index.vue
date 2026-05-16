@@ -27,14 +27,12 @@
     </div>
 
     <div v-else-if="wishes.length === 0" class="empty-state">
-      <a-empty :description="hasFilters ? '没有找到匹配的愿望' : '暂无愿望'">
-        <template v-if="!hasFilters">
+      <EmptyState v-if="!hasFilters" type="no-data" description="暂无愿望">
+        <template #action>
           <a-button type="primary" @click="openCreate">新建愿望</a-button>
         </template>
-        <template v-else>
-          <a-button @click="clearFilters">清除筛选</a-button>
-        </template>
-      </a-empty>
+      </EmptyState>
+      <EmptyState v-else type="no-result" description="没有找到匹配的愿望" @clear="clearFilters" />
     </div>
 
     <div v-else class="wish-grid">
@@ -160,6 +158,7 @@ import {
   getWishList, createWish, updateWish, deleteWish, promoteWish,
   updateWishStatus, voteWish, unvoteWish,
 } from '@/api/wish'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface WishItem {
   id: number
@@ -322,7 +321,7 @@ const form = reactive({
 
 async function handleSubmit() {
   if (!form.title.trim()) {
-    message.error('请输入标题')
+    message.error('❌ 请输入标题')
     return
   }
   submitting.value = true
@@ -338,10 +337,10 @@ async function handleSubmit() {
     }
     if (editingWish.value) {
       await updateWish(editingWish.value.id, payload)
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       await createWish(payload)
-      message.success('创建成功')
+      message.success('✅ 创建成功')
     }
     dialogOpen.value = false
     fetchWishes()
@@ -354,14 +353,14 @@ async function handleSubmit() {
 
 async function handlePromote(wish: WishItem) {
   Modal.confirm({
-    title: '提升为家庭愿望',
+    title: '❓ 提升为家庭愿望',
     content: '提升后将展示给所有成员且不可撤回，确定继续吗？',
     okText: '确定',
     cancelText: '取消',
     async onOk() {
       try {
         await promoteWish(wish.id)
-        message.success('已提升为家庭愿望')
+        message.success('✅ 已提升为家庭愿望')
         fetchWishes()
       } catch (e: any) {
         if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -374,7 +373,7 @@ async function handlePromote(wish: WishItem) {
 async function handleStatusChange(wish: WishItem, status: string) {
   try {
     await updateWishStatus(wish.id, status)
-    message.success('状态已更新')
+    message.success('✅ 状态已更新')
     fetchWishes()
   } catch (e: any) {
     if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -384,20 +383,20 @@ async function handleStatusChange(wish: WishItem, status: string) {
 async function handleVote(wish: WishItem) {
   try {
     await voteWish(wish.id)
-    message.success('投票成功')
+    message.success('✅ 投票成功')
     fetchWishes()
   } catch (e: any) {
     const msg = e?.response?.data?.message || ''
     if (msg.includes('已投票')) {
       Modal.confirm({
-        title: '取消投票',
+        title: '❓ 取消投票',
         content: '你已经投过票了，要取消投票吗？',
         okText: '取消投票',
         cancelText: '算了',
         async onOk() {
           try {
             await unvoteWish(wish.id)
-            message.success('已取消投票')
+            message.success('✅ 已取消投票')
             fetchWishes()
           } catch { /* ignore */ }
         },
@@ -410,7 +409,7 @@ async function handleVote(wish: WishItem) {
 
 function confirmDelete(wish: WishItem) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: `确定要删除愿望「${wish.title}」吗？`,
     okText: '删除',
     okType: 'danger',
@@ -418,7 +417,7 @@ function confirmDelete(wish: WishItem) {
     async onOk() {
       try {
         await deleteWish(wish.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         dialogOpen.value = false
         fetchWishes()
       } catch (e: any) {
@@ -479,15 +478,16 @@ onMounted(() => {
 
 .wish-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 16px;
   border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.2s;
   display: flex;
   flex-direction: column;
 }
 
-.wish-card:hover { box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); }
+.wish-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
 
 .wish-card-header {
   display: flex;
@@ -550,5 +550,6 @@ onMounted(() => {
 @media (max-width: 767px) {
   .wish-page { padding: 16px; }
   .wish-grid { grid-template-columns: 1fr; }
+  .wish-title { font-size: 15px; }
 }
 </style>

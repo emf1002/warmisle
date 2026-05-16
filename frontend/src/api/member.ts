@@ -45,3 +45,7 @@ export function getProfile() {
 export function updateProfile(data: { name?: string; avatar?: string }) {
   return request.put('/profile', data)
 }
+
+export function changePassword(data: { old_password: string; new_password: string }) {
+  return request.put('/profile/password', data)
+}

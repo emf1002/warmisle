@@ -19,7 +19,7 @@ request.interceptors.response.use(
   response => {
     const data = response.data
     if (data.code !== 0) {
-      message.error(data.message || '请求失败')
+      message.error('❌ ' + (data.message || '请求失败'))
       return Promise.reject(new Error(data.message))
     }
     return data
@@ -29,7 +29,7 @@ request.interceptors.response.use(
       localStorage.removeItem('token')
       router.push('/login')
     }
-    message.error(error.message || '网络错误')
+    message.error('❌ ' + (error.message || '网络错误'))
     return Promise.reject(error)
   }
 )

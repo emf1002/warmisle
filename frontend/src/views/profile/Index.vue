@@ -5,8 +5,8 @@
       <div class="profile-header">
         <div class="profile-avatar-large">{{ profile.avatar }}</div>
         <div class="profile-name">{{ profile.name }}</div>
-        <a-tag :color="profile.role === 'admin' ? 'blue' : 'green'" class="profile-role-tag">
-          {{ profile.role === 'admin' ? '管理员' : '普通成员' }}
+        <a-tag :color="profile.role === 'admin' ? 'blue' : 'default'" class="profile-role-tag">
+          {{ profile.role === 'admin' ? '管理员' : '成员' }}
         </a-tag>
         <div class="profile-username">@{{ profile.username }}</div>
       </div>
@@ -26,10 +26,24 @@
         <div class="info-item">
           <span class="info-label">角色</span>
           <span class="info-value">
-            <a-tag :color="profile.role === 'admin' ? 'blue' : 'green'">
-              {{ profile.role === 'admin' ? '管理员' : '普通成员' }}
+            <a-tag :color="profile.role === 'admin' ? 'blue' : 'default'">
+              {{ profile.role === 'admin' ? '管理员' : '成员' }}
             </a-tag>
           </span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="profile-nav">
+        <div class="nav-item" @click="goCategories">
+          <span class="nav-item-icon">📂</span>
+          <span class="nav-item-label">账单分类</span>
+          <span class="nav-item-arrow">›</span>
+        </div>
+        <div class="nav-item" @click="goMembers">
+          <span class="nav-item-icon">👥</span>
+          <span class="nav-item-label">家庭成员</span>
+          <span class="nav-item-arrow">›</span>
         </div>
       </div>
 
@@ -38,7 +52,15 @@
       <!-- Actions -->
       <div class="profile-actions">
         <a-button type="primary" block size="large" @click="openEdit" :style="{ minHeight: '44px' }">
-          修改个人信息
+          ✏️ 修改个人信息
+        </a-button>
+        <a-button
+          block
+          size="large"
+          @click="handleChangePassword"
+          :style="{ minHeight: '44px', marginTop: '12px' }"
+        >
+          🔒 修改密码
         </a-button>
         <a-button
           danger
@@ -47,7 +69,7 @@
           @click="confirmLogout"
           :style="{ minHeight: '44px', marginTop: '12px' }"
         >
-          退出登录
+          🚪 退出登录
         </a-button>
       </div>
     </a-card>
@@ -81,6 +103,25 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- Change Password Dialog -->
+    <a-modal
+      v-model:open="pwdDialogOpen"
+      title="🔒 修改密码"
+      @ok="handlePwdSubmit"
+      :confirm-loading="pwdSubmitting"
+      cancel-text="取消"
+      ok-text="保存"
+    >
+      <a-form :model="pwdForm" layout="vertical">
+        <a-form-item label="当前密码" required>
+          <a-input-password v-model:value="pwdForm.old_password" placeholder="请输入当前密码" />
+        </a-form-item>
+        <a-form-item label="新密码" required>
+          <a-input-password v-model:value="pwdForm.new_password" placeholder="6-32位新密码" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -88,7 +129,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
-import { getProfile, updateProfile } from '@/api/member'
+import { getProfile, updateProfile, changePassword } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -139,7 +180,7 @@ function openEdit() {
 
 async function handleSubmit() {
   if (!form.name || form.name.trim().length === 0) {
-    message.error('姓名不能为空')
+    message.error('❌ 姓名不能为空')
     return
   }
   submitting.value = true
@@ -151,7 +192,7 @@ async function handleSubmit() {
     if (res.data) {
       profile.value = res.data
     }
-    message.success('修改成功')
+    message.success('✅ 修改成功')
     dialogOpen.value = false
   } catch (e: any) {
     if (e?.response?.data?.message) {
@@ -164,17 +205,64 @@ async function handleSubmit() {
 
 function confirmLogout() {
   Modal.confirm({
-    title: '确认退出',
+    title: '❓ 确认退出',
     content: '确定要退出登录吗？',
     okText: '退出',
     okType: 'danger',
     cancelText: '取消',
     onOk() {
       authStore.logout()
-      message.success('已退出登录')
+      message.success('✅ 已退出登录')
       router.push('/login')
     },
   })
+}
+
+function goCategories() {
+  router.push('/categories')
+}
+
+function goMembers() {
+  router.push('/members')
+}
+
+const pwdDialogOpen = ref(false)
+const pwdSubmitting = ref(false)
+const pwdForm = reactive({
+  old_password: '',
+  new_password: '',
+})
+
+function handleChangePassword() {
+  pwdForm.old_password = ''
+  pwdForm.new_password = ''
+  pwdDialogOpen.value = true
+}
+
+async function handlePwdSubmit() {
+  if (!pwdForm.old_password) {
+    message.error('❌ 请输入当前密码')
+    return
+  }
+  if (!pwdForm.new_password || pwdForm.new_password.length < 6) {
+    message.error('❌ 新密码长度需在6-32位之间')
+    return
+  }
+  pwdSubmitting.value = true
+  try {
+    await changePassword({
+      old_password: pwdForm.old_password,
+      new_password: pwdForm.new_password,
+    })
+    message.success('✅ 密码修改成功')
+    pwdDialogOpen.value = false
+  } catch (e: any) {
+    if (e?.response?.data?.message) {
+      message.error('❌ ' + e.response.data.message)
+    }
+  } finally {
+    pwdSubmitting.value = false
+  }
 }
 </script>
 
@@ -248,6 +336,48 @@ function confirmLogout() {
 /* Actions */
 .profile-actions {
   padding: 0 8px;
+}
+
+/* Navigation */
+.profile-nav {
+  padding: 0 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  min-height: 44px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.nav-item:last-child {
+  border-bottom: none;
+}
+
+.nav-item:hover {
+  background: #fafafa;
+  margin: 0 -8px;
+  padding: 14px 8px;
+  border-radius: 6px;
+}
+
+.nav-item-icon {
+  font-size: 18px;
+}
+
+.nav-item-label {
+  flex: 1;
+  font-size: 15px;
+  color: #333;
+}
+
+.nav-item-arrow {
+  font-size: 18px;
+  color: #ccc;
 }
 
 /* Emoji Picker */

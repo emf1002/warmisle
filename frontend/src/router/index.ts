@@ -116,7 +116,7 @@ router.beforeEach(async (to, _from, next) => {
         return
       }
     } catch {
-      message.error('网络错误，请刷新重试')
+      message.error('❌ 网络错误，请刷新重试')
       next(false)
       return
     }

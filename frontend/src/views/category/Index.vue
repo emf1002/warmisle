@@ -184,10 +184,10 @@ async function handleSubmit() {
         icon: form.icon,
         sort_order: form.sort_order,
       })
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       if (!form.name) {
-        message.error('分类名称不能为空')
+        message.error('❌ 分类名称不能为空')
         submitting.value = false
         return
       }
@@ -197,7 +197,7 @@ async function handleSubmit() {
         icon: form.icon,
         sort_order: form.sort_order,
       })
-      message.success('添加成功')
+      message.success('✅ 添加成功')
     }
     dialogOpen.value = false
     fetchCategories()
@@ -212,7 +212,7 @@ async function handleSubmit() {
 
 function confirmDelete(record: any) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: `确定要删除分类「${record.name}」吗？如果该分类下有记账记录则无法删除。`,
     okText: '删除',
     okType: 'danger',
@@ -220,7 +220,7 @@ function confirmDelete(record: any) {
     async onOk() {
       try {
         await deleteCategory(record.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         fetchCategories()
       } catch (e: any) {
         if (e?.response?.data?.message) {
@@ -286,6 +286,7 @@ function confirmDelete(record: any) {
   border-radius: 8px;
   gap: 12px;
   min-height: 44px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .category-icon {

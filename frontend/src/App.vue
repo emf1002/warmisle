@@ -1,7 +1,9 @@
 <template>
-  <component :is="layout">
-    <router-view />
-  </component>
+  <a-config-provider :theme="themeConfig">
+    <component :is="layout">
+      <router-view />
+    </component>
+  </a-config-provider>
 </template>
 
 <script setup lang="ts">
@@ -21,4 +23,15 @@ const layout = computed(() => {
   const layoutName = (route.meta.layout as string) || 'main'
   return layoutMap[layoutName] || MainLayout
 })
+
+const themeConfig = {
+  token: {
+    colorPrimary: '#1677FF',
+    colorSuccess: '#52C41A',
+    colorWarning: '#FAAD14',
+    colorError: '#FF4D4F',
+    borderRadius: 6,
+    fontSize: 14,
+  },
+}
 </script>

@@ -252,3 +252,38 @@ func (h *MemberHandler) GetProfile(c *gin.Context) {
 
 	pkg.Success(c, member)
 }
+
+type changePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+func (h *MemberHandler) ChangePassword(c *gin.Context) {
+	memberIDVal, _ := c.Get("member_id")
+	memberID := memberIDVal.(uint)
+
+	var req changePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		pkg.Error(c, 400, 40001, "参数校验失败")
+		return
+	}
+
+	if err := h.svc.ChangePassword(memberID, req.OldPassword, req.NewPassword); err != nil {
+		if errors.Is(err, service.ErrMemberNotFound) {
+			pkg.Error(c, 404, 40001, "成员不存在")
+			return
+		}
+		if errors.Is(err, service.ErrIncorrectPassword) {
+			pkg.Error(c, 400, 40010, "原密码错误")
+			return
+		}
+		if errors.Is(err, service.ErrInvalidPassword) {
+			pkg.Error(c, 400, 40001, "新密码长度需在6-32位之间")
+			return
+		}
+		pkg.Error(c, 500, 50001, "服务器内部错误")
+		return
+	}
+
+	pkg.Success(c, nil)
+}

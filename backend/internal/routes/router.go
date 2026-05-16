@@ -41,6 +41,7 @@ func Register(r *gin.Engine) {
 	// Profile
 	api.GET("/profile", authRequired, member.GetProfile)
 	api.PUT("/profile", authRequired, member.UpdateProfile)
+	api.PUT("/profile/password", authRequired, member.ChangePassword)
 
 	// Category management
 	api.GET("/categories", authRequired, category.List)

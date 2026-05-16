@@ -183,7 +183,7 @@
             </a-select-opt-group>
           </a-select>
         </a-form-item>
-        <a-form-item label="金额" required>
+        <a-form-item label="金额（元）" required>
           <a-input-number
             v-model:value="form.amount"
             :min="0.01"
@@ -191,6 +191,7 @@
             :precision="2"
             placeholder="0.00"
             style="width: 100%"
+            inputmode="decimal"
           />
         </a-form-item>
         <a-form-item label="关联成员" required>
@@ -467,15 +468,15 @@ function onItemClick(item: LedgerItem) {
 
 async function handleSubmit() {
   if (!form.category_id) {
-    message.error('请选择分类')
+    message.error('❌ 请选择分类')
     return
   }
   if (!form.amount || form.amount <= 0) {
-    message.error('金额必须大于 0')
+    message.error('❌ 金额必须大于 0')
     return
   }
   if (form.member_ids.length === 0) {
-    message.error('请至少选择一位关联成员')
+    message.error('❌ 请至少选择一位关联成员')
     return
   }
 
@@ -496,10 +497,10 @@ async function handleSubmit() {
         payload.amount = form.amount!
       }
       await updateLedger(editingRecord.value.id, payload)
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       await createLedger(payload)
-      message.success('记账成功')
+      message.success('✅ 记账成功')
     }
     dialogOpen.value = false
     fetchLedgers()
@@ -515,7 +516,7 @@ async function handleSubmit() {
 function confirmDelete() {
   if (!editingRecord.value) return
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: '确定要删除这条记账记录吗？',
     okText: '删除',
     okType: 'danger',
@@ -523,7 +524,7 @@ function confirmDelete() {
     async onOk() {
       try {
         await deleteLedger(editingRecord.value!.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         dialogOpen.value = false
         fetchLedgers()
       } catch (e: any) {
@@ -585,7 +586,7 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 16px 24px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .summary-item {
@@ -758,12 +759,14 @@ onMounted(async () => {
   padding: 16px 0;
 }
 
-/* FAB - mobile */
+/* Mobile */
 @media (max-width: 767px) {
   .ledger-page {
     padding: 16px;
     padding-bottom: 80px;
   }
+
+  .item-name { font-size: 14px; }
 
   .month-row :deep(.ant-btn-primary) {
     position: fixed;

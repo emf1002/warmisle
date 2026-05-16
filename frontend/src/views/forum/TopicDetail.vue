@@ -441,7 +441,7 @@ async function submitComment() {
       target_id: topicId.value,
       content: commentText.value.trim(),
     })
-    message.success('评论已发布')
+    message.success('✅ 评论已发布')
     commentText.value = ''
     fetchComments()
     // Refresh topic to update comment count
@@ -462,7 +462,7 @@ async function submitReply(parentComment: CommentItem) {
       parent_id: parentComment.id,
       content: replyText.value.trim(),
     })
-    message.success('回复已发布')
+    message.success('✅ 回复已发布')
     cancelReply()
     fetchComments()
     fetchTopic()
@@ -473,7 +473,7 @@ async function submitReply(parentComment: CommentItem) {
 
 function confirmDeleteComment(comment: CommentItem) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: comment.children && comment.children.length > 0
       ? '删除该评论后，其下的回复也会一并删除，确定继续吗？'
       : '确定要删除这条评论吗？',
@@ -483,7 +483,7 @@ function confirmDeleteComment(comment: CommentItem) {
     async onOk() {
       try {
         await deleteComment(comment.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         fetchComments()
         fetchTopic()
       } catch (e: any) {
@@ -506,7 +506,7 @@ function openEditDialog() {
 
 async function handleEditSubmit() {
   if (!editForm.title.trim()) {
-    message.error('标题不能为空')
+    message.error('❌ 标题不能为空')
     return
   }
   editSubmitting.value = true
@@ -519,7 +519,7 @@ async function handleEditSubmit() {
       payload.tag_id = editForm.tag_id
     }
     await updateTopic(topicId.value, payload)
-    message.success('更新成功')
+    message.success('✅ 更新成功')
     editDialogOpen.value = false
     fetchTopic()
   } catch (e: any) {
@@ -533,7 +533,7 @@ async function handleEditSubmit() {
 
 function confirmDelete() {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: '确定要删除这个话题吗？删除后所有评论也会一并删除。',
     okText: '删除',
     okType: 'danger',
@@ -541,7 +541,7 @@ function confirmDelete() {
     async onOk() {
       try {
         await deleteTopic(topicId.value)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         router.push('/forum')
       } catch (e: any) {
         if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -557,7 +557,7 @@ async function handleTogglePin() {
   if (!topic.value) return
   try {
     await togglePinApi(topic.value.id)
-    message.success(topic.value.is_pinned ? '已取消置顶' : '已置顶')
+    message.success(topic.value.is_pinned ? '✅ 已取消置顶' : '✅ 已置顶')
     fetchTopic()
   } catch (e: any) {
     if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -597,9 +597,10 @@ onMounted(() => {
 /* Topic card */
 .topic-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
   border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   margin-bottom: 24px;
 }
 
@@ -680,9 +681,10 @@ onMounted(() => {
 /* Comments section */
 .comments-section {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
   border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .comments-title {

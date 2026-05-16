@@ -22,6 +22,7 @@ var (
 	ErrInvalidPassword      = errors.New("invalid password length")
 	ErrInvalidName          = errors.New("invalid name length")
 	ErrUsernameRequired     = errors.New("username is required")
+	ErrIncorrectPassword    = errors.New("incorrect password")
 )
 
 type MemberService struct {
@@ -282,4 +283,30 @@ func (s *MemberService) GetProfile(id uint) (*model.Member, error) {
 		return nil, err
 	}
 	return member, nil
+}
+
+func (s *MemberService) ChangePassword(id uint, oldPwd, newPwd string) error {
+	member, err := s.repo.FindByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMemberNotFound
+		}
+		return err
+	}
+
+	if !pkg.CheckPassword(member.Password, oldPwd) {
+		return ErrIncorrectPassword
+	}
+
+	if err := validatePassword(newPwd); err != nil {
+		return err
+	}
+
+	hash, err := pkg.HashPassword(newPwd)
+	if err != nil {
+		return err
+	}
+
+	member.Password = hash
+	return s.repo.Update(member)
 }

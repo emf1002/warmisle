@@ -36,14 +36,12 @@
     </div>
 
     <div v-else-if="todos.length === 0" class="empty-state">
-      <a-empty :description="hasFilters ? '没有找到匹配的待办事项' : '暂无待办事项'">
-        <template v-if="!hasFilters">
+      <EmptyState v-if="!hasFilters" type="no-data" description="暂无待办事项">
+        <template #action>
           <a-button type="primary" @click="openCreate">新建待办</a-button>
         </template>
-        <template v-else>
-          <a-button @click="clearFilters">清除筛选</a-button>
-        </template>
-      </a-empty>
+      </EmptyState>
+      <EmptyState v-else type="no-result" description="没有找到匹配的待办事项" @clear="clearFilters" />
     </div>
 
     <div v-else class="todo-list">
@@ -162,6 +160,7 @@ import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import { getTodoList, createTodo, updateTodo, deleteTodo, toggleTodo, claimTodo } from '@/api/todo'
 import { getMembers } from '@/api/member'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface Member {
   id: number
@@ -315,7 +314,7 @@ const form = reactive({
 
 async function handleSubmit() {
   if (!form.title.trim()) {
-    message.error('请输入标题')
+    message.error('❌ 请输入标题')
     return
   }
   submitting.value = true
@@ -329,10 +328,10 @@ async function handleSubmit() {
     if (form.due_date) payload.due_date = form.due_date.format('YYYY-MM-DD')
     if (editingTodo.value) {
       await updateTodo(editingTodo.value.id, payload)
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       await createTodo(payload)
-      message.success('创建成功')
+      message.success('✅ 创建成功')
     }
     dialogOpen.value = false
     fetchTodos()
@@ -346,7 +345,7 @@ async function handleSubmit() {
 async function handleToggle(todo: TodoItem) {
   try {
     await toggleTodo(todo.id)
-    message.success(todo.status === 'pending' ? '已完成' : '已恢复')
+    message.success(todo.status === 'pending' ? '✅ 已完成' : '✅ 已恢复')
     fetchTodos()
   } catch (e: any) {
     if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -356,7 +355,7 @@ async function handleToggle(todo: TodoItem) {
 async function handleClaim(todo: TodoItem) {
   try {
     await claimTodo(todo.id)
-    message.success('认领成功')
+    message.success('✅ 认领成功')
     fetchTodos()
   } catch (e: any) {
     if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -365,7 +364,7 @@ async function handleClaim(todo: TodoItem) {
 
 function confirmDelete(todo: TodoItem) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: `确定要删除待办「${todo.title}」吗？`,
     okText: '删除',
     okType: 'danger',
@@ -373,7 +372,7 @@ function confirmDelete(todo: TodoItem) {
     async onOk() {
       try {
         await deleteTodo(todo.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         dialogOpen.value = false
         fetchTodos()
       } catch (e: any) {
@@ -441,10 +440,11 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 12px 16px;
   border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.2s;
 }
 
-.todo-item:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.todo-item:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
 
 .todo-item.completed {
   background: #f9f9f9;
@@ -526,5 +526,7 @@ onMounted(async () => {
 
 @media (max-width: 767px) {
   .todo-page { padding: 16px; }
+
+  .todo-title { font-size: 15px; }
 }
 </style>

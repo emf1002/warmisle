@@ -14,13 +14,11 @@
     </div>
 
     <template v-else-if="feedItems.length === 0 && pinnedItems.length === 0">
-      <div class="empty-state">
-        <a-empty description="暂无动态">
-          <template #children>
-            <a-button type="primary" @click="openCreatePost">发第一条动态</a-button>
-          </template>
-        </a-empty>
-      </div>
+      <EmptyState type="no-data" description="暂无动态">
+        <template #action>
+          <a-button type="primary" @click="openCreatePost">发第一条动态</a-button>
+        </template>
+      </EmptyState>
     </template>
 
     <template v-else>
@@ -209,6 +207,7 @@ import {
   togglePin as togglePinApi,
   getTags,
 } from '@/api/forum'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface MemberInfo {
   id: number
@@ -357,17 +356,17 @@ function openEditPost(item: FeedItem) {
 
 async function handlePostSubmit() {
   if (!postForm.content.trim()) {
-    message.error('内容不能为空')
+    message.error('❌ 内容不能为空')
     return
   }
   postSubmitting.value = true
   try {
     if (editingPostItem.value) {
       await updatePost(editingPostItem.value.id, { content: postForm.content.trim() })
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       await createPost({ content: postForm.content.trim() })
-      message.success('发布成功')
+      message.success('✅ 发布成功')
     }
     postDialogOpen.value = false
     fetchFeed()
@@ -380,7 +379,7 @@ async function handlePostSubmit() {
 
 function confirmDeletePost(item: FeedItem) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: '确定要删除这条动态吗？',
     okText: '删除',
     okType: 'danger',
@@ -388,7 +387,7 @@ function confirmDeletePost(item: FeedItem) {
     async onOk() {
       try {
         await deletePost(item.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         fetchFeed()
       } catch (e: any) {
         if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -418,7 +417,7 @@ function openEditTopic(item: FeedItem) {
 
 async function handleTopicSubmit() {
   if (!topicForm.title.trim()) {
-    message.error('标题不能为空')
+    message.error('❌ 标题不能为空')
     return
   }
   topicSubmitting.value = true
@@ -432,10 +431,10 @@ async function handleTopicSubmit() {
     }
     if (editingTopicItem.value) {
       await updateTopic(editingTopicItem.value.id, payload)
-      message.success('更新成功')
+      message.success('✅ 更新成功')
     } else {
       await createTopic(payload)
-      message.success('发布成功')
+      message.success('✅ 发布成功')
     }
     topicDialogOpen.value = false
     fetchFeed()
@@ -448,7 +447,7 @@ async function handleTopicSubmit() {
 
 function confirmDeleteTopic(item: FeedItem) {
   Modal.confirm({
-    title: '确认删除',
+    title: '❓ 确认删除',
     content: `确定要删除话题「${item.title}」吗？删除后话题下的所有评论也会一并删除。`,
     okText: '删除',
     okType: 'danger',
@@ -456,7 +455,7 @@ function confirmDeleteTopic(item: FeedItem) {
     async onOk() {
       try {
         await deleteTopic(item.id)
-        message.success('删除成功')
+        message.success('✅ 删除成功')
         fetchFeed()
       } catch (e: any) {
         if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -469,7 +468,7 @@ function confirmDeleteTopic(item: FeedItem) {
 async function handleTogglePin(item: FeedItem) {
   try {
     await togglePinApi(item.id)
-    message.success(item.is_pinned ? '已取消置顶' : '已置顶')
+    message.success(item.is_pinned ? '✅ 已取消置顶' : '✅ 已置顶')
     fetchFeed()
   } catch (e: any) {
     if (e?.response?.data?.message) message.error(e.response.data.message)
@@ -543,14 +542,15 @@ onMounted(() => {
 
 .feed-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 16px;
   border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.2s;
 }
 
 .feed-card:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
