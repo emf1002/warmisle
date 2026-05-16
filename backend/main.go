@@ -17,10 +17,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"github.com/pressly/goose/v3"
 
-	"home-center/internal/model"
 	"home-center/internal/pkg"
 	"home-center/internal/routes"
 )
@@ -58,27 +57,8 @@ func main() {
 		log.Fatalf("migration failed: %v", err)
 	}
 
-	// GORM AutoMigrate 作为二次校验
-	if err := pkg.DB.AutoMigrate(
-		&model.Member{},
-		&model.Category{},
-		&model.Tag{},
-		&model.Ledger{},
-		&model.LedgerMember{},
-		&model.Todo{},
-		&model.TodoLog{},
-		&model.Wish{},
-		&model.WishVote{},
-		&model.Post{},
-		&model.Topic{},
-		&model.Vote{},
-		&model.VoteOption{},
-		&model.VoteRecord{},
-		&model.Comment{},
-		&model.Like{},
-	); err != nil {
-		log.Fatalf("failed to auto-migrate: %v", err)
-	}
+	// 迁移由 goose 管理，无需 GORM AutoMigrate
+	// 如需添加字段，创建新的 goose 迁移文件
 
 	r := gin.Default()
 
@@ -87,7 +67,25 @@ func main() {
 
 	// 前端静态文件（从 embed 提供）
 	dist, _ := fs.Sub(frontendFS, "frontend/dist")
-	r.StaticFS("/", http.FS(dist))
+	r.Use(func(c *gin.Context) {
+		// API 请求跳过静态文件处理
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.Next()
+			return
+		}
+		// 尝试读取静态文件，SPA fallback 到 index.html
+		path := c.Request.URL.Path
+		if path == "/" {
+			path = "/index.html"
+		}
+		data, err := fs.ReadFile(dist, strings.TrimPrefix(path, "/"))
+		if err != nil {
+			// SPA fallback: 前端路由交由 index.html 处理
+			data, _ = fs.ReadFile(dist, "index.html")
+		}
+		c.Data(http.StatusOK, getContentType(path), data)
+		c.Abort()
+	})
 
 	log.Printf("Server starting on :%s", port)
 	if err := r.Run(":" + port); err != nil {
@@ -100,6 +98,35 @@ func getEnv(key, defaultVal string) string {
 		return val
 	}
 	return defaultVal
+}
+
+func getContentType(path string) string {
+	ext := filepath.Ext(path)
+	// 常见的前端资源 MIME 类型
+	switch ext {
+	case ".html":
+		return "text/html; charset=utf-8"
+	case ".js":
+		return "application/javascript; charset=utf-8"
+	case ".css":
+		return "text/css; charset=utf-8"
+	case ".json":
+		return "application/json; charset=utf-8"
+	case ".png":
+		return "image/png"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".svg":
+		return "image/svg+xml"
+	case ".ico":
+		return "image/x-icon"
+	case ".woff":
+		return "font/woff"
+	case ".woff2":
+		return "font/woff2"
+	default:
+		return "text/plain; charset=utf-8"
+	}
 }
 
 func loadOrGenerateSecret(dataDir string) string {
@@ -161,13 +188,14 @@ func runMigrations(dbPath string) error {
 	// 清理旧备份（保留最近 7 份）
 	cleanupBackups()
 
-	sqlDB, err := sql.Open("sqlite3", dbPath)
+	sqlDB, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return err
 	}
 	defer sqlDB.Close()
 
 	goose.SetBaseFS(migrationFS)
+	goose.SetDialect("sqlite3")
 	if err := goose.Up(sqlDB, "migrations"); err != nil {
 		return fmt.Errorf("migration failed: %w", err)
 	}

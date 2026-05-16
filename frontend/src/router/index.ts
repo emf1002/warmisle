@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { checkInit } from '@/api/auth'
 
@@ -72,20 +72,31 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 })
 
 router.beforeEach(async (to, _from, next) => {
   const token = localStorage.getItem('token')
 
-  // No token: only allow /init, otherwise redirect to /login
+  // No token: allow /init and /login, otherwise check init status
   if (!token) {
-    if (to.path === '/init') {
+    if (to.path === '/init' || to.path === '/login') {
       next()
-    } else if (to.meta.guest) {
+      return
+    }
+    if (to.meta.guest) {
       next()
-    } else {
+      return
+    }
+    try {
+      const res: any = await checkInit()
+      if (res.data.need_init) {
+        next('/init')
+      } else {
+        next('/login')
+      }
+    } catch {
       next('/login')
     }
     return
