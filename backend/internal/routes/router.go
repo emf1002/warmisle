@@ -15,6 +15,8 @@ func Register(r *gin.Engine) {
 	member := handler.NewMemberHandler()
 	category := handler.NewCategoryHandler()
 	ledger := handler.NewLedgerHandler()
+	dashboard := handler.NewDashboardHandler()
+	todo := handler.NewTodoHandler()
 
 	// Auth & Init
 	api.GET("/init/check", auth.InitCheck)
@@ -49,4 +51,19 @@ func Register(r *gin.Engine) {
 	api.GET("/ledgers/:id", authRequired, ledger.GetByID)
 	api.PUT("/ledgers/:id", authRequired, ledger.Update)
 	api.DELETE("/ledgers/:id", authRequired, ledger.Delete)
+
+	// Dashboard
+	api.GET("/dashboard/summary", authRequired, dashboard.Summary)
+	api.GET("/dashboard/expense-chart", authRequired, dashboard.ExpenseChart)
+	api.GET("/dashboard/upcoming-todos", authRequired, dashboard.UpcomingTodos)
+	api.GET("/dashboard/wish-trends", authRequired, dashboard.WishTrends)
+	api.GET("/dashboard/forum-hot", authRequired, dashboard.ForumHot)
+
+	// Todo management
+	api.GET("/todos", authRequired, todo.List)
+	api.POST("/todos", authRequired, todo.Create)
+	api.PUT("/todos/:id", authRequired, todo.Update)
+	api.DELETE("/todos/:id", authRequired, todo.Delete)
+	api.PUT("/todos/:id/toggle", authRequired, todo.Toggle)
+	api.PUT("/todos/:id/claim", authRequired, todo.Claim)
 }
