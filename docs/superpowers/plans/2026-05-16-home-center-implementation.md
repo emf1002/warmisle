@@ -8,6 +8,12 @@
 
 **Tech Stack:** Go 1.22+, Gin, GORM, SQLite, goose, Vue 3, Ant Design Vue, Vite, Pinia, Axios
 
+**修订记录**：
+
+| 版本 | 日期 | 修改内容 |
+|------|------|----------|
+| V1.1.0 | 2026-05-16 | 同步技术设计 V1.0.1 和 UI 风格指南 V1.1.1：1) 预置数据移至 migration 创建；2) 新增数据库索引任务；3) CLI 补充解锁同步；4) 仪表盘 API 补充 month 参数；5) 信息流 API 补充分页/响应结构；6) 评论/点赞 API 补充请求体定义；7) JWT 中间件补充 disabled 校验说明
+
 ---
 
 ## Phase 0: 项目脚手架
@@ -282,6 +288,7 @@ import (
     "io"
     "os"
     "path/filepath"
+    "sort"
     "time"
     "github.com/pressly/goose/v3"
 )
@@ -349,7 +356,28 @@ func cleanupBackups() {
 
 在 `InitDatabase` 后执行 `DB.AutoMigrate(&model.Member{}, ...)` 作为二次校验。
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: 数据库索引**
+
+在迁移文件 `001_init.up.sql` 中创建以下索引（技术设计 3.4 节）：
+
+| 表 | 索引 | 理由 |
+|------|------|------|
+| ledgers | `(deleted_at, occurred_at)` | 按月查询+排序 |
+| ledgers | `(creator_id, deleted_at)` | 按记录者筛选 |
+| ledgers | `(category_id, deleted_at)` | 按分类筛选+删除校验 |
+| ledger_members | `(member_id)` | 按成员筛选 |
+| todos | `(deleted_at, status, priority, due_date)` | 列表排序 |
+| todos | `(assignee_id, deleted_at)` | 按指派人筛选 |
+| posts | `(deleted_at, created_at)` | 信息流排序 |
+| topics | `(deleted_at, created_at)` | 信息流排序 |
+| topics | `(is_pinned, deleted_at, created_at)` | 公告置顶查询 |
+| comments | `(target_type, target_id, deleted_at)` | 评论列表 |
+| likes | `(target_type, target_id)` | 点赞数统计 |
+| wish_votes | `(wish_id)` | 愿望投票数 |
+| vote_records | `(vote_id, member_id)` | 投票去重+结果 |
+| members | `(username, deleted_at)` | 登录查询+用户名唯一校验 |
+
+- [ ] **Step 6: Commit**
 
 ```bash
 git add -A
@@ -495,9 +523,9 @@ func AuthRequired() gin.HandlerFunc {
             c.Abort()
             return
         }
-        // 检查成员是否被禁用
-        member, _ := pkg.GetMemberByID(claims.MemberID) // 临时方案，后续注入 repository
-        if member != nil && member.Status == "disabled" {
+        // 检查成员是否被禁用 — 通过注入的 repository 查询
+        var member model.Member
+        if err := pkg.DB.First(&member, claims.MemberID).Error; err != nil || member.Status == "disabled" {
             pkg.Error(c, 403, 40301, "账号已被禁用")
             c.Abort()
             return
@@ -753,13 +781,14 @@ git commit -m "feat: add authentication module with JWT login"
 **Files:**
 - Create: `backend/internal/service/init.go`
 - Create: `backend/internal/handler/init.go`
-- Create: `backend/internal/model/category.go`
-- Create: `backend/internal/model/tag.go`
 - Modify: `backend/internal/routes/router.go`
+- Modify: `backend/migrations/001_init.up.sql`（补充预置分类和标签的 INSERT OR IGNORE）
 
 - [ ] **Step 1: 初始化 Service**
 
-`backend/internal/service/init.go` — 创建管理员、预置分类(20个)、预置标签(10个)：
+> **关键变更（技术设计 V1.0.1）**：预置数据（20 个分类 + 10 个标签）由 goose migration 在数据库迁移阶段创建，`POST /api/init/setup` 仅创建管理员。
+
+`backend/internal/service/init.go` — 仅创建管理员：
 ```go
 package service
 
@@ -771,7 +800,7 @@ import (
 
 type InitService struct{}
 
-func (s *InitService) Setup(tx *gorm.DB, adminName, username, password string) error {
+func (s *InitService) Setup(tx *gorm.DB, adminName, username, password string) (*model.Member, error) {
     hash, _ := pkg.HashPassword(password)
     admin := model.Member{
         Username: username,
@@ -782,26 +811,13 @@ func (s *InitService) Setup(tx *gorm.DB, adminName, username, password string) e
         Status:   "active",
     }
     if err := tx.Create(&admin).Error; err != nil {
-        return err
+        return nil, err
     }
-    // 创建预置分类
-    categories := getPresetCategories()
-    for i := range categories {
-        if err := tx.Create(&categories[i]).Error; err != nil {
-            return err
-        }
-    }
-    // 创建预置标签
-    tags := getPresetTags()
-    for i := range tags {
-        if err := tx.Create(&tags[i]).Error; err != nil {
-            return err
-        }
-    }
-    return nil
+    return &admin, nil
 }
+```
 
-> **事务说明**：`Setup` 接收 `tx *gorm.DB` 参数，调用方需用 `pkg.DB.Transaction(...)` 包裹，确保管理员、分类、标签三部分创建是一个原子操作，任何一步失败自动回滚。
+> **事务说明**：`Setup` 接收 `tx *gorm.DB` 参数，调用方需用 `pkg.DB.Transaction(...)` 包裹。事务内仅创建管理员，预置数据已在 migration 中创建。
 
 Handler 调用示例：
 ```go
@@ -815,58 +831,41 @@ func (h *InitHandler) Setup(c *gin.Context) {
         pkg.Error(c, 400, 40001, "参数错误")
         return
     }
+    var token string
     err := pkg.DB.Transaction(func(tx *gorm.DB) error {
-        return h.svc.Setup(tx, req.Name, req.Username, req.Password)
+        admin, err := h.svc.Setup(tx, req.Name, req.Username, req.Password)
+        if err != nil {
+            return err
+        }
+        token, _ = pkg.GenerateToken(admin.ID, req.Username, "admin")
+        return nil
     })
     if err != nil {
         pkg.Error(c, 500, 40005, "初始化失败: "+err.Error())
         return
     }
-    token, _ := pkg.GenerateToken(1, req.Username, "admin")
+    // 首次初始化后需创建预置数据
     pkg.Success(c, gin.H{"token": token})
 }
 ```
 
-func getPresetCategories() []model.Category {
-    return []model.Category{
-        {Type: "expense", Name: "餐饮", Icon: "🍱", SortOrder: 1, Preset: true},
-        {Type: "expense", Name: "交通", Icon: "🚌", SortOrder: 2, Preset: true},
-        {Type: "expense", Name: "购物", Icon: "🛍️", SortOrder: 3, Preset: true},
-        {Type: "expense", Name: "居住", Icon: "🏠", SortOrder: 4, Preset: true},
-        {Type: "expense", Name: "通讯", Icon: "📱", SortOrder: 5, Preset: true},
-        {Type: "expense", Name: "医疗", Icon: "🏥", SortOrder: 6, Preset: true},
-        {Type: "expense", Name: "教育", Icon: "📚", SortOrder: 7, Preset: true},
-        {Type: "expense", Name: "娱乐", Icon: "🎬", SortOrder: 8, Preset: true},
-        {Type: "expense", Name: "亲子", Icon: "👶", SortOrder: 9, Preset: true},
-        {Type: "expense", Name: "人情", Icon: "🧧", SortOrder: 10, Preset: true},
-        {Type: "expense", Name: "宠物", Icon: "🐱", SortOrder: 11, Preset: true},
-        {Type: "expense", Name: "美容", Icon: "💄", SortOrder: 12, Preset: true},
-        {Type: "expense", Name: "运动", Icon: "🏃", SortOrder: 13, Preset: true},
-        {Type: "expense", Name: "保险", Icon: "🛡️", SortOrder: 14, Preset: true},
-        {Type: "expense", Name: "其他支出", Icon: "📦", SortOrder: 15, Preset: true},
-        {Type: "income", Name: "工资", Icon: "💰", SortOrder: 16, Preset: true},
-        {Type: "income", Name: "兼职", Icon: "💼", SortOrder: 17, Preset: true},
-        {Type: "income", Name: "理财", Icon: "📈", SortOrder: 18, Preset: true},
-        {Type: "income", Name: "红包", Icon: "🧧", SortOrder: 19, Preset: true},
-        {Type: "income", Name: "其他收入", Icon: "📦", SortOrder: 20, Preset: true},
-    }
-}
+预置数据在迁移文件 `backend/migrations/001_init.up.sql` 中通过 `INSERT OR IGNORE` 创建，确保幂等（技术设计 3.3 节）：
 
-func getPresetTags() []model.Tag {
-    return []model.Tag{
-        {Name: "家务", Preset: true},
-        {Name: "育儿", Preset: true},
-        {Name: "出行", Preset: true},
-        {Name: "饮食", Preset: true},
-        {Name: "健康", Preset: true},
-        {Name: "教育", Preset: true},
-        {Name: "财务", Preset: true},
-        {Name: "购物", Preset: true},
-        {Name: "装修", Preset: true},
-        {Name: "宠物", Preset: true},
-    }
-}
+```sql
+-- 预置分类（支出 15 个 + 收入 5 个）
+INSERT OR IGNORE INTO categories (type, name, icon, sort_order, preset, created_at, updated_at) VALUES
+('expense', '餐饮', '🍱', 1, 1, datetime('now'), datetime('now')),
+-- ... 其余 19 个
+('income', '其他收入', '📦', 20, 1, datetime('now'), datetime('now'));
+
+-- 预置标签（10 个）
+INSERT OR IGNORE INTO tags (name, preset, created_at) VALUES
+('家务', 1, datetime('now')),
+-- ... 其余 9 个
+('宠物', 1, datetime('now'));
 ```
+
+预置分类和标签的完整列表详见 PRD 第 6.3 节和 6.7 节。
 
 - [ ] **Step 2: 初始化 Handler + 路由**
 
@@ -1153,6 +1152,8 @@ type Ledger struct {
 月度小计 sticky 顶部 → 日期分组列表 → 每条显示: 分类名+金额+备注+记录者头像
 日期格式: 今天/昨天/M月D日 周X
 
+日期分组标头视觉规范（UI 风格指南 3.8a）：标头背景 `colorBgLayout`（#F5F5F5），日期文字 14px/500，日小计金额 14px/500 跟随收支颜色
+
 - [ ] **Step 3: 记账表单对话框**
 
 选择分类(默认支出)→输入金额→选择关联成员(多选)→选择日期→备注
@@ -1188,8 +1189,12 @@ type Ledger struct {
 
 - [ ] **Step 4: Todo Handler + 路由**
 
-`PUT /api/todos/:id/toggle` — 完成/恢复切换
-`PUT /api/todos/:id/claim` — 认领
+`GET /api/todos?status=pending|completed&assignee_id=&page=1&page_size=20` — 列表查询
+`POST /api/todos` — 创建
+`PUT /api/todos/:id` — 编辑（创建者/被指派人/admin）
+`DELETE /api/todos/:id` — 删除（创建者/admin）
+`PUT /api/todos/:id/toggle` — 完成/恢复切换（创建者/被指派人/admin）
+`PUT /api/todos/:id/claim` — 认领（登录用户，仅未指派）
 
 - [ ] **Step 5: Commit**
 
@@ -1234,6 +1239,18 @@ func (s *DashboardService) GetForumHot() (map[string]interface{}, error)
 ```
 
 - [ ] **Step 2: Dashboard Handler + 路由**
+
+路由注册：
+```go
+api.GET("/dashboard/summary", dashboardHandler.Summary)           // ?month=2026-05
+api.GET("/dashboard/expense-chart", dashboardHandler.ExpenseChart) // ?month=2026-05
+api.GET("/dashboard/upcoming-todos", dashboardHandler.UpcomingTodos)
+api.GET("/dashboard/wish-trends", dashboardHandler.WishTrends)
+api.GET("/dashboard/forum-hot", dashboardHandler.ForumHot)
+```
+
+`summary` 和 `expense-chart` 接受可选 `month` 查询参数（格式 `YYYY-MM`），缺省使用当前月份。
+
 - [ ] **Step 3: Commit**
 
 ### Task 7.2: 仪表盘 — 前端
@@ -1245,9 +1262,11 @@ func (s *DashboardService) GetForumHot() (map[string]interface{}, error)
 - [ ] **Step 1: Dashboard API**
 - [ ] **Step 2: 仪表盘页面**
 
-三张统计卡片(收入/支出/结余) → 支出饼图(使用 Ant Design Vue Chart 或简单 CSS 实现) → 近期待办列表(5条) → 愿望动态 → 论坛热点
+三张统计卡片(收入/支出/结余) → 支出饼图(使用 Ant Design Vue Chart 或简单 CSS 实现) → 近期待办列表(5条) → 愿望动态(5条，可点击跳转愿望列表) → 论坛热点
 
-- [ ] **Step 3: 月份切换器（仅仪表盘独立）**
+> **移动端愿望清单入口**（UI 风格指南 4.0）：愿望清单在移动端不设独立 Tab，通过仪表盘页面内嵌"愿望动态"区域进入。点击任意愿望卡片跳转完整愿望列表页 `/wish`（顶部有返回按钮）。
+
+- [ ] **Step 3: 月份切换器（仅仪表盘独立，与记账本月份各自独立不联动）**
 - [ ] **Step 4: Commit**
 
 ---
@@ -1272,9 +1291,14 @@ func (s *DashboardService) GetForumHot() (map[string]interface{}, error)
 
 - [ ] **Step 3: Wish Handler + 路由**
 
-`POST /api/wishes/:id/promote` — 提升
-`PUT /api/wishes/:id/status` — 状态变更
-`POST/DELETE /api/wishes/:id/vote` — 投票/取消
+`GET /api/wishes?type=personal|family&status=pending|agreed|achieved|abandoned&creator_id=&page=1&page_size=20` — 列表查询
+`POST /api/wishes` — 创建
+`PUT /api/wishes/:id` — 编辑（创建者/admin）
+`DELETE /api/wishes/:id` — 删除（创建者/admin）
+`POST /api/wishes/:id/promote` — 提升为家庭愿望（创建者，单向不可逆）
+`PUT /api/wishes/:id/status` — 状态变更（admin 任意/创建者仅放弃）
+`POST /api/wishes/:id/vote` — 投票
+`DELETE /api/wishes/:id/vote` — 取消投票
 
 - [ ] **Step 4: Commit**
 
@@ -1288,7 +1312,7 @@ func (s *DashboardService) GetForumHot() (map[string]interface{}, error)
 - [ ] **Step 2: 愿望列表页**
 
 个人愿望/家庭愿望两个 tab。个人愿望展示创建者标识(只读)，家庭愿望展示投票按钮和人数。
-卡片形式展示：标题、分类、金额、优先级、状态标签、投票人数
+卡片形式展示：标题、分类、金额、优先级标签（复用待办优先级配色：紧急=red、重要=orange、普通=default）、状态标签、投票人数
 
 - [ ] **Step 3: 创建/编辑对话框 + 提升按钮**
 - [ ] **Step 4: Commit**
@@ -1314,14 +1338,25 @@ func (s *DashboardService) GetForumHot() (map[string]interface{}, error)
 
 - [ ] **Step 2: Forum Repository**
 
-关键查询——信息流：
+关键查询——信息流（分页 + 置顶公告 + 动态/话题混合）：
+
 ```go
-func (r *ForumRepo) GetFeed() (map[string]interface{}, error) {
-    // 1. 置顶公告(按创建时间倒序)
-    // 2. 动态(按创建时间倒序) + 话题(按创建时间倒序) 混合
-    // 返回按时间排序的统一列表
+func (r *ForumRepo) GetFeed(page, pageSize int) (*FeedResponse, error) {
+    // 1. 置顶公告: topics WHERE is_pinned=true AND deleted_at IS NULL ORDER BY created_at DESC
+    //    → pinned 返回所有有效公告（不分页）
+    // 2. 动态+话题混合: posts + topics (WHERE is_pinned=false) UNION ORDER BY created_at DESC
+    //    → items 按分页返回
+    // 3. 总条数: total (动态+非置顶话题的未删除总数)
+}
+
+type FeedResponse struct {
+    Pinned []FeedItem `json:"pinned"`   // 所有有效公告，按创建时间倒序
+    Items  []FeedItem `json:"items"`    // 动态+话题混合，按创建时间倒序，分页
+    Total  int64      `json:"total"`    // items 总数（不含 pinned）
 }
 ```
+
+`GET /api/feed?page=1&page_size=20`，前端若 `pinned` 为空数组则隐藏公告区。
 
 - [ ] **Step 3: Forum Service**
 
@@ -1331,7 +1366,31 @@ func (r *ForumRepo) GetFeed() (map[string]interface{}, error) {
 
 - [ ] **Step 4: Forum Handler + 路由**
 
-信息流 `GET /api/feed` → 公告置顶在前 + 动态/话题混合按时间倒序
+- [ ] **Step 4: Forum Handler + 路由**
+
+信息流 `GET /api/feed?page=1&page_size=20` → 公告置顶在前 + 动态/话题混合按时间倒序，响应含 `pinned` + `items` + `total`。
+
+评论请求体（`POST /api/comments`）：
+```json
+{
+  "target_type": "post",
+  "target_id": 1,
+  "parent_id": null,
+  "content": "说得好"
+}
+```
+- `target_type` 枚举：`post` / `topic` / `wish`
+- `parent_id` 为 null → 一级评论；指向一级评论 ID → 二级评论
+- 后端校验：`parent_id` 指向的评论的 `parent_id` 必须为 null（禁止三级嵌套）
+
+点赞请求体（`POST /api/likes`）：
+```json
+{
+  "target_type": "post",
+  "target_id": 1
+}
+```
+`DELETE /api/likes` 请求体同上，通过 `(target_type, target_id, member_id)` 唯一约束定位。
 
 - [ ] **Step 5: Commit**
 
