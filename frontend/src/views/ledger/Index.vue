@@ -5,15 +5,17 @@
       <h2>记账本</h2>
     </div>
 
-    <!-- Month Picker -->
+    <!-- Month Switcher -->
     <div class="month-row">
-      <a-date-picker
-        v-model:value="selectedMonth"
-        picker="month"
-        format="YYYY年M月"
-        @change="onMonthChange"
-        style="width: 160px"
-      />
+      <div class="month-switcher">
+        <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月">
+          ◀
+        </a-button>
+        <span class="month-text">{{ selectedMonth.format('YYYY年M月') }}</span>
+        <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月">
+          ▶
+        </a-button>
+      </div>
       <a-button type="primary" @click="openCreate()">记一笔</a-button>
     </div>
 
@@ -111,20 +113,28 @@
           :class="{ clickable: canEdit(item) }"
           @click="onItemClick(item)"
         >
-          <div class="item-main">
-            <span class="item-icon">{{ item.category.icon }}</span>
-            <div class="item-info">
-              <span class="item-name">{{ item.category.name }}</span>
-              <span v-if="item.note" class="item-note">{{ truncate(item.note, 30) }}</span>
-            </div>
-            <span :class="item.category.type === 'income' ? 'income-amount' : 'expense-amount'" class="item-amount">
-              {{ formatAmount(item.amount, item.category.type) }}
+          <div class="item-top">
+            <span class="item-category">
+              <span class="item-cat-icon">{{ item.category.icon }}</span>
+              <span class="item-cat-name">{{ item.category.name }}</span>
+            </span>
+            <span class="item-creator-line">
+              <span class="creator-avatar">{{ item.creator.avatar }}</span>
+              <span class="creator-name">{{ item.creator.name }}</span>
+              <span class="creator-label">记录</span>
             </span>
           </div>
-          <div class="item-meta">
-            <span class="item-creator">{{ item.creator.avatar }} {{ item.creator.name }}</span>
+          <div v-if="item.note" class="item-body">
+            <span class="item-note">{{ truncate(item.note, 30) }}</span>
+          </div>
+          <div class="item-bottom">
             <span v-if="item.members && item.members.length > 0" class="item-members">
-              <span v-for="m in item.members" :key="m.id" class="member-avatar">{{ m.avatar }}</span>
+              关联：<span v-for="m in item.members.slice(0, 4)" :key="m.id" class="member-tag">{{ m.avatar }}</span>
+              <span v-if="item.members.length > 4" class="member-more">等 {{ item.members.length }} 人</span>
+            </span>
+            <span v-else class="item-members"></span>
+            <span class="item-amount" :class="item.category.type === 'income' ? 'income-amount' : 'expense-amount'">
+              {{ item.category.type === 'income' ? '+' : '-' }}¥{{ (item.amount / 100).toFixed(2) }}
             </span>
           </div>
         </div>
@@ -352,11 +362,6 @@ function formatYuan(cents: number): string {
   return `\u00A5${(cents / 100).toFixed(2)}`
 }
 
-function formatAmount(cents: number, categoryType: string): string {
-  const yuan = (cents / 100).toFixed(2)
-  return categoryType === 'income' ? `+\u00A5${yuan}` : `-\u00A5${yuan}`
-}
-
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   const now = new Date()
@@ -383,6 +388,16 @@ function canEdit(item: LedgerItem): boolean {
 // Methods
 function getMonthParam(): string {
   return selectedMonth.value.format('YYYY-MM')
+}
+
+function goPrevMonth() {
+  selectedMonth.value = selectedMonth.value.subtract(1, 'month')
+  fetchLedgers()
+}
+
+function goNextMonth() {
+  selectedMonth.value = selectedMonth.value.add(1, 'month')
+  fetchLedgers()
 }
 
 async function fetchLedgers(isLoadMore = false) {
@@ -423,10 +438,6 @@ async function fetchLedgers(isLoadMore = false) {
 async function loadMore() {
   page.value++
   await fetchLedgers(true)
-}
-
-function onMonthChange() {
-  fetchLedgers()
 }
 
 function onFilterChange() {
@@ -555,22 +566,12 @@ onMounted(async () => {
 
 <style scoped>
 .ledger-page {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 800px;
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
+/* Month Row */
 .month-row {
   display: flex;
   justify-content: space-between;
@@ -579,14 +580,39 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.month-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-arrow {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.month-arrow:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.month-text {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 110px;
+  text-align: center;
+}
+
 /* Summary Bar */
 .summary-bar {
   display: flex;
-  background: #fff;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
   padding: 16px 24px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-level-1);
 }
 
 .summary-item {
@@ -599,29 +625,37 @@ onMounted(async () => {
 
 .summary-label {
   font-size: 13px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 /* Filter Row */
 .filter-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
   flex-wrap: wrap;
   align-items: center;
+  padding: var(--space-sm);
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
 }
 
 /* Amount Colors */
 .income-amount {
-  color: #52c41a;
+  color: var(--color-success);
   font-weight: 600;
   font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .expense-amount {
-  color: #ff4d4f;
+  color: var(--color-danger);
   font-weight: 600;
   font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 /* Loading & Empty */
@@ -630,22 +664,16 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   padding: 48px 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .empty-state {
   text-align: center;
   padding: 48px 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
-/* Record List */
-.record-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
+/* Date Group */
 .date-group {
   margin-bottom: 0;
 }
@@ -655,31 +683,37 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background: #f5f5f5;
-  border-radius: 6px;
+  background: var(--color-bg-layout);
+  border-radius: var(--radius-md);
   margin-bottom: 8px;
 }
 
 .date-text {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .date-total {
   font-size: 14px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-/* Ledger Item */
+/* ==================== Ledger Item Card ==================== */
 .ledger-item {
-  background: #fff;
-  border-radius: 8px;
-  padding: 14px 16px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
   margin-bottom: 8px;
-  border: 1px solid #f0f0f0;
-  transition: box-shadow 0.2s;
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-level-1);
+  transition: box-shadow var(--duration-normal) ease;
   min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .ledger-item.clickable {
@@ -687,70 +721,80 @@ onMounted(async () => {
 }
 
 .ledger-item.clickable:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-level-2);
 }
 
-.item-main {
+/* Top row: category + creator */
+.item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-category {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
 }
 
-.item-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-  width: 36px;
-  text-align: center;
+.item-cat-icon {
+  font-size: 18px;
 }
 
-.item-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.item-name {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.item-note {
-  font-size: 12px;
-  color: #999;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-amount {
-  font-size: 16px;
+.item-cat-name {
+  font-size: 14px;
   font-weight: 600;
-  flex-shrink: 0;
 }
 
-.item-meta {
+.item-creator-line {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #fafafa;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
-.item-creator {
-  font-size: 12px;
-  color: #666;
+.creator-avatar {
+  font-size: 14px;
+}
+
+/* Body: note */
+.item-note {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+
+/* Bottom: members + amount */
+.item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .item-members {
+  font-size: 12px;
+  color: var(--color-text-secondary);
   display: flex;
+  align-items: center;
   gap: 2px;
 }
 
-.member-avatar {
+.member-tag {
   font-size: 14px;
+}
+
+.member-more {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.item-amount {
+  font-weight: 600;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
 /* Load More */
@@ -762,22 +806,20 @@ onMounted(async () => {
 /* Mobile */
 @media (max-width: 767px) {
   .ledger-page {
-    padding: 16px;
+    padding: var(--space-md);
     padding-bottom: 80px;
   }
-
-  .item-name { font-size: 14px; }
 
   .month-row :deep(.ant-btn-primary) {
     position: fixed;
     bottom: 72px;
     right: 20px;
-    z-index: 100;
+    z-index: var(--z-overlay);
     width: 56px;
     height: 56px;
     border-radius: 50%;
     font-size: 24px;
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+    box-shadow: var(--shadow-level-3);
   }
 }
 </style>
