@@ -1,138 +1,130 @@
 <template>
   <div class="dashboard">
-    <!-- 月份选择 -->
-    <div class="month-selector">
-      <span class="month-label">月份：</span>
-      <a-month-picker v-model:value="selectedMonth" format="YYYY-MM" placeholder="选择月份" @change="onMonthChange" />
+    <!-- 月份切换 -->
+    <div class="month-switcher">
+      <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月">
+        ◀
+      </a-button>
+      <span class="month-text">{{ selectedMonth.format('YYYY年M月') }}</span>
+      <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月">
+        ▶
+      </a-button>
     </div>
 
     <!-- 月度统计卡片 -->
-    <a-row :gutter="[16, 16]" class="summary-cards">
-      <a-col :xs="8" :sm="8">
-        <a-card :bordered="false" class="stat-card">
-          <a-statistic title="收入" :value="summary.income / 100" :precision="2" prefix="+¥">
-            <template #prefix>
-              <span class="income-prefix">+¥</span>
-            </template>
-          </a-statistic>
-        </a-card>
-      </a-col>
-      <a-col :xs="8" :sm="8">
-        <a-card :bordered="false" class="stat-card">
-          <a-statistic title="支出" :value="summary.expense / 100" :precision="2" prefix="-¥">
-            <template #prefix>
-              <span class="expense-prefix">-¥</span>
-            </template>
-          </a-statistic>
-        </a-card>
-      </a-col>
-      <a-col :xs="8" :sm="8">
-        <a-card :bordered="false" class="stat-card">
-          <a-statistic title="结余" :value="Math.abs(summary.balance / 100)" :precision="2" :prefix="summary.balance >= 0 ? '+¥' : '-¥'">
-          </a-statistic>
-        </a-card>
-      </a-col>
-    </a-row>
+    <div class="summary-grid">
+      <a-card :bordered="false" class="stat-card">
+        <a-statistic title="收入" :value="summary.income / 100" :precision="2">
+          <template #prefix><span class="income-prefix">+¥</span></template>
+        </a-statistic>
+      </a-card>
+      <a-card :bordered="false" class="stat-card">
+        <a-statistic title="支出" :value="summary.expense / 100" :precision="2">
+          <template #prefix><span class="expense-prefix">-¥</span></template>
+        </a-statistic>
+      </a-card>
+      <a-card :bordered="false" class="stat-card">
+        <a-statistic title="结余" :value="Math.abs(summary.balance / 100)" :precision="2">
+          <template #prefix>
+            <span :class="summary.balance >= 0 ? 'income-prefix' : 'expense-prefix'">
+              {{ summary.balance >= 0 ? '+' : '-' }}¥
+            </span>
+          </template>
+        </a-statistic>
+      </a-card>
+    </div>
 
-    <a-row :gutter="[16, 16]">
+    <div class="dashboard-grid">
       <!-- 支出分类图表 -->
-      <a-col :xs="24" :lg="14">
-        <a-card title="支出分类" class="section-card">
-          <div v-if="expenseChart.length === 0" class="empty-section">
-            <EmptyState type="no-data" description="暂无数据" />
-          </div>
-          <div v-else class="expense-chart">
-            <div v-for="item in expenseChart" :key="item.category_id" class="chart-row">
-              <span class="chart-icon">{{ item.icon }}</span>
-              <span class="chart-name">{{ item.category_name }}</span>
-              <div class="chart-bar-wrapper">
-                <div class="chart-bar" :style="{ width: getPercent(item.amount) + '%' }"></div>
-              </div>
-              <span class="chart-amount">-¥{{ (item.amount / 100).toFixed(2) }}</span>
+      <a-card title="支出分类" class="section-card">
+        <div v-if="expenseChart.length === 0" class="empty-section">
+          <EmptyState type="no-data" description="暂无数据" />
+        </div>
+        <div v-else class="expense-chart">
+          <div v-for="item in expenseChart" :key="item.category_id" class="chart-row">
+            <span class="chart-icon">{{ item.icon }}</span>
+            <span class="chart-name">{{ item.category_name }}</span>
+            <div class="chart-bar-wrapper">
+              <div class="chart-bar" :style="{ width: getPercent(item.amount) + '%' }"></div>
             </div>
+            <span class="chart-amount">-¥{{ (item.amount / 100).toFixed(2) }}</span>
           </div>
-        </a-card>
-      </a-col>
+        </div>
+      </a-card>
 
       <!-- 近期待办 -->
-      <a-col :xs="24" :lg="10">
-        <a-card title="近期待办" class="section-card">
-          <div v-if="upcomingTodos.length === 0" class="empty-section">
-            <EmptyState type="no-data" description="暂无待办" />
-          </div>
-          <a-list v-else :data-source="upcomingTodos" size="small">
-            <template #renderItem="{ item: todo }">
-              <a-list-item class="todo-item" @click="$router.push('/todo')">
-                <div class="todo-item-content">
-                  <span class="todo-title">{{ todo.title }}</span>
-                  <span class="todo-meta">
-                    <a-tag v-if="todo.priority === 'urgent'" color="red">紧急</a-tag>
-                    <a-tag v-else-if="todo.priority === 'important'" color="orange">重要</a-tag>
-                    <span v-if="todo.assignee" class="todo-assignee">{{ todo.assignee.name }}</span>
-                    <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo.due_date) }">
-                      {{ formatDate(todo.due_date) }}
-                    </span>
+      <a-card title="近期待办" class="section-card">
+        <div v-if="upcomingTodos.length === 0" class="empty-section">
+          <EmptyState type="no-data" description="暂无待办" />
+        </div>
+        <a-list v-else :data-source="upcomingTodos" size="small">
+          <template #renderItem="{ item: todo }">
+            <a-list-item class="todo-item" @click="$router.push('/todo')">
+              <div class="todo-item-content">
+                <span class="todo-title">{{ todo.title }}</span>
+                <span class="todo-meta">
+                  <a-tag v-if="todo.priority === 'urgent'" color="red">紧急</a-tag>
+                  <a-tag v-else-if="todo.priority === 'important'" color="orange">重要</a-tag>
+                  <span v-if="todo.assignee" class="todo-assignee">{{ todo.assignee.name }}</span>
+                  <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo.due_date) }">
+                    {{ formatDate(todo.due_date) }}
                   </span>
-                </div>
-              </a-list-item>
-            </template>
-          </a-list>
-        </a-card>
-      </a-col>
-    </a-row>
+                </span>
+              </div>
+            </a-list-item>
+          </template>
+        </a-list>
+      </a-card>
+    </div>
 
-    <a-row :gutter="[16, 16]" style="margin-top: 16px">
+    <div class="bottom-grid" style="margin-top: 16px">
       <!-- 愿望动态 -->
-      <a-col :xs="24" :lg="12">
-        <a-card title="愿望动态" class="section-card">
-          <div v-if="wishTrends.length === 0" class="empty-section">
-            <EmptyState type="no-data" description="暂无愿望" />
-          </div>
-          <a-list v-else :data-source="wishTrends" size="small">
-            <template #renderItem="{ item: trend }">
-              <a-list-item class="clickable-item" @click="$router.push('/wish')">
-                <a-list-item-meta>
-                  <template #title>{{ trend.title }}</template>
-                  <template #description>
-                    <span>{{ trend.creator.name }}</span>
-                    <span style="margin-left: 8px">{{ trend.vote_count }} 票</span>
-                  </template>
-                </a-list-item-meta>
-                <template #extra>
-                  <a-tag v-if="trend.status === 'pending'" color="default">待定</a-tag>
-                  <a-tag v-else-if="trend.status === 'agreed'" color="blue">已同意</a-tag>
-                  <a-tag v-else-if="trend.status === 'achieved'" color="green">已实现</a-tag>
-                  <a-tag v-else-if="trend.status === 'abandoned'">已放弃</a-tag>
+      <a-card title="愿望动态" class="section-card">
+        <div v-if="wishTrends.length === 0" class="empty-section">
+          <EmptyState type="no-data" description="暂无愿望" />
+        </div>
+        <a-list v-else :data-source="wishTrends" size="small">
+          <template #renderItem="{ item: trend }">
+            <a-list-item class="clickable-item" @click="$router.push('/wish')">
+              <a-list-item-meta>
+                <template #title>{{ trend.title }}</template>
+                <template #description>
+                  <span>{{ trend.creator.name }}</span>
+                  <span style="margin-left: 8px">{{ trend.vote_count }} 票</span>
                 </template>
-              </a-list-item>
-            </template>
-          </a-list>
-        </a-card>
-      </a-col>
+              </a-list-item-meta>
+              <template #extra>
+                <a-tag v-if="trend.status === 'pending'" color="default">待定</a-tag>
+                <a-tag v-else-if="trend.status === 'agreed'" color="blue">已同意</a-tag>
+                <a-tag v-else-if="trend.status === 'achieved'" color="green">已实现</a-tag>
+                <a-tag v-else-if="trend.status === 'abandoned'">已放弃</a-tag>
+              </template>
+            </a-list-item>
+          </template>
+        </a-list>
+      </a-card>
 
       <!-- 论坛热点 -->
-      <a-col :xs="24" :lg="12">
-        <a-card title="论坛热点" class="section-card">
-          <div v-if="forumHot.length === 0" class="empty-section">
-            <EmptyState type="no-data" description="暂无动态" />
-          </div>
-          <a-list v-else :data-source="forumHot" size="small">
-            <template #renderItem="{ item: feed }">
-              <a-list-item class="clickable-item" @click="$router.push('/forum')">
-                <a-list-item-meta>
-                  <template #title>
-                    <a-tag v-if="feed.type === 'topic'" color="blue" size="small">话题</a-tag>
-                    <a-tag v-else size="small">动态</a-tag>
-                    <span>{{ feed.title || feed.content }}</span>
-                  </template>
-                  <template #description>{{ feed.creator.name }} · {{ timeAgo(feed.created_at) }}</template>
-                </a-list-item-meta>
-              </a-list-item>
-            </template>
-          </a-list>
-        </a-card>
-      </a-col>
-    </a-row>
+      <a-card title="论坛热点" class="section-card">
+        <div v-if="forumHot.length === 0" class="empty-section">
+          <EmptyState type="no-data" description="暂无动态" />
+        </div>
+        <a-list v-else :data-source="forumHot" size="small">
+          <template #renderItem="{ item: feed }">
+            <a-list-item class="clickable-item" @click="$router.push('/forum')">
+              <a-list-item-meta>
+                <template #title>
+                  <a-tag v-if="feed.type === 'topic'" color="blue" size="small">话题</a-tag>
+                  <a-tag v-else size="small">动态</a-tag>
+                  <span>{{ feed.title || feed.content }}</span>
+                </template>
+                <template #description>{{ feed.creator.name }} · {{ timeAgo(feed.created_at) }}</template>
+              </a-list-item-meta>
+            </a-list-item>
+          </template>
+        </a-list>
+      </a-card>
+    </div>
   </div>
 </template>
 
@@ -153,7 +145,13 @@ const forumHot = ref<any[]>([])
 
 const monthParam = computed(() => selectedMonth.value.format('YYYY-MM'))
 
-function onMonthChange() {
+function goPrevMonth() {
+  selectedMonth.value = selectedMonth.value.subtract(1, 'month')
+  fetchData()
+}
+
+function goNextMonth() {
+  selectedMonth.value = selectedMonth.value.add(1, 'month')
   fetchData()
 }
 
@@ -209,56 +207,100 @@ onMounted(() => {
 
 <style scoped>
 .dashboard {
-  padding: 16px;
-  max-width: 1200px;
+  padding: var(--space-md);
+  max-width: var(--max-content-width);
   margin: 0 auto;
 }
 
-.month-selector {
+/* Month Switcher */
+.month-switcher {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-bottom: 16px;
+  gap: 16px;
 }
 
-.month-label {
-  margin-right: 8px;
+.month-arrow {
+  min-width: 44px;
+  min-height: 44px;
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
-.summary-cards {
+.month-arrow:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.month-text {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Summary Grid */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   margin-bottom: 16px;
 }
 
 .stat-card {
   text-align: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-level-1);
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--duration-normal) ease;
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-level-2);
 }
 
 .stat-card :deep(.ant-statistic-content-value) {
   font-size: 28px !important;
   font-weight: 700 !important;
-}
-
-.stat-card :deep(.ant-statistic-content) {
-  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .income-prefix {
-  color: #52c41a;
+  color: var(--color-success);
   font-size: 14px;
 }
 
 .expense-prefix {
-  color: #ff4d4f;
+  color: var(--color-danger);
   font-size: 14px;
+}
+
+/* Dashboard Grids */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .section-card {
   height: 100%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-level-1);
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--duration-normal) ease;
 }
 
+.section-card:hover {
+  box-shadow: var(--shadow-level-2);
+}
+
+/* Expense Chart */
 .expense-chart {
   padding: 8px 0;
 }
@@ -280,23 +322,23 @@ onMounted(() => {
   width: 80px;
   flex-shrink: 0;
   font-size: 13px;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .chart-bar-wrapper {
   flex: 1;
   height: 12px;
-  background: #f0f0f0;
+  background: var(--color-border-secondary);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .chart-bar {
   height: 100%;
-  background: linear-gradient(90deg, #ff4d4f, #ff7875);
+  background: linear-gradient(90deg, #FF4D4F, var(--color-brand));
   border-radius: 6px;
   min-width: 2px;
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) ease;
 }
 
 .chart-amount {
@@ -304,35 +346,19 @@ onMounted(() => {
   flex-shrink: 0;
   text-align: right;
   font-size: 13px;
-  color: #ff4d4f;
+  color: var(--color-danger);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .empty-section {
   padding: 24px 0;
 }
 
+/* Todo items in dashboard */
 .todo-item {
   cursor: pointer;
   min-height: 44px;
-}
-
-.todo-item:hover {
-  background: #fafafa;
-}
-
-@media (max-width: 767px) {
-  .dashboard {
-    padding: 12px;
-  }
-
-  .stat-card :deep(.ant-statistic-content-value) {
-    font-size: 24px !important;
-  }
-
-  .stat-card :deep(.ant-statistic-content) {
-    font-size: 24px;
-  }
 }
 
 .todo-item-content {
@@ -357,16 +383,16 @@ onMounted(() => {
 
 .todo-assignee {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .todo-due {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .todo-due.overdue {
-  color: #ff4d4f;
+  color: var(--color-danger);
 }
 
 .clickable-item {
@@ -374,7 +400,29 @@ onMounted(() => {
   min-height: 44px;
 }
 
-.clickable-item:hover {
-  background: #fafafa;
+/* Responsive */
+@media (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard {
+    padding: 12px;
+  }
+
+  .summary-grid {
+    gap: 8px;
+  }
+
+  .dashboard-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card :deep(.ant-statistic-content-value) {
+    font-size: 24px !important;
+  }
 }
 </style>
