@@ -4,6 +4,7 @@
       <div class="auth-header">
         <span class="auth-logo">🏠</span>
         <h1 class="auth-title">家庭数字中心</h1>
+        <p class="auth-subtitle">全家人的记账、待办、愿望、交流</p>
       </div>
       <div class="auth-content">
         <slot />
@@ -24,7 +25,8 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  min-height: 100dvh;
+  background: linear-gradient(135deg, #E8734A 0%, #F0884A 50%, #F5A67A 100%);
   padding: 16px;
 }
 
@@ -42,24 +44,32 @@
 }
 
 .auth-logo {
-  font-size: 48px;
+  font-size: 64px;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .auth-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #fff;
+  margin: 0 0 8px 0;
+  letter-spacing: 2px;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
-  letter-spacing: 1px;
 }
 
 .auth-content {
   width: 100%;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-level-4);
   padding: 32px;
 }
 
@@ -69,7 +79,7 @@
 
 .auth-footer p {
   font-size: 12px;
-  color: #bbb;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
 }
 </style>

@@ -35,7 +35,7 @@
             :loading="loading"
             block
           >
-            登录
+            登 录
           </a-button>
         </a-form-item>
       </a-form>
