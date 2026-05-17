@@ -462,7 +462,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   padding: 48px 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .empty-state {
@@ -477,17 +477,17 @@ onMounted(() => {
 }
 
 .wish-card {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
   padding: 16px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-level-1);
   transition: box-shadow 0.2s;
   display: flex;
   flex-direction: column;
 }
 
-.wish-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.wish-card:hover { box-shadow: var(--shadow-level-2); }
 
 .wish-card-header {
   display: flex;
@@ -510,7 +510,7 @@ onMounted(() => {
 
 .wish-desc {
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 0 0 8px 0;
   word-break: break-word;
 }
@@ -518,7 +518,7 @@ onMounted(() => {
 .wish-amount {
   font-size: 15px;
   font-weight: 600;
-  color: #1677ff;
+  color: var(--color-brand);
   margin-bottom: 8px;
 }
 
@@ -532,7 +532,7 @@ onMounted(() => {
 
 .wish-creator {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .wish-card-actions {
@@ -545,6 +545,11 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   margin-top: 24px;
+}
+
+.vote-ended {
+	opacity: 0.7;
+	pointer-events: none;
 }
 
 @media (max-width: 767px) {

@@ -587,7 +587,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   padding: 48px 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .empty-state {
@@ -596,11 +596,11 @@ onMounted(() => {
 
 /* Topic card */
 .topic-card {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
   padding: 20px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-level-1);
   margin-bottom: 24px;
 }
 
@@ -622,7 +622,7 @@ onMounted(() => {
 
 .topic-content {
   font-size: 15px;
-  color: #333;
+  color: var(--color-text-primary);
   line-height: 1.8;
   word-break: break-word;
   white-space: pre-wrap;
@@ -639,17 +639,17 @@ onMounted(() => {
 
 .topic-creator {
   font-size: 13px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .topic-time {
   font-size: 12px;
-  color: #bbb;
+  color: var(--color-text-disabled);
 }
 
 .topic-edited {
   font-size: 12px;
-  color: #bbb;
+  color: var(--color-text-disabled);
 }
 
 .topic-actions {
@@ -657,7 +657,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid var(--color-bg-layout);
 }
 
 .topic-actions .ant-btn-text {
@@ -665,26 +665,26 @@ onMounted(() => {
 }
 
 .topic-actions .ant-btn-text.liked {
-  color: #ff4d4f;
+  color: var(--color-danger);
 }
 
 .action-stat {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .more-btn {
-  color: #999;
+  color: var(--color-text-secondary);
   min-width: 32px;
 }
 
 /* Comments section */
 .comments-section {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
   padding: 20px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-level-1);
 }
 
 .comments-title {
@@ -715,7 +715,7 @@ onMounted(() => {
 }
 
 .comment-item {
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--color-bg-layout);
   padding-bottom: 12px;
   margin-bottom: 12px;
 }
@@ -755,13 +755,13 @@ onMounted(() => {
 .reply-author {
   font-size: 13px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .comment-time,
 .reply-time {
   font-size: 12px;
-  color: #bbb;
+  color: var(--color-text-disabled);
 }
 
 .comment-content,
@@ -806,14 +806,14 @@ onMounted(() => {
   margin-top: 10px;
   padding: 10px 12px;
   background: #fafafa;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .reply-item {
   display: flex;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border-secondary);
 }
 
 .reply-item:last-child {

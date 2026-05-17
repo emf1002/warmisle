@@ -360,11 +360,11 @@ function confirmResetPwd(record: any) {
 }
 
 .emoji-item:hover {
-  border-color: #d9d9d9;
+  border-color: var(--color-border);
 }
 
 .emoji-item.active {
-  border-color: #1890ff;
-  background: #e6f7ff;
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
 }
 </style>

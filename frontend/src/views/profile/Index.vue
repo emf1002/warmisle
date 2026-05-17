@@ -304,7 +304,7 @@ async function handlePwdSubmit() {
 
 .profile-username {
   font-size: 13px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 /* Info */
@@ -320,17 +320,17 @@ async function handlePwdSubmit() {
 }
 
 .info-item + .info-item {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-border-secondary);
 }
 
 .info-label {
-  color: #999;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 
 .info-value {
   font-size: 14px;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 /* Actions */
@@ -350,7 +350,7 @@ async function handlePwdSubmit() {
   padding: 14px 0;
   min-height: 44px;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border-secondary);
   transition: background 0.2s;
 }
 
@@ -372,7 +372,7 @@ async function handlePwdSubmit() {
 .nav-item-label {
   flex: 1;
   font-size: 15px;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .nav-item-arrow {
@@ -402,12 +402,12 @@ async function handlePwdSubmit() {
 }
 
 .emoji-item:hover {
-  border-color: #d9d9d9;
+  border-color: var(--color-border);
 }
 
 .emoji-item.active {
-  border-color: #1890ff;
-  background: #e6f7ff;
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
 }
 
 @media (max-width: 767px) {

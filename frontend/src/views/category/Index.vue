@@ -242,7 +242,7 @@ function confirmDelete(record: any) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .page-header h2 {
@@ -266,7 +266,7 @@ function confirmDelete(record: any) {
 }
 
 .empty-hint {
-  color: #999;
+  color: var(--color-text-secondary);
   font-size: 14px;
   padding: 12px 0;
 }
@@ -281,12 +281,12 @@ function confirmDelete(record: any) {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md);
   gap: 12px;
   min-height: 44px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-level-1);
 }
 
 .category-icon {
@@ -327,11 +327,11 @@ function confirmDelete(record: any) {
 }
 
 .emoji-item:hover {
-  border-color: #d9d9d9;
+  border-color: var(--color-border);
 }
 
 .emoji-item.active {
-  border-color: #1890ff;
-  background: #e6f7ff;
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
 }
 </style>
