@@ -26,12 +26,30 @@ const layout = computed(() => {
 
 const themeConfig = {
   token: {
-    colorPrimary: '#1677FF',
-    colorSuccess: '#52C41A',
+    colorPrimary: '#E8734A',
+    colorSuccess: '#389E0D',
     colorWarning: '#FAAD14',
     colorError: '#FF4D4F',
-    borderRadius: 6,
+    colorInfo: '#E8734A',
+    borderRadius: 8,
     fontSize: 14,
+    fontFamily: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif',
+    colorBgLayout: '#FAF9F7',
+    colorBgContainer: '#FFFFFF',
+  },
+  components: {
+    Button: {
+      borderRadius: 8,
+      controlHeight: 44,
+    },
+    Input: {
+      borderRadius: 8,
+      controlHeight: 44,
+    },
+    Select: {
+      borderRadius: 8,
+      controlHeight: 44,
+    },
   },
 }
 </script>
