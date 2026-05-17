@@ -39,6 +39,17 @@ func validWishPriority(p string) bool {
 	return p == "normal" || p == "important" || p == "urgent"
 }
 
+func (s *WishService) FindByID(id uint) (*repository.WishWithAssoc, error) {
+	result, err := s.repo.FindByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrWishNotFound
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
 func (s *WishService) List(filter repository.WishFilter) (*repository.WishListResult, error) {
 	return s.repo.List(filter)
 }
