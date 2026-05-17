@@ -39,11 +39,13 @@ func (s *AuthService) isLocked(username string) bool {
 	if !exists {
 		return false
 	}
-	if time.Now().Before(info.lockedUntil) {
+	if !info.lockedUntil.IsZero() && time.Now().Before(info.lockedUntil) {
 		return true
 	}
-	// 锁定期已过，清除记录
-	delete(s.attempts, username)
+	if !info.lockedUntil.IsZero() {
+		// 锁定期已过，清除记录
+		delete(s.attempts, username)
+	}
 	return false
 }
 
