@@ -24,30 +24,37 @@
     <template v-else>
       <!-- Pinned topics -->
       <div v-if="pinnedItems.length > 0" class="pinned-section">
-        <div v-for="item in pinnedItems" :key="'pinned-' + item.id" class="feed-card pinned-card">
-          <div class="card-pin-badge">📌 置顶</div>
-          <div class="card-header" @click="goTopic(item.id)">
-            <span class="card-type-tag">
-              <a-tag color="blue" size="small">话题</a-tag>
-            </span>
-            <a-tag v-if="item.tag" size="small" class="card-topic-tag">{{ item.tag.name }}</a-tag>
+        <div v-for="item in pinnedItems" :key="'pinned-' + item.id" class="feed-card topic-card">
+          <div class="feed-header">
+            <span class="topic-pin-badge">📌 公告</span>
           </div>
-          <h3 class="card-title" @click="goTopic(item.id)">{{ item.title }}</h3>
-          <p v-if="item.content" class="card-content" @click="goTopic(item.id)">
-            {{ truncate(item.content, 150) }}
-          </p>
-          <div class="card-footer">
-            <span class="card-author">{{ item.creator.avatar }} {{ item.creator.name }}</span>
-            <span class="card-time">{{ timeAgo(item.created_at) }}</span>
-            <a-dropdown v-if="canEditTopic(item)" :trigger="['click']">
-              <a-button type="text" size="small" class="card-more-btn">···</a-button>
+          <h3 class="topic-title" @click="goToDetail(item)">{{ item.title }}</h3>
+          <p class="feed-content topic-excerpt">{{ truncate(item.content, 150) }}</p>
+          <div class="topic-footer">
+            <span v-if="item.tag" class="topic-tag">#{{ item.tag.name }}</span>
+            <span class="feed-author topic-author">
+              <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
+              <span class="feed-name">{{ item.creator?.name }}</span>
+              <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
+            </span>
+          </div>
+          <div class="feed-actions">
+            <span class="feed-action" @click.stop="handleLike(item)">
+              <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
+              <span>{{ item.like_count || 0 }}</span>
+            </span>
+            <span class="feed-action" @click.stop="goToDetail(item)">
+              💬 {{ item.comment_count || 0 }}
+            </span>
+            <a-dropdown v-if="canManage(item)" trigger="click">
+              <span class="feed-action" @click.stop>⋯</span>
               <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="openEditTopic(item)">编辑</a-menu-item>
-                  <a-menu-item v-if="isAdmin" @click="handleTogglePin(item)">
+                <a-menu @click="(e: any) => onMenuClick(e, item)">
+                  <a-menu-item v-if="isAdmin" key="pin">
                     {{ item.is_pinned ? '取消置顶' : '置顶' }}
                   </a-menu-item>
-                  <a-menu-item danger @click="confirmDeleteTopic(item)">删除</a-menu-item>
+                  <a-menu-item key="edit">编辑</a-menu-item>
+                  <a-menu-item key="delete" danger>删除</a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
@@ -57,61 +64,76 @@
 
       <!-- Feed items -->
       <div class="feed-list">
-        <div v-for="item in feedItems" :key="item.type + '-' + item.id" class="feed-card">
-          <!-- Topic card -->
-          <template v-if="item.type === 'topic'">
-            <div class="card-header" @click="goTopic(item.id)">
-              <span class="card-type-tag">
-                <a-tag color="blue" size="small">话题</a-tag>
+        <div v-for="item in feedItems" :key="item.type + '-' + item.id">
+          <!-- Post card -->
+          <div v-if="item.type === 'post'" class="feed-card">
+            <div class="feed-header">
+              <span class="feed-author">
+                <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
+                <span class="feed-name">{{ item.creator?.name }}</span>
               </span>
-              <a-tag v-if="item.tag" size="small" class="card-topic-tag">{{ item.tag.name }}</a-tag>
+              <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
             </div>
-            <h3 class="card-title" @click="goTopic(item.id)">{{ item.title }}</h3>
-            <p v-if="item.content" class="card-content" @click="goTopic(item.id)">
-              {{ truncate(item.content, 150) }}
-            </p>
-            <div class="card-footer">
-              <span class="card-author">{{ item.creator.avatar }} {{ item.creator.name }}</span>
-              <span class="card-time">{{ timeAgo(item.created_at) }}</span>
-              <a-dropdown v-if="canEditTopic(item)" :trigger="['click']">
-                <a-button type="text" size="small" class="card-more-btn">···</a-button>
+            <div class="feed-body">
+              <p class="feed-content">{{ truncate(item.content, 200) }}</p>
+            </div>
+            <div class="feed-actions">
+              <span class="feed-action" @click.stop="handleLike(item)">
+                <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
+                <span>{{ item.like_count || 0 }}</span>
+              </span>
+              <span class="feed-action" @click.stop="goToDetail(item)">
+                💬 {{ item.comment_count || 0 }}
+              </span>
+              <a-dropdown v-if="canManage(item)" trigger="click">
+                <span class="feed-action" @click.stop>⋯</span>
                 <template #overlay>
-                  <a-menu>
-                    <a-menu-item @click="openEditTopic(item)">编辑</a-menu-item>
-                    <a-menu-item v-if="isAdmin" @click="handleTogglePin(item)">
+                  <a-menu @click="(e: any) => onMenuClick(e, item)">
+                    <a-menu-item key="edit">编辑</a-menu-item>
+                    <a-menu-item key="delete" danger>删除</a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </div>
+          </div>
+
+          <!-- Topic card -->
+          <div v-else-if="item.type === 'topic'" class="feed-card topic-card">
+            <div v-if="item.is_pinned" class="feed-header">
+              <span class="topic-pin-badge">📌 公告</span>
+            </div>
+            <h3 class="topic-title" @click="goToDetail(item)">{{ item.title }}</h3>
+            <p class="feed-content topic-excerpt">{{ truncate(item.content, 150) }}</p>
+            <div class="topic-footer">
+              <span v-if="item.tag" class="topic-tag">#{{ item.tag.name }}</span>
+              <span class="feed-author topic-author">
+                <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
+                <span class="feed-name">{{ item.creator?.name }}</span>
+                <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
+              </span>
+            </div>
+            <div class="feed-actions">
+              <span class="feed-action" @click.stop="handleLike(item)">
+                <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
+                <span>{{ item.like_count || 0 }}</span>
+              </span>
+              <span class="feed-action" @click.stop="goToDetail(item)">
+                💬 {{ item.comment_count || 0 }}
+              </span>
+              <a-dropdown v-if="canManage(item)" trigger="click">
+                <span class="feed-action" @click.stop>⋯</span>
+                <template #overlay>
+                  <a-menu @click="(e: any) => onMenuClick(e, item)">
+                    <a-menu-item v-if="isAdmin" key="pin">
                       {{ item.is_pinned ? '取消置顶' : '置顶' }}
                     </a-menu-item>
-                    <a-menu-item danger @click="confirmDeleteTopic(item)">删除</a-menu-item>
+                    <a-menu-item key="edit">编辑</a-menu-item>
+                    <a-menu-item key="delete" danger>删除</a-menu-item>
                   </a-menu>
                 </template>
               </a-dropdown>
             </div>
-          </template>
-
-          <!-- Post card -->
-          <template v-else>
-            <div class="card-header">
-              <span class="card-type-tag">
-                <a-tag size="small">动态</a-tag>
-              </span>
-            </div>
-            <p class="card-content card-content-post">
-              {{ truncate(item.content, 200) }}
-            </p>
-            <div class="card-footer">
-              <span class="card-author">{{ item.creator.avatar }} {{ item.creator.name }}</span>
-              <span class="card-time">{{ timeAgo(item.created_at) }}</span>
-              <a-dropdown v-if="canEditPost(item)" :trigger="['click']">
-                <a-button type="text" size="small" class="card-more-btn">···</a-button>
-                <template #overlay>
-                  <a-menu>
-                    <a-menu-item @click="openEditPost(item)">编辑</a-menu-item>
-                    <a-menu-item danger @click="confirmDeletePost(item)">删除</a-menu-item>
-                  </a-menu>
-                </template>
-              </a-dropdown>
-            </div>
-          </template>
+          </div>
         </div>
       </div>
 
@@ -143,6 +165,29 @@
         show-count
       />
     </a-modal>
+
+    <!-- Mobile FAB -->
+    <div v-if="isMobile" class="forum-fab" @click="showCreateSheet = true">
+      <span class="fab-icon">+</span>
+    </div>
+
+    <a-drawer
+      v-model:open="showCreateSheet"
+      placement="bottom"
+      height="auto"
+      title="发布内容"
+    >
+      <div class="create-sheet-options">
+        <div class="sheet-option" @click="openCreatePost(); showCreateSheet = false">
+          <span class="sheet-option-icon">💬</span>
+          <span class="sheet-option-label">发动态</span>
+        </div>
+        <div class="sheet-option" @click="openCreateTopic(); showCreateSheet = false">
+          <span class="sheet-option-icon">📝</span>
+          <span class="sheet-option-label">发话题</span>
+        </div>
+      </div>
+    </a-drawer>
 
     <!-- Create/Edit Topic Dialog -->
     <a-modal
@@ -229,10 +274,16 @@ interface FeedItem {
   creator: MemberInfo
   tag: TagInfo | null
   is_pinned: boolean
+  is_liked?: boolean
+  like_count?: number
+  comment_count?: number
   created_at: string
 }
 
 const router = useRouter()
+
+const isMobile = ref(window.innerWidth < 768)
+const showCreateSheet = ref(false)
 
 const loading = ref(false)
 const feedItems = ref<FeedItem[]>([])
@@ -283,16 +334,6 @@ const isAdmin = computed(() => {
   }
 })
 
-function canEditPost(item: FeedItem): boolean {
-  if (isAdmin.value) return true
-  return item.creator.id === currentUserId.value
-}
-
-function canEditTopic(item: FeedItem): boolean {
-  if (isAdmin.value) return true
-  return item.creator.id === currentUserId.value
-}
-
 function truncate(text: string, maxLen: number): string {
   if (!text) return ''
   if (text.length <= maxLen) return text
@@ -312,8 +353,40 @@ function timeAgo(date: string): string {
   return d.format('M月D日')
 }
 
-function goTopic(id: number) {
-  router.push(`/forum/topic/${id}`)
+function goToDetail(item: FeedItem) {
+  if (item.type === 'topic') {
+    router.push(`/forum/topic/${item.id}`)
+  }
+}
+
+function canManage(item: FeedItem): boolean {
+  if (isAdmin.value) return true
+  return item.creator.id === currentUserId.value
+}
+
+function handleFeedAction(key: string, item: FeedItem) {
+  switch (key) {
+    case 'edit':
+      if (item.type === 'topic') openEditTopic(item)
+      else openEditPost(item)
+      break
+    case 'delete':
+      if (item.type === 'topic') confirmDeleteTopic(item)
+      else confirmDeletePost(item)
+      break
+    case 'pin':
+      handleTogglePin(item)
+      break
+  }
+}
+
+function onMenuClick(e: { key: string }, item: FeedItem) {
+  handleFeedAction(e.key, item)
+}
+
+function handleLike(_item: FeedItem) {
+  // V1: like functionality is read-only display, no toggle API yet
+  message.info('点赞功能将在后续版本上线')
 }
 
 // --- Fetch ---
@@ -517,23 +590,15 @@ onMounted(() => {
   padding: 48px 0;
 }
 
-/* Pinned section */
+/* ==================== Pinned Section ==================== */
 .pinned-section {
+  background: var(--color-warning-light);
+  border-radius: var(--radius-md);
+  padding: 12px;
   margin-bottom: 16px;
 }
 
-.pinned-card {
-  background: #fffbe6;
-  border-color: #ffe58f;
-}
-
-.card-pin-badge {
-  font-size: 12px;
-  color: #ad8b00;
-  margin-bottom: 8px;
-}
-
-/* Feed cards */
+/* ==================== Feed Card ==================== */
 .feed-list {
   display: flex;
   flex-direction: column;
@@ -541,93 +606,216 @@ onMounted(() => {
 }
 
 .feed-card {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
   padding: 16px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-level-1);
+  transition: box-shadow var(--duration-normal) ease;
 }
 
 .feed-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-level-2);
 }
 
-.card-header {
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.feed-author {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
 }
 
-.card-type-tag {
-  flex-shrink: 0;
-}
-
-.card-topic-tag {
-  flex-shrink: 0;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 6px 0;
-  cursor: pointer;
-  word-break: break-word;
-  line-height: 1.5;
-}
-
-.card-title:hover {
-  color: #1677ff;
-}
-
-.card-content {
-  font-size: 14px;
-  color: #555;
-  margin: 0 0 10px 0;
-  line-height: 1.6;
-  word-break: break-word;
-  cursor: pointer;
-}
-
-.card-content-post {
-  cursor: default;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-}
-
-.card-author {
-  font-size: 12px;
-  color: #999;
-}
-
-.card-time {
-  font-size: 12px;
-  color: #bbb;
-  flex: 1;
-}
-
-.card-more-btn {
-  color: #999;
-  min-width: 32px;
-  min-height: 44px;
+.feed-avatar {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Pagination */
+.feed-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.feed-time {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.feed-body {
+  margin-bottom: 12px;
+}
+
+.feed-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  margin: 0;
+  word-break: break-word;
+}
+
+.topic-pin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.topic-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-title:hover {
+  color: var(--color-brand);
+}
+
+.topic-excerpt {
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.topic-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.topic-tag {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding: 2px 8px;
+  background: var(--color-border-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.topic-author {
+  margin-left: auto;
+}
+
+/* ==================== Feed Actions ==================== */
+.feed-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.feed-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: color var(--duration-fast) ease;
+  user-select: none;
+}
+
+.feed-action:hover {
+  color: var(--color-brand);
+}
+
+/* ==================== Forum FAB ==================== */
+.forum-fab {
+  position: fixed;
+  bottom: calc(56px + 16px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-level-3);
+  cursor: pointer;
+  z-index: var(--z-overlay);
+  transition: transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.forum-fab:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-level-4);
+}
+
+.forum-fab:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.create-sheet-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+}
+
+.sheet-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background var(--duration-fast) ease;
+}
+
+.sheet-option:hover {
+  background: var(--color-brand-light);
+}
+
+.sheet-option-icon {
+  font-size: 24px;
+}
+
+.sheet-option-label {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* ==================== Pagination ==================== */
 .pagination-row {
   display: flex;
   justify-content: center;
   margin-top: 24px;
 }
 
+/* ==================== Mobile ==================== */
 @media (max-width: 767px) {
   .forum-page {
     padding: 16px;
@@ -646,7 +834,7 @@ onMounted(() => {
     padding: 14px;
   }
 
-  .card-title {
+  .topic-title {
     font-size: 15px;
   }
 }
