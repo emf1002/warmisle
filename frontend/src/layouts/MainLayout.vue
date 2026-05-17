@@ -1,7 +1,15 @@
 <template>
   <div class="main-layout">
     <!-- ==================== 桌面端侧边栏 ==================== -->
-    <aside class="sidebar" :class="{ 'sidebar-hidden': isMobile }">
+    <aside
+      class="sidebar"
+      :class="{
+        'sidebar-collapsed': sidebarCollapsed && !isMobile,
+        'sidebar-hidden': isMobile,
+      }"
+      @mouseenter="onSidebarMouseEnter"
+      @mouseleave="onSidebarMouseLeave"
+    >
       <div class="sidebar-logo" @click="$router.push('/')">
         <span class="sidebar-logo-icon">🏠</span>
         <span class="sidebar-logo-text">家庭中心</span>
@@ -53,9 +61,15 @@
     </aside>
 
     <!-- ==================== 主内容区 ==================== -->
-    <div class="main-area" :class="{ 'main-full': isMobile }">
+    <div class="main-area" :class="{ 'main-full': isMobile, 'main-compact': sidebarCollapsed && !isMobile }">
       <!-- 顶部栏 -->
-      <header class="topbar" :class="{ 'topbar-mobile': isMobile }">
+      <header
+        class="topbar"
+        :class="{
+          'topbar-mobile': isMobile,
+          'topbar-compact': sidebarCollapsed && !isMobile,
+        }"
+      >
         <div v-if="isMobile" class="topbar-left">
           <span class="page-title">{{ pageTitle }}</span>
         </div>
@@ -120,9 +134,35 @@ const authStore = useAuthStore()
 
 // ---- 响应式检测 ----
 const isMobile = ref(window.innerWidth < 768)
+const isTablet = ref(window.innerWidth >= 768 && window.innerWidth < 1024)
+const sidebarCollapsed = ref(false)
 
 function onResize() {
   isMobile.value = window.innerWidth < 768
+  isTablet.value = window.innerWidth >= 768 && window.innerWidth < 1024
+  // 平板端默认折叠
+  if (isTablet.value) {
+    sidebarCollapsed.value = true
+  } else if (window.innerWidth >= 1024) {
+    sidebarCollapsed.value = false
+  }
+}
+
+// 初始化时设置
+if (isTablet.value) {
+  sidebarCollapsed.value = true
+}
+
+function onSidebarMouseEnter() {
+  if (isTablet.value) {
+    sidebarCollapsed.value = false
+  }
+}
+
+function onSidebarMouseLeave() {
+  if (isTablet.value) {
+    sidebarCollapsed.value = true
+  }
 }
 
 onMounted(() => window.addEventListener('resize', onResize))
@@ -230,21 +270,31 @@ function onBottomTabClick(key: string) {
 /* ==================== 全局 ==================== */
 .main-layout {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--color-bg-layout);
 }
 
-/* ==================== 侧边栏（桌面端） ==================== */
+/* ==================== 侧边栏 ==================== */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 220px;
-  background: #001529;
+  background: var(--color-bg-sidebar);
   display: flex;
   flex-direction: column;
-  z-index: 100;
+  z-index: var(--z-sticky);
   overflow-y: auto;
+  transition: width var(--duration-normal) ease;
+}
+
+.sidebar-collapsed {
+  width: 64px;
+}
+
+.sidebar-collapsed .sidebar-logo-text,
+.sidebar-collapsed .ant-menu-item .ant-menu-title-content {
+  display: none;
 }
 
 .sidebar-hidden {
@@ -259,11 +309,14 @@ function onBottomTabClick(key: string) {
   padding: 0 16px;
   cursor: pointer;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sidebar-logo-icon {
   font-size: 20px;
   margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .sidebar-logo-text {
@@ -276,6 +329,10 @@ function onBottomTabClick(key: string) {
 .sidebar-menu {
   flex: 1;
   border-inline-end: none !important;
+}
+
+.sidebar-menu :deep(.ant-menu-item-selected) {
+  background-color: rgba(232, 115, 74, 0.2) !important;
 }
 
 .menu-icon {
@@ -291,6 +348,11 @@ function onBottomTabClick(key: string) {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: margin-left var(--duration-normal) ease;
+}
+
+.main-compact {
+  margin-left: 64px;
 }
 
 .main-full {
@@ -310,7 +372,12 @@ function onBottomTabClick(key: string) {
   align-items: center;
   justify-content: flex-end;
   padding: 0 24px;
-  z-index: 99;
+  z-index: calc(var(--z-sticky) - 1);
+  transition: left var(--duration-normal) ease;
+}
+
+.topbar-compact {
+  left: 64px;
 }
 
 .topbar-mobile {
@@ -332,7 +399,7 @@ function onBottomTabClick(key: string) {
 .page-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text-primary);
 }
 
 .user-trigger {
@@ -342,7 +409,7 @@ function onBottomTabClick(key: string) {
   min-height: 44px;
   padding: 4px 8px;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: background var(--duration-fast) ease;
 }
 
 .user-trigger:hover {
@@ -379,11 +446,12 @@ function onBottomTabClick(key: string) {
   right: 0;
   height: 56px;
   background: #fff;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-border-secondary);
   display: flex;
   align-items: center;
-  z-index: 100;
+  z-index: var(--z-sticky);
   padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: var(--shadow-level-2);
 }
 
 .tabbar-item {
@@ -394,13 +462,27 @@ function onBottomTabClick(key: string) {
   justify-content: center;
   min-height: 44px;
   cursor: pointer;
-  color: #999;
-  transition: color 0.2s;
+  color: var(--color-text-secondary);
+  transition: color var(--duration-fast) ease;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
 .tabbar-item-active {
-  color: #1677ff;
+  color: var(--color-brand);
+}
+
+.tabbar-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: var(--color-brand);
+  border-radius: 2px;
+  transition: all var(--duration-normal) ease;
 }
 
 .tabbar-icon {
