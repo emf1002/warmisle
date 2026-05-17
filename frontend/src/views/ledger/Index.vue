@@ -107,10 +107,11 @@
 
         <!-- Items -->
         <div
-          v-for="item in group.items"
+          v-for="(item, index) in group.items"
           :key="item.id"
-          class="ledger-item"
+          class="ledger-item card-stagger"
           :class="{ clickable: canEdit(item) }"
+          :style="{ animationDelay: `${index * 50}ms` }"
           @click="onItemClick(item)"
         >
           <div class="item-top">
@@ -119,7 +120,7 @@
               <span class="item-cat-name">{{ item.category.name }}</span>
             </span>
             <span class="item-creator-line">
-              <span class="creator-avatar">{{ item.creator.avatar }}</span>
+              <span class="creator-avatar" :aria-label="`${item.creator.name}的头像`">{{ item.creator.avatar }}</span>
               <span class="creator-name">{{ item.creator.name }}</span>
               <span class="creator-label">记录</span>
             </span>

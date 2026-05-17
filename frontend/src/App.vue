@@ -1,7 +1,11 @@
 <template>
   <a-config-provider :theme="themeConfig">
     <component :is="layout">
-      <router-view />
+      <router-view v-slot="{ Component: RouteComponent }">
+        <transition name="page-fade" mode="out-in">
+          <component :is="RouteComponent" />
+        </transition>
+      </router-view>
     </component>
   </a-config-provider>
 </template>

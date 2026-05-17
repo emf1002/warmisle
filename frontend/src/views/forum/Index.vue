@@ -64,9 +64,9 @@
 
       <!-- Feed items -->
       <div class="feed-list">
-        <div v-for="item in feedItems" :key="item.type + '-' + item.id">
+        <div v-for="(item, index) in feedItems" :key="item.type + '-' + item.id">
           <!-- Post card -->
-          <div v-if="item.type === 'post'" class="feed-card">
+          <div v-if="item.type === 'post'" class="feed-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }">
             <div class="feed-header">
               <span class="feed-author">
                 <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
@@ -78,7 +78,7 @@
               <p class="feed-content">{{ truncate(item.content, 200) }}</p>
             </div>
             <div class="feed-actions">
-              <span class="feed-action" @click.stop="handleLike(item)">
+              <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)">
                 <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
                 <span>{{ item.like_count || 0 }}</span>
               </span>
@@ -98,7 +98,7 @@
           </div>
 
           <!-- Topic card -->
-          <div v-else-if="item.type === 'topic'" class="feed-card topic-card">
+          <div v-else-if="item.type === 'topic'" class="feed-card topic-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }">
             <div v-if="item.is_pinned" class="feed-header">
               <span class="topic-pin-badge">📌 公告</span>
             </div>
@@ -113,7 +113,7 @@
               </span>
             </div>
             <div class="feed-actions">
-              <span class="feed-action" @click.stop="handleLike(item)">
+              <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)">
                 <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
                 <span>{{ item.like_count || 0 }}</span>
               </span>
@@ -285,6 +285,7 @@ const router = useRouter()
 const isMobile = ref(window.innerWidth < 768)
 const showCreateSheet = ref(false)
 
+const likingItems = ref<Record<string, boolean>>({})
 const loading = ref(false)
 const feedItems = ref<FeedItem[]>([])
 const pinnedItems = ref<FeedItem[]>([])
@@ -384,7 +385,12 @@ function onMenuClick(e: { key: string }, item: FeedItem) {
   handleFeedAction(e.key, item)
 }
 
-function handleLike(_item: FeedItem) {
+function handleLike(item: FeedItem) {
+  const key = `${item.type}_${item.id}`
+  likingItems.value[key] = true
+  setTimeout(() => {
+    likingItems.value[key] = false
+  }, 150)
   // V1: like functionality is read-only display, no toggle API yet
   message.info('点赞功能将在后续版本上线')
 }

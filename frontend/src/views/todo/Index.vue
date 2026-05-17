@@ -46,10 +46,11 @@
 
     <div v-else class="todo-list">
       <div
-        v-for="todo in todos"
+        v-for="(todo, index) in todos"
         :key="todo.id"
-        class="todo-item"
+        class="todo-item card-stagger"
         :class="{ completed: todo.status === 'completed' }"
+        :style="{ animationDelay: `${index * 50}ms` }"
       >
         <div class="todo-main">
           <a-checkbox
