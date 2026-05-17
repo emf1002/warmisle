@@ -33,7 +33,7 @@
           <div class="topic-footer">
             <span v-if="item.tag" class="topic-tag">#{{ item.tag.name }}</span>
             <span class="feed-author topic-author">
-              <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
+              <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
               <span class="feed-name">{{ item.creator?.name }}</span>
               <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
             </span>
@@ -69,7 +69,7 @@
           <div v-if="item.type === 'post'" class="feed-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }">
             <div class="feed-header">
               <span class="feed-author">
-                <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
+                <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
                 <span class="feed-name">{{ item.creator?.name }}</span>
               </span>
               <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
@@ -107,7 +107,7 @@
             <div class="topic-footer">
               <span v-if="item.tag" class="topic-tag">#{{ item.tag.name }}</span>
               <span class="feed-author topic-author">
-                <span class="feed-avatar">{{ item.creator?.avatar || '👤' }}</span>
+                <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
                 <span class="feed-name">{{ item.creator?.name }}</span>
                 <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
               </span>

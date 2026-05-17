@@ -1,7 +1,7 @@
 <template>
   <div class="empty-state">
     <div class="empty-icon">
-      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg aria-hidden="true" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="12" width="48" height="40" rx="4" stroke="#d9d9d9" stroke-width="2" fill="#fafafa" />
         <line x1="20" y1="24" x2="44" y2="24" stroke="#e8e8e8" stroke-width="2" stroke-linecap="round" />
         <line x1="20" y1="32" x2="38" y2="32" stroke="#e8e8e8" stroke-width="2" stroke-linecap="round" />

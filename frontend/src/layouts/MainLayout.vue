@@ -3,6 +3,7 @@
     <!-- ==================== 桌面端侧边栏 ==================== -->
     <aside
       class="sidebar"
+      aria-label="主导航"
       :class="{
         'sidebar-collapsed': sidebarCollapsed && !isMobile,
         'sidebar-hidden': isMobile,
@@ -107,7 +108,7 @@
     </div>
 
     <!-- ==================== 移动端底部TabBar ==================== -->
-    <nav v-if="isMobile" class="tabbar">
+    <nav v-if="isMobile" class="tabbar" aria-label="底部导航">
       <div
         v-for="tab in bottomTabs"
         :key="tab.key"
