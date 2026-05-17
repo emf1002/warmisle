@@ -54,7 +54,7 @@
         <div class="todo-main">
           <a-checkbox
             :checked="todo.status === 'completed'"
-            :style="{ minHeight: '44px', display: 'flex', alignItems: 'flex-start', paddingTop: '2px' }"
+            class="todo-checkbox"
             @change="handleToggle(todo)"
           />
           <div class="todo-content" @click="canEdit(todo) ? openEdit(todo) : undefined">
@@ -68,23 +68,20 @@
             </div>
             <div v-if="todo.description" class="todo-desc">{{ todo.description }}</div>
             <div class="todo-meta">
-              <span v-if="todo.assignee" class="todo-assignee">
-                {{ todo.assignee.avatar }} {{ todo.assignee.name }}
+              <span class="todo-assignee-line">
+                <span class="meta-avatar">{{ todo.creator.avatar }}</span>
+                <span v-if="todo.assignee">
+                  <span class="meta-arrow">→</span>
+                  <span class="meta-avatar">{{ todo.assignee.avatar }}</span>
+                  <span class="meta-name">{{ todo.assignee.name }}</span>
+                </span>
+                <span v-else class="todo-unassigned">
+                  未指派
+                  <a-button type="link" size="small" @click.stop="handleClaim(todo)">认领</a-button>
+                </span>
               </span>
-              <span v-else class="todo-unassigned">未指派</span>
-              <a-button
-                v-if="!todo.assignee"
-                type="link"
-                size="small"
-                @click.stop="handleClaim(todo)"
-              >
-                认领
-              </a-button>
               <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo) }">
-                {{ formatDate(todo.due_date) }}
-              </span>
-              <span class="todo-creator">
-                {{ todo.creator.avatar }} {{ todo.creator.name }}
+                📅 {{ formatDate(todo.due_date) }}
               </span>
             </div>
           </div>
@@ -394,7 +391,7 @@ onMounted(async () => {
 
 <style scoped>
 .todo-page {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 800px;
   margin: 0 auto;
 }
@@ -410,10 +407,14 @@ onMounted(async () => {
 
 .filter-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
   flex-wrap: wrap;
   align-items: center;
+  padding: var(--space-sm);
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
 }
 
 .loading-state {
@@ -421,7 +422,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   padding: 48px 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .empty-state {
@@ -435,19 +436,22 @@ onMounted(async () => {
   gap: 8px;
 }
 
+/* ==================== Todo Item Card ==================== */
 .todo-item {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-md);
   padding: 12px 16px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s;
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-level-1);
+  transition: box-shadow var(--duration-normal) ease, opacity var(--duration-normal) ease;
 }
 
-.todo-item:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.todo-item:hover {
+  box-shadow: var(--shadow-level-2);
+}
 
 .todo-item.completed {
-  background: #f9f9f9;
+  background: #f9fafb;
   opacity: 0.75;
 }
 
@@ -455,6 +459,13 @@ onMounted(async () => {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+}
+
+.todo-checkbox {
+  min-height: 44px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 2px;
 }
 
 .todo-content {
@@ -471,44 +482,77 @@ onMounted(async () => {
 }
 
 .todo-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
   word-break: break-word;
 }
 
 .todo-title.title-done {
   text-decoration: line-through;
-  color: #999;
+  color: var(--color-text-disabled);
 }
 
-.todo-priority { flex-shrink: 0; }
+.todo-priority {
+  flex-shrink: 0;
+}
 
 .todo-desc {
-  font-size: 13px;
-  color: #666;
+  font-size: 12px;
+  color: var(--color-text-secondary);
   margin-top: 4px;
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* Meta row */
 .todo-meta {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 8px;
   flex-wrap: wrap;
-  min-height: 28px;
+  min-height: 24px;
 }
 
-.todo-assignee { font-size: 12px; color: #666; }
+.todo-assignee-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
 
-.todo-unassigned { font-size: 12px; color: #bbb; font-style: italic; }
+.meta-avatar {
+  font-size: 14px;
+}
 
-.todo-due { font-size: 12px; color: #666; }
+.meta-arrow {
+  color: var(--color-muted);
+  margin: 0 2px;
+}
 
-.todo-due.overdue { color: #ff4d4f; font-weight: 500; }
+.meta-name {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
 
-.todo-creator { font-size: 12px; color: #999; }
+.todo-unassigned {
+  font-size: 12px;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.todo-due {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.todo-due.overdue {
+  color: var(--color-danger);
+  font-weight: 500;
+}
 
 .todo-actions {
   display: flex;
@@ -525,8 +569,8 @@ onMounted(async () => {
 }
 
 @media (max-width: 767px) {
-  .todo-page { padding: 16px; }
-
-  .todo-title { font-size: 15px; }
+  .todo-page {
+    padding: var(--space-md);
+  }
 }
 </style>
