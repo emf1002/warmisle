@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"unicode/utf8"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
-	"home-center/internal/repository"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
+	"warmisle/internal/repository"
 
 	"gorm.io/gorm"
 )

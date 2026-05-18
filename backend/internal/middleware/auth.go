@@ -3,8 +3,8 @@ package middleware
 import (
 	"strings"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,8 +1,8 @@
 package testutil
 
 import (
-	"home-center/internal/model"
-	"home-center/internal/pkg"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 
 func resetPassword(username string) {
 	// 初始化数据库
-	dbPath := getEnv("HC_DB_PATH", "./data/home-center.db")
+	dbPath := getEnv("HC_DB_PATH", "./data/warmisle.db")
 	if err := pkg.InitDatabase(dbPath); err != nil {
 		fmt.Printf("failed to init database: %v\n", err)
 		os.Exit(1)

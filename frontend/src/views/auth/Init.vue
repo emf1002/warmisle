@@ -2,7 +2,7 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <h1>初始化家庭数字中心</h1>
+        <h1>初始化暖屿</h1>
         <p>创建管理员账号</p>
       </div>
       <a-form

@@ -3,14 +3,14 @@
     <div class="auth-container">
       <div class="auth-header">
         <span class="auth-logo">🏠</span>
-        <h1 class="auth-title">家庭数字中心</h1>
+        <h1 class="auth-title">暖屿 · WarmIsle</h1>
         <p class="auth-subtitle">全家人的记账、待办、愿望、交流</p>
       </div>
       <div class="auth-content">
         <slot />
       </div>
       <div class="auth-footer">
-        <p>&copy; 2026 家庭数字中心</p>
+        <p>&copy; 2026 暖屿 · WarmIsle</p>
       </div>
     </div>
   </div>

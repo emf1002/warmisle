@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-家庭数字中心 V1 — 面向家庭的私有化协作平台。包含记账本、待办管理、愿望清单、家庭论坛、仪表盘 5 大模块。Go 后端 + Vue 3 前端，编译为单二进制部署。
+暖屿 (WarmIsle) V1 — 面向家庭的私有化协作平台。包含记账本、待办管理、愿望清单、家庭论坛、仪表盘 5 大模块。Go 后端 + Vue 3 前端，编译为单二进制部署。
 
 ## 构建与开发命令
 
@@ -26,7 +26,7 @@ make clean     # 清理构建产物
 ## 项目结构
 
 ```
-home-center-v1/
+warmisle/
 ├── backend/
 │   ├── cmd/server/main.go       # Web 服务入口，embed 前端 dist
 │   ├── cmd/cli/main.go          # CLI 工具（reset-password）
@@ -89,7 +89,7 @@ home-center-v1/
 | 变量 | 说明 | 默认值 |
 |---|---|---|
 | `HC_JWT_SECRET` | JWT 签名密钥 | 随机生成 32 位 hex（持久化到 `data/secret.key`） |
-| `HC_DB_PATH` | SQLite 文件路径 | `./data/home-center.db` |
+| `HC_DB_PATH` | SQLite 文件路径 | `./data/warmisle.db` |
 | `HC_PORT` | 监听端口 | `8080` |
 | `HC_CORS_ORIGINS` | CORS 白名单（逗号分隔） | 开发：`*`，生产（嵌入前端）：仅同源 |
 
@@ -124,5 +124,5 @@ home-center-v1/
 
 按 RICE 优先级：认证与权限 → 成员管理 → 分类管理 → 记账本 → 待办管理 → 仪表盘 → 愿望清单 → 家庭论坛 → 个人中心 → 布局与响应式。
 
-完整实施计划（含 task 依赖关系 DAG）见 `docs/superpowers/plans/2026-05-16-home-center-implementation.md`。
+完整实施计划（含 task 依赖关系 DAG）见 `docs/superpowers/plans/2026-05-16-warmisle-implementation.md`。
 详细验收标准、业务规则、字段约束见 `docs/prd.md`。

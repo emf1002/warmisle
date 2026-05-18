@@ -1,8 +1,8 @@
 frontend/node_modules/
 frontend/dist/
 backend/frontend/dist/
-backend/home-center
-backend/home-center.exe
+backend/warmisle
+backend/warmisle.exe
 backend/tmp/
 backups/
 data/

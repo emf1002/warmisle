@@ -1,8 +1,8 @@
 package service
 
 import (
-	"home-center/internal/model"
-	"home-center/internal/pkg"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 	"time"
 )
 

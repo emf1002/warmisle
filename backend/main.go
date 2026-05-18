@@ -20,8 +20,8 @@ import (
 	_ "modernc.org/sqlite"
 	"github.com/pressly/goose/v3"
 
-	"home-center/internal/pkg"
-	"home-center/internal/routes"
+	"warmisle/internal/pkg"
+	"warmisle/internal/routes"
 )
 
 //go:embed frontend/dist/*
@@ -32,7 +32,7 @@ var migrationFS embed.FS
 
 func main() {
 	// 读取配置
-	dbPath := getEnv("HC_DB_PATH", "./data/home-center.db")
+	dbPath := getEnv("HC_DB_PATH", "./data/warmisle.db")
 	port := getEnv("HC_PORT", "8080")
 	jwtSecret := getEnv("HC_JWT_SECRET", "")
 

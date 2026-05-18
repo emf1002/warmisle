@@ -3,8 +3,8 @@ package repository
 import (
 	"time"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 )
 
 type LedgerRepo struct{}

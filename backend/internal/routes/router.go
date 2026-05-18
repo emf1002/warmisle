@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"home-center/internal/handler"
-	"home-center/internal/middleware"
+	"warmisle/internal/handler"
+	"warmisle/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )

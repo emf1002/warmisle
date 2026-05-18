@@ -6,7 +6,7 @@ dev:
 
 build:
 	@cd frontend && npm run build
-	@cd backend && go build -o home-center .
+	@cd backend && go build -o warmisle .
 
 clean:
-	@rm -rf frontend/dist backend/frontend/dist backend/home-center backend/home-center.exe
+	@rm -rf frontend/dist backend/frontend/dist backend/warmisle backend/warmisle.exe

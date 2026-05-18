@@ -4,9 +4,9 @@ import (
 	"errors"
 	"strconv"
 
-	"home-center/internal/pkg"
-	"home-center/internal/repository"
-	"home-center/internal/service"
+	"warmisle/internal/pkg"
+	"warmisle/internal/repository"
+	"warmisle/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

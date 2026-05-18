@@ -2,7 +2,7 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <h1>家庭数字中心</h1>
+        <h1>暖屿 · WarmIsle</h1>
         <p>登录您的账号</p>
       </div>
       <a-form

@@ -1,4 +1,4 @@
-module home-center
+module warmisle
 
 go 1.22
 

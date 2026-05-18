@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
-	"home-center/internal/repository"
-	"home-center/internal/testutil"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
+	"warmisle/internal/repository"
+	"warmisle/internal/testutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

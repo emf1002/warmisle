@@ -13,7 +13,7 @@
     >
       <div class="sidebar-logo" @click="$router.push('/')">
         <span class="sidebar-logo-icon">🏠</span>
-        <span class="sidebar-logo-text">家庭中心</span>
+        <span class="sidebar-logo-text">暖屿</span>
       </div>
 
       <a-menu
@@ -229,7 +229,7 @@ const routeTitleMap: Record<string, string> = {
   Profile: '个人中心',
 }
 
-const pageTitle = computed(() => routeTitleMap[route.name as string] || '家庭中心')
+const pageTitle = computed(() => routeTitleMap[route.name as string] || '暖屿')
 
 // ---- 用户下拉菜单 ----
 function onUserMenuClick({ key }: { key: string }) {

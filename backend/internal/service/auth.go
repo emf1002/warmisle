@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"home-center/internal/pkg"
-	"home-center/internal/repository"
+	"warmisle/internal/pkg"
+	"warmisle/internal/repository"
 )
 
 var (

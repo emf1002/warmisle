@@ -3,9 +3,9 @@ package service
 import (
 	"testing"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
-	"home-center/internal/testutil"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
+	"warmisle/internal/testutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

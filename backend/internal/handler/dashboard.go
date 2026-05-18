@@ -3,8 +3,8 @@ package handler
 import (
 	"time"
 
-	"home-center/internal/pkg"
-	"home-center/internal/service"
+	"warmisle/internal/pkg"
+	"warmisle/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

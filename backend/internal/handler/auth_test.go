@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"home-center/internal/model"
-	"home-center/internal/pkg"
-	"home-center/internal/testutil"
+	"warmisle/internal/model"
+	"warmisle/internal/pkg"
+	"warmisle/internal/testutil"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

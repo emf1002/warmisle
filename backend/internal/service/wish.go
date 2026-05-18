@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 
-	"home-center/internal/model"
-	"home-center/internal/repository"
+	"warmisle/internal/model"
+	"warmisle/internal/repository"
 
 	"gorm.io/gorm"
 )
