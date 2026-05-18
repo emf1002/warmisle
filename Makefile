@@ -5,8 +5,9 @@ dev:
 	@cd frontend && npm run dev & cd backend && air -- cmd/server/main.go
 
 build:
-	@cd frontend && npm run build
-	@cd backend && go build -o warmisle .
+	@cd frontend && npm run build -- --emptyOutDir
+	@mkdir -p dist
+	@cd backend && go build -o ../dist/warmisle .
 
 clean:
-	@rm -rf frontend/dist backend/frontend/dist backend/warmisle backend/warmisle.exe
+	@rm -rf frontend/dist backend/frontend/dist dist
