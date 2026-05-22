@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暖屿 — 仪表盘 V3 晨屿</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --coral:#E87461;--coral-light:#F09888;--coral-dark:#D05A48;--coral-bg:rgba(232,116,97,0.08);
+  --teal:#6BBAA7;--teal-bg:rgba(107,186,167,0.1);
+  --gold:#F2B84B;--gold-bg:rgba(242,184,75,0.1);
+  --lavender:#C5B3D9;--lavender-bg:rgba(197,179,217,0.1);
+  --sky:#B8D4E8;--sky-bg:rgba(184,212,232,0.1);
+  --sidebar-bg:#FDF8F4;--sidebar-border:rgba(61,53,48,0.06);--sidebar-hover:rgba(232,116,97,0.06);--sidebar-active:rgba(232,116,97,0.1);
+  --bg:#FDF8F4;--card:#FFFFFF;--text:#3D3530;--text2:#8A807A;--text3:#B8AFA8;
+  --border:rgba(61,53,48,0.07);--green:#389E0D;--red:#E85D5D;--yellow:#E8A830;
+  --shadow:0 1px 4px rgba(61,53,48,0.05);--shadow-hover:0 4px 16px rgba(61,53,48,0.08);
+  --radius:14px;--radius-sm:10px;
+  --font:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --font-display:'Noto Serif SC','PingFang SC',serif;
+}
+html,body{height:100%;font-family:var(--font);color:var(--text);background:var(--bg)}
+
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;z-index:20}
+.sidebar-logo{padding:20px 20px 16px;display:flex;align-items:center;gap:12px}
+.logo-icon{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--coral-light),var(--coral-dark));display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(232,116,97,0.25)}
+.logo-icon svg{width:20px;height:20px}
+.logo-text{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--text);letter-spacing:0.06em}
+
+.sidebar-nav{flex:1;padding:8px 12px;overflow-y:auto}
+.nav-section{margin-bottom:8px}
+.nav-section-title{font-size:11px;color:var(--text3);padding:8px 12px 4px;letter-spacing:0.08em;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;transition:all 0.2s;text-decoration:none;margin-bottom:2px}
+.nav-item:hover{background:var(--sidebar-hover);color:var(--text)}
+.nav-item.active{background:var(--sidebar-active);color:var(--coral);font-weight:500}
+.nav-item svg{width:20px;height:20px;flex-shrink:0;opacity:0.55}
+.nav-item.active svg{opacity:1}
+
+.sidebar-user{padding:12px 16px;border-top:1px solid var(--sidebar-border);display:flex;align-items:center;gap:10px}
+.sidebar-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral-bg);display:flex;align-items:center;justify-content:center;font-size:18px}
+.sidebar-user-name{font-size:13px;color:var(--text);font-weight:500}
+.sidebar-user-role{font-size:11px;color:var(--text3)}
+
+/* MAIN */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* TOPBAR */
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-title{font-size:16px;font-weight:600}
+.month-switcher{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 6px}
+.month-btn{width:32px;height:32px;border:none;background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all 0.15s;font-size:16px}
+.month-btn:hover{background:var(--card);color:var(--coral)}
+.month-label{font-size:14px;font-weight:600;color:var(--text);min-width:90px;text-align:center}
+
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-avatar{width:36px;height:36px;border-radius:50%;background:var(--coral-bg);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:2px solid transparent;transition:border-color 0.2s}
+.topbar-avatar:hover{border-color:var(--coral)}
+.topbar-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:10px;transition:background 0.2s}
+.topbar-user:hover{background:var(--bg)}
+.topbar-user-name{font-size:13px;font-weight:500}
+.topbar-user-arrow{color:var(--text3);font-size:10px}
+.topbar-dropdown{position:relative}
+.dropdown-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-hover);min-width:160px;padding:4px;display:none;z-index:50}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;color:var(--text);border-radius:8px;cursor:pointer;transition:background 0.15s}
+.dropdown-item:hover{background:var(--bg)}
+.dropdown-item svg{width:16px;height:16px;color:var(--text2)}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all 0.2s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0}
+.stat-card.income-card::after{background:linear-gradient(90deg,var(--teal),#A8D8CA)}
+.stat-card.expense-card::after{background:linear-gradient(90deg,var(--coral),var(--coral-light))}
+.stat-card.balance-card::after{background:linear-gradient(90deg,var(--gold),var(--gold-bg))}
+.stat-card:hover{box-shadow:var(--shadow-hover)}
+.stat-label{font-size:13px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.stat-label-dot{width:8px;height:8px;border-radius:50%}
+.stat-value{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+.stat-value.income{color:var(--green)}
+.stat-value.expense{color:var(--red)}
+.stat-value.balance{color:var(--text)}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:4px}
+
+/* GRID */
+.grid-2col{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600}
+.card-more{font-size:12px;color:var(--coral);cursor:pointer;text-decoration:none}
+
+/* PIE */
+.chart-container{display:flex;align-items:center;gap:24px}
+.pie-chart{width:160px;height:160px;border-radius:50%;flex-shrink:0;position:relative}
+.pie-center{position:absolute;inset:30px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pie-center-label{font-size:11px;color:var(--text3)}
+.pie-center-value{font-size:16px;font-weight:700;color:var(--text)}
+.chart-legend{flex:1;display:flex;flex-direction:column;gap:8px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:4px;flex-shrink:0}
+.legend-value{margin-left:auto;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+
+/* TODOS */
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.todo-item:last-child{border-bottom:none}
+.todo-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(61,53,48,0.12);flex-shrink:0;margin-top:1px;cursor:pointer;transition:all 0.2s}
+.todo-check:hover{border-color:var(--coral)}
+.todo-content{flex:1;min-width:0}
+.todo-title{font-size:14px;font-weight:500;margin-bottom:2px}
+.todo-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:8px}
+.todo-priority{font-size:11px;padding:1px 6px;border-radius:6px;font-weight:500}
+.priority-urgent{background:rgba(232,93,93,0.08);color:var(--red)}
+.priority-important{background:rgba(232,168,48,0.08);color:var(--yellow)}
+.priority-normal{background:var(--bg);color:var(--text3)}
+.todo-assignee{font-size:12px;color:var(--text2);white-space:nowrap}
+
+/* WISHES + FORUM */
+.grid-2col-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wish-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.wish-item:last-child{border-bottom:none}
+.wish-avatar{width:32px;height:32px;border-radius:50%;background:var(--coral-bg);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.wish-content{flex:1;min-width:0}
+.wish-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wish-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.wish-votes{font-size:12px;color:var(--coral);font-weight:500;white-space:nowrap}
+
+.forum-item{padding:10px 0;border-bottom:1px solid var(--border)}
+.forum-item:last-child{border-bottom:none}
+.forum-tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:6px;margin-bottom:4px;font-weight:500}
+.tag-announcement{background:rgba(232,93,93,0.08);color:var(--red)}
+.tag-topic{background:var(--coral-bg);color:var(--coral)}
+.tag-poll{background:var(--teal-bg);color:var(--teal)}
+.forum-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.forum-meta{font-size:11px;color:var(--text3);display:flex;gap:12px}
+
+/* MOBILE TABBAR */
+.mobile-tabbar{display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--card);border-top:1px solid var(--border);z-index:30;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom)}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text3);cursor:pointer;padding:6px 12px;border-radius:10px;transition:color 0.2s}
+.tab-item.active{color:var(--coral)}
+.tab-item svg{width:22px;height:22px}
+.tab-label{font-weight:500}
+
+.hamburger{display:none;width:36px;height:36px;border:none;background:transparent;cursor:pointer;border-radius:10px;align-items:center;justify-content:center;color:var(--text)}
+.hamburger:hover{background:var(--bg)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:19}
+
+@media(max-width:900px){.grid-2col,.grid-2col-bottom{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-240px;top:0;bottom:0;transition:left 0.3s ease;z-index:21}
+  .sidebar.open{left:0}
+  .sidebar-overlay.show{display:block}
+  .hamburger{display:flex}
+  .mobile-tabbar{display:flex}
+  .content{padding:16px;padding-bottom:72px}
+  .topbar{padding:0 16px}
+  .stats-row{grid-template-columns:1fr;gap:10px}
+  .stat-card{padding:16px}
+  .stat-value{font-size:22px}
+  .chart-container{flex-direction:column;align-items:stretch}
+  .pie-chart{align-self:center}
+  .topbar-user-name,.topbar-user-arrow{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3 11L10 5L17 11" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="5.5" y="10" width="9" height="7.5" rx="1.5" stroke="#fff" stroke-width="1.4" fill="none"/><rect x="8.5" y="13" width="3" height="4.5" rx="1.5" stroke="#fff" stroke-width="1.2" fill="none"/></svg>
+      </div>
+      <span class="logo-text">暖 屿</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">概览</div>
+        <a class="nav-item active" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
+          仪表盘
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">家庭</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 8h10M5 11h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          记账本
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          待办管理
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 3l2.2 4.4 4.8.7-3.5 3.4.8 4.8L10 13.8l-4.3 2.5.8-4.8L3 8.1l4.8-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg>
+          愿望清单
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 4h14a1 1 0 011 1v8a1 1 0 01-1 1h-4l-3 3-3-3H3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/><path d="M6 7.5h8M6 10.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          家庭论坛
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">管理</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          成员管理
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="9" cy="15" r="1.5" fill="currentColor"/></svg>
+          分类管理
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">👨</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">张三</div>
+        <div class="sidebar-user-role">管理员</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleSidebar()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <span class="topbar-title">仪表盘</span>
+        <div class="month-switcher">
+          <button class="month-btn">&lsaquo;</button>
+          <span class="month-label">2026年5月</span>
+          <button class="month-btn">&rsaquo;</button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-dropdown">
+          <div class="topbar-user" onclick="toggleDropdown()">
+            <span class="topbar-avatar">👨</span>
+            <span class="topbar-user-name">张三</span>
+            <span class="topbar-user-arrow">&#9662;</span>
+          </div>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="dropdown-item">
+              <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M3 15c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              个人信息
+            </div>
+            <div class="dropdown-item">
+              <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              修改密码
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" style="color:var(--red)">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M6 2H4a2 2 0 00-2 2v8a2 2 0 002 2h2M11 11l3-3-3-3M6 8h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              退出登录
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="stats-row">
+        <div class="stat-card income-card">
+          <div class="stat-label"><span class="stat-label-dot" style="background:var(--green)"></span>本月收入</div>
+          <div class="stat-value income">+¥18,520.00</div>
+          <div class="stat-sub">较上月 +12.3%</div>
+        </div>
+        <div class="stat-card expense-card">
+          <div class="stat-label"><span class="stat-label-dot" style="background:var(--red)"></span>本月支出</div>
+          <div class="stat-value expense">-¥12,847.50</div>
+          <div class="stat-sub">较上月 -5.1%</div>
+        </div>
+        <div class="stat-card balance-card">
+          <div class="stat-label"><span class="stat-label-dot" style="background:var(--gold)"></span>本月结余</div>
+          <div class="stat-value balance">¥5,672.50</div>
+          <div class="stat-sub">累计结余 ¥42,380.00</div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">支出分类占比</span>
+            <a class="card-more" href="#">查看全部</a>
+          </div>
+          <div class="chart-container">
+            <div class="pie-chart" style="background:conic-gradient(#E87461 0% 28%,#6BBAA7 28% 45%,#F2B84B 45% 58%,#B8D4E8 58% 70%,#C5B3D9 70% 80%,#F09888 80% 88%,#EDE9E4 88% 100%)">
+              <div class="pie-center">
+                <span class="pie-center-label">总支出</span>
+                <span class="pie-center-value">¥12,847</span>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-dot" style="background:#E87461"></span>餐饮<span class="legend-value">¥3,597</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#6BBAA7"></span>居住<span class="legend-value">¥2,184</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#F2B84B"></span>交通<span class="legend-value">¥1,670</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#B8D4E8"></span>购物<span class="legend-value">¥1,542</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#C5B3D9"></span>教育<span class="legend-value">¥1,285</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#F09888"></span>娱乐<span class="legend-value">¥1,028</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#EDE9E4"></span>其他<span class="legend-value">¥1,542</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">近期待办</span>
+            <a class="card-more" href="#">全部待办</a>
+          </div>
+          <div class="todo-item">
+            <div class="todo-check"></div>
+            <div class="todo-content">
+              <div class="todo-title">交电费</div>
+              <div class="todo-meta"><span class="todo-priority priority-urgent">紧急</span><span>5月22日截止</span></div>
+            </div>
+            <span class="todo-assignee">👩 李女士</span>
+          </div>
+          <div class="todo-item">
+            <div class="todo-check"></div>
+            <div class="todo-content">
+              <div class="todo-title">预约牙科检查</div>
+              <div class="todo-meta"><span class="todo-priority priority-important">重要</span><span>5月25日截止</span></div>
+            </div>
+            <span class="todo-assignee">👨 张三</span>
+          </div>
+          <div class="todo-item">
+            <div class="todo-check"></div>
+            <div class="todo-content">
+              <div class="todo-title">买猫粮</div>
+              <div class="todo-meta"><span class="todo-priority priority-normal">普通</span><span>5月28日截止</span></div>
+            </div>
+            <span class="todo-assignee">👧 小美</span>
+          </div>
+          <div class="todo-item">
+            <div class="todo-check"></div>
+            <div class="todo-content">
+              <div class="todo-title">缴纳物业费</div>
+              <div class="todo-meta"><span class="todo-priority priority-important">重要</span><span>5月30日截止</span></div>
+            </div>
+            <span class="todo-assignee">👩 李女士</span>
+          </div>
+          <div class="todo-item">
+            <div class="todo-check"></div>
+            <div class="todo-content">
+              <div class="todo-title">准备周末聚餐食材</div>
+              <div class="todo-meta"><span class="todo-priority priority-normal">普通</span><span>6月1日截止</span></div>
+            </div>
+            <span class="todo-assignee">👨 张三</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col-bottom">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">愿望动态</span>
+            <a class="card-more" href="#">全部愿望</a>
+          </div>
+          <div class="wish-item">
+            <div class="wish-avatar">👧</div>
+            <div class="wish-content"><div class="wish-title">暑假去三亚旅行</div><div class="wish-meta">小美 &middot; 家庭愿望</div></div>
+            <span class="wish-votes">👍 4票</span>
+          </div>
+          <div class="wish-item">
+            <div class="wish-avatar">👨</div>
+            <div class="wish-content"><div class="wish-title">买一台投影仪</div><div class="wish-meta">张三 &middot; 个人愿望</div></div>
+            <span class="wish-votes">👍 2票</span>
+          </div>
+          <div class="wish-item">
+            <div class="wish-avatar">👩</div>
+            <div class="wish-content"><div class="wish-title">换一套新沙发</div><div class="wish-meta">李女士 &middot; 家庭愿望</div></div>
+            <span class="wish-votes">👍 3票</span>
+          </div>
+          <div class="wish-item">
+            <div class="wish-avatar">👧</div>
+            <div class="wish-content"><div class="wish-title">养一只小狗</div><div class="wish-meta">小美 &middot; 个人愿望</div></div>
+            <span class="wish-votes">👍 1票</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">论坛热点</span>
+            <a class="card-more" href="#">进入论坛</a>
+          </div>
+          <div class="forum-item">
+            <span class="forum-tag tag-announcement">公告</span>
+            <div class="forum-title">暑假出行计划征集</div>
+            <div class="forum-meta"><span>张三</span><span>2小时前</span></div>
+          </div>
+          <div class="forum-item">
+            <span class="forum-tag tag-topic">话题</span>
+            <div class="forum-title">周末大扫除分工讨论</div>
+            <div class="forum-meta"><span>8条评论</span><span>李女士</span><span>5小时前</span></div>
+          </div>
+          <div class="forum-item">
+            <span class="forum-tag tag-poll">投票</span>
+            <div class="forum-title">今年暑假去哪里？</div>
+            <div class="forum-meta"><span>4人参与</span><span>张三</span><span>1天前</span></div>
+          </div>
+          <div class="forum-item">
+            <span class="forum-tag tag-topic">话题</span>
+            <div class="forum-title">小美期中考试总结</div>
+            <div class="forum-meta"><span>5条评论</span><span>李女士</span><span>2天前</span></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="mobile-tabbar">
+  <div class="tab-item active">
+    <svg viewBox="0 0 22 22" fill="none"><rect x="2" y="2" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="2" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="12" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="12" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
+    <span class="tab-label">仪表盘</span>
+  </div>
+  <div class="tab-item">
+    <svg viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 9h10M6 12h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    <span class="tab-label">记账</span>
+  </div>
+  <div class="tab-item">
+    <svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M8 11l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="tab-label">待办</span>
+  </div>
+  <div class="tab-item">
+    <svg viewBox="0 0 22 22" fill="none"><path d="M3 5h16a1 1 0 011 1v9a1 1 0 01-1 1h-5l-3 3-3-3H3a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M6 8h10M6 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    <span class="tab-label">论坛</span>
+  </div>
+  <div class="tab-item">
+    <svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span class="tab-label">我的</span>
+  </div>
+</div>
+
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show')}
+function toggleDropdown(){document.getElementById('dropdownMenu').classList.toggle('show')}
+document.addEventListener('click',e=>{if(!e.target.closest('.topbar-dropdown'))document.getElementById('dropdownMenu').classList.remove('show')});
+</script>
+</body>
+</html>

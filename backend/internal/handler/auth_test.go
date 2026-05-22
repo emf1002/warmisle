@@ -147,3 +147,43 @@ func TestHandler_Login_MissingPassword(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, float64(40001), resp["code"])
 }
+
+func TestHandler_Login_DisabledUser(t *testing.T) {
+	testutil.SetupTestDB()
+	defer testutil.TeardownTestDB()
+	pkg.InitJWT("test-secret")
+
+	r := setupAuthRouter()
+
+	// 先初始化系统
+	initBody := `{"admin_name":"管理员","username":"admin","password":"admin123"}`
+	testutil.MakeRequest(r, "POST", "/api/init/setup", initBody, "")
+
+	// 创建禁用成员
+	testutil.SeedDisabledMember(t)
+
+	loginBody := `{"username":"disabled","password":"testpass123"}`
+	w := testutil.MakeRequest(r, "POST", "/api/auth/login", loginBody, "")
+	testutil.AssertErrorResponse(t, w, 401, 40101)
+}
+
+func TestHandler_ProtectedEndpoint_NoToken(t *testing.T) {
+	testutil.SetupTestDB()
+	defer testutil.TeardownTestDB()
+	pkg.InitJWT("test-secret")
+
+	// 需要用完整路由才能测试受保护端点
+	fullRouter := setupTestRouter()
+	w := testutil.MakeRequest(fullRouter, "GET", "/api/members", nil, "")
+	testutil.AssertErrorResponse(t, w, 401, 40101)
+}
+
+func TestHandler_ProtectedEndpoint_InvalidToken(t *testing.T) {
+	testutil.SetupTestDB()
+	defer testutil.TeardownTestDB()
+	pkg.InitJWT("test-secret")
+
+	fullRouter := setupTestRouter()
+	w := testutil.MakeRequest(fullRouter, "GET", "/api/members", nil, "invalid-token")
+	testutil.AssertErrorResponse(t, w, 401, 40101)
+}

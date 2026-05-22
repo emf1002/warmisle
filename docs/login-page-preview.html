@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暖屿 WarmIsle — 登录</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --brand: #E8734A;
+    --brand-light: #F09A7A;
+    --brand-dark: #C95A35;
+    --brand-glow: rgba(232, 115, 74, 0.15);
+    --bg-warm: #FAF9F7;
+    --bg-cream: #F5F0EB;
+    --text-primary: #2D2A26;
+    --text-secondary: #7A756E;
+    --text-muted: #B5AFA8;
+    --border: #E8E3DD;
+    --white: #FFFFFF;
+    --shadow-soft: 0 2px 20px rgba(45, 42, 38, 0.06);
+    --shadow-card: 0 8px 40px rgba(45, 42, 38, 0.10);
+    --shadow-button: 0 4px 16px rgba(232, 115, 74, 0.30);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --font-display: 'Noto Serif SC', 'PingFang SC', 'Hiragino Sans GB', serif;
+    --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background: var(--bg-warm);
+    overflow: hidden;
+  }
+
+  .login-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ====== LEFT: ATMOSPHERIC PANEL ====== */
+  .left-panel {
+    flex: 1 1 55%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(160deg, #FCEEE6 0%, #F8DCC8 25%, #F0C4A0 50%, #E8A87C 75%, #E09060 100%);
+    overflow: hidden;
+  }
+
+  /* Grain texture overlay */
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Decorative floating shapes */
+  .deco-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    animation: floatIn 1.8s ease-out forwards;
+  }
+
+  .deco-circle-1 {
+    width: 400px; height: 400px;
+    top: -80px; right: -100px;
+    background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
+    animation-delay: 0.2s;
+  }
+
+  .deco-circle-2 {
+    width: 300px; height: 300px;
+    bottom: -60px; left: -80px;
+    background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%);
+    animation-delay: 0.5s;
+  }
+
+  .deco-circle-3 {
+    width: 180px; height: 180px;
+    top: 30%; left: 15%;
+    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+    animation-delay: 0.8s;
+  }
+
+  /* House illustration */
+  .house-illustration {
+    position: relative;
+    z-index: 2;
+    width: 280px;
+    height: 280px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: riseUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  }
+
+  .house-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 12px 32px rgba(200, 90, 53, 0.2));
+  }
+
+  .left-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    opacity: 0;
+    animation: riseUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.6s forwards;
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.08em;
+    text-shadow: 0 2px 20px rgba(200, 90, 53, 0.3);
+    margin-bottom: 8px;
+  }
+
+  .brand-english {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .brand-tagline {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.8;
+    letter-spacing: 0.04em;
+  }
+
+  /* Wave separator */
+  .wave-separator {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    height: 100%;
+    width: 80px;
+    z-index: 3;
+  }
+
+  /* ====== RIGHT: LOGIN FORM ====== */
+  .right-panel {
+    flex: 1 1 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 48px;
+    background: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle dot pattern */
+  .right-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .form-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 380px;
+    opacity: 0;
+    animation: slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.8s forwards;
+  }
+
+  .form-header {
+    margin-bottom: 40px;
+  }
+
+  .form-greeting {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .form-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .input-group {
+    margin-bottom: 22px;
+  }
+
+  .input-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  .input-field {
+    width: 100%;
+    height: 52px;
+    padding: 0 18px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--text-primary);
+    background: var(--bg-warm);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: all 0.25s ease;
+  }
+
+  .input-field::placeholder {
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .input-field:hover {
+    border-color: var(--brand-light);
+  }
+
+  .input-field:focus {
+    border-color: var(--brand);
+    background: var(--white);
+    box-shadow: 0 0 0 4px var(--brand-glow);
+  }
+
+  .remember-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+
+  .remember-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .remember-label input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg-warm);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .remember-label input[type="checkbox"]:checked {
+    background: var(--brand);
+    border-color: var(--brand);
+  }
+
+  .remember-label input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 2px;
+    width: 5px; height: 9px;
+    border: solid var(--white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .forgot-link {
+    font-size: 13px;
+    color: var(--brand);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .forgot-link:hover {
+    color: var(--brand-dark);
+  }
+
+  .login-button {
+    width: 100%;
+    height: 54px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    box-shadow: var(--shadow-button);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .login-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(232, 115, 74, 0.4);
+  }
+
+  .login-button:hover::before {
+    opacity: 1;
+  }
+
+  .login-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 12px rgba(232, 115, 74, 0.3);
+  }
+
+  .form-footer {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+    line-height: 1.8;
+  }
+
+  /* ====== ANIMATIONS ====== */
+  @keyframes floatIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes riseUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+  }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 900px) {
+    .login-container {
+      flex-direction: column;
+    }
+
+    .left-panel {
+      flex: 0 0 auto;
+      min-height: 280px;
+      padding: 40px 24px;
+    }
+
+    .house-illustration {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 24px;
+    }
+
+    .brand-name {
+      font-size: 36px;
+    }
+
+    .brand-english {
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .brand-tagline {
+      font-size: 14px;
+    }
+
+    .wave-separator {
+      display: none;
+    }
+
+    .right-panel {
+      flex: 1;
+      padding: 32px 24px;
+    }
+
+    .form-header {
+      margin-bottom: 32px;
+    }
+
+    .form-greeting {
+      font-size: 24px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .left-panel {
+      min-height: 220px;
+      padding: 32px 20px;
+    }
+
+    .house-illustration {
+      width: 90px;
+      height: 90px;
+      margin-bottom: 16px;
+    }
+
+    .brand-name {
+      font-size: 28px;
+    }
+
+    .brand-tagline {
+      font-size: 13px;
+    }
+
+    .right-panel {
+      padding: 28px 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <!-- LEFT: Atmospheric Brand Panel -->
+  <div class="left-panel">
+    <div class="deco-circle deco-circle-1"></div>
+    <div class="deco-circle deco-circle-2"></div>
+    <div class="deco-circle deco-circle-3"></div>
+
+    <div class="house-illustration">
+      <svg class="house-svg" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Warm glow background -->
+        <circle cx="140" cy="140" r="120" fill="rgba(255,255,255,0.12)"/>
+        <circle cx="140" cy="140" r="90" fill="rgba(255,255,255,0.08)"/>
+
+        <!-- House body -->
+        <rect x="80" y="140" width="120" height="90" rx="6" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+
+        <!-- Roof -->
+        <path d="M65 145 L140 80 L215 145" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M72 143 L140 86 L208 143" fill="rgba(255,255,255,0.3)"/>
+
+        <!-- Chimney -->
+        <rect x="175" y="95" width="18" height="35" rx="3" fill="rgba(255,255,255,0.7)"/>
+
+        <!-- Smoke from chimney -->
+        <circle cx="184" cy="82" r="5" fill="rgba(255,255,255,0.3)">
+          <animate attributeName="cy" values="82;72;62" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0.15;0" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="5;8;10" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="190" cy="75" r="4" fill="rgba(255,255,255,0.2)">
+          <animate attributeName="cy" values="75;65;55" dur="3.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.2;0.1;0" dur="3.5s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="4;7;9" dur="3.5s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Door -->
+        <rect x="122" y="180" width="36" height="50" rx="18 18 4 4" fill="rgba(232,115,74,0.6)"/>
+        <circle cx="150" cy="208" r="3" fill="rgba(255,255,255,0.8)"/>
+
+        <!-- Windows -->
+        <rect x="92" y="158" width="22" height="22" rx="4" fill="rgba(255,220,180,0.6)" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="103" y1="158" x2="103" y2="180" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <line x1="92" y1="169" x2="114" y2="169" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+
+        <rect x="166" y="158" width="22" height="22" rx="4" fill="rgba(255,220,180,0.6)" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="177" y1="158" x2="177" y2="180" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <line x1="166" y1="169" x2="188" y2="169" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+
+        <!-- Window glow -->
+        <rect x="92" y="158" width="22" height="22" rx="4" fill="rgba(255,200,120,0.3)">
+          <animate attributeName="opacity" values="0.3;0.5;0.3" dur="4s" repeatCount="indefinite"/>
+        </rect>
+        <rect x="166" y="158" width="22" height="22" rx="4" fill="rgba(255,200,120,0.3)">
+          <animate attributeName="opacity" values="0.3;0.5;0.3" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+        </rect>
+
+        <!-- Heart above door -->
+        <path d="M140 168 C140 164, 135 160, 131 163 C127 166, 127 172, 140 178 C153 172, 153 166, 149 163 C145 160, 140 164, 140 168Z" fill="rgba(232,115,74,0.5)">
+          <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2.5s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Ground -->
+        <path d="M50 230 Q140 220 230 230" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+
+        <!-- Little plants -->
+        <circle cx="72" cy="225" r="6" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="68" cy="222" r="4" fill="rgba(255,255,255,0.15)"/>
+        <circle cx="210" cy="225" r="5" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="214" cy="222" r="3.5" fill="rgba(255,255,255,0.15)"/>
+      </svg>
+    </div>
+
+    <div class="left-content">
+      <div class="brand-name">暖 屿</div>
+      <div class="brand-english">Warm Isle</div>
+      <div class="brand-tagline">全家人的记账、待办、愿望、交流<br>一个地方搞定</div>
+    </div>
+
+    <!-- Wave separator -->
+    <svg class="wave-separator" viewBox="0 0 80 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 0 C40 100, 60 200, 30 300 C0 400, 60 500, 30 600 C0 700, 40 750, 80 800 L80 0Z" fill="white"/>
+    </svg>
+  </div>
+
+  <!-- RIGHT: Login Form -->
+  <div class="right-panel">
+    <div class="form-wrapper">
+      <div class="form-header">
+        <div class="form-greeting">欢迎回来</div>
+        <div class="form-subtitle">登录你的暖屿账号</div>
+      </div>
+
+      <form onsubmit="return false;">
+        <div class="input-group">
+          <label class="input-label" for="username">用户名</label>
+          <input
+            class="input-field"
+            type="text"
+            id="username"
+            placeholder="请输入用户名"
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="password">密码</label>
+          <input
+            class="input-field"
+            type="password"
+            id="password"
+            placeholder="请输入密码"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="remember-row">
+          <label class="remember-label">
+            <input type="checkbox" />
+            记住登录状态
+          </label>
+          <a href="#" class="forgot-link">忘记密码？</a>
+        </div>
+
+        <button type="submit" class="login-button">登 录</button>
+      </form>
+
+      <div class="form-footer">
+        &copy; 2026 暖屿 WarmIsle &middot; 家庭数字中心
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
