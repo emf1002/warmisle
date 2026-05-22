@@ -99,21 +99,15 @@ async function handleSetup() {
 
 <style scoped>
 .auth-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  padding: 16px;
+  width: 100%;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 40px 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
 }
 
 .auth-header {
@@ -124,11 +118,15 @@ async function handleSetup() {
 .auth-header h1 {
   font-size: 24px;
   margin: 0 0 8px;
-  color: #1a1a1a;
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .auth-header h1 {
+  color: #E8E4DE;
 }
 
 .auth-header p {
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 </style>
