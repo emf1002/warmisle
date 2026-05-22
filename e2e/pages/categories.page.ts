@@ -30,6 +30,8 @@ export class CategoriesPage extends BasePage {
 
   async submit() {
     await this.page.locator('.ant-modal-footer .ant-btn-primary').click();
+    // 等待弹窗关闭，确认提交成功
+    await expect(this.page.getByTestId('category-modal')).not.toBeVisible();
   }
 
   async expectExpenseCategoryCount(count: number) {

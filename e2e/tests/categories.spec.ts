@@ -19,7 +19,11 @@ test.describe('分类管理', () => {
     await categories.selectType('支出');
     await categories.fillName('测试分类');
     await categories.submit();
+    // submit() 内部已等待弹窗关闭
+    // toHaveCount 会自动重试直到超时，如果列表不刷新会报错
     await categories.expectExpenseCategoryCount(16);
+    // 验证新分类名称出现在页面上
+    await expect(page.getByTestId('expense-categories')).toContainText('测试分类');
   });
 
   test('删除自定义分类', async ({ authenticated }) => {
