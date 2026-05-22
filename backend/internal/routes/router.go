@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"os"
 	"warmisle/internal/handler"
 	"warmisle/internal/middleware"
 
@@ -9,6 +10,11 @@ import (
 
 func Register(r *gin.Engine) {
 	api := r.Group("/api")
+
+	// 测试重置端点（仅测试模式可用）
+	if os.Getenv("HC_TEST_MODE") == "true" {
+		api.POST("/test/reset", handler.TestReset)
+	}
 
 	auth := handler.NewAuthHandler()
 	init := handler.NewInitHandler()
