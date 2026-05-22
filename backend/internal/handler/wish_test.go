@@ -23,9 +23,9 @@ func TestHandler_Wish_Create_Success(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "想买iPad", data["Title"])
-	assert.Equal(t, "personal", data["Type"])
-	assert.Equal(t, "pending", data["Status"])
+	assert.Equal(t, "想买iPad", data["title"])
+	assert.Equal(t, "personal", data["type"])
+	assert.Equal(t, "pending", data["status"])
 }
 
 func TestHandler_Wish_Create_EmptyTitle(t *testing.T) {
@@ -62,13 +62,13 @@ func TestHandler_Wish_Promote_Success(t *testing.T) {
 	// 创建个人愿望
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"提升测试","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 
 	// 提升为家庭愿望
 	w := testutil.MakeRequest(r, "POST", fmt.Sprintf("/api/wishes/%d/promote", int(wishID)), nil, memberToken)
 	promoteResp := testutil.AssertSuccessResponse(t, w)
 	promoteData := testutil.ParseDataMap(promoteResp)
-	assert.Equal(t, "family", promoteData["Type"])
+	assert.Equal(t, "family", promoteData["type"])
 }
 
 func TestHandler_Wish_Promote_NotCreator(t *testing.T) {
@@ -81,7 +81,7 @@ func TestHandler_Wish_Promote_NotCreator(t *testing.T) {
 	// 创建愿望
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"不能提升","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 
 	// 另一个成员尝试提升
 	hash, _ := pkg.HashPassword("testpass123")
@@ -103,7 +103,7 @@ func TestHandler_Wish_Vote_Success(t *testing.T) {
 	// 创建家庭愿望
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"投票测试","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 	// 先提升
 	testutil.MakeRequest(r, "POST", fmt.Sprintf("/api/wishes/%d/promote", int(wishID)), nil, memberToken)
 
@@ -126,7 +126,7 @@ func TestHandler_Wish_Vote_Duplicate(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"重复投票","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 	testutil.MakeRequest(r, "POST", fmt.Sprintf("/api/wishes/%d/promote", int(wishID)), nil, memberToken)
 
 	hash, _ := pkg.HashPassword("testpass123")
@@ -150,7 +150,7 @@ func TestHandler_Wish_Unvote_Success(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"取消投票","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 	testutil.MakeRequest(r, "POST", fmt.Sprintf("/api/wishes/%d/promote", int(wishID)), nil, memberToken)
 
 	hash, _ := pkg.HashPassword("testpass123")
@@ -172,14 +172,14 @@ func TestHandler_Wish_UpdateStatus_AdminAnyStatus(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"状态测试","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 
 	for _, status := range []string{"agreed", "achieved"} {
 		body := fmt.Sprintf(`{"status":"%s"}`, status)
 		w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/wishes/%d/status", int(wishID)), body, adminToken)
 		statusResp := testutil.AssertSuccessResponse(t, w)
 		statusData := testutil.ParseDataMap(statusResp)
-		assert.Equal(t, status, statusData["Status"])
+		assert.Equal(t, status, statusData["status"])
 	}
 }
 
@@ -192,14 +192,14 @@ func TestHandler_Wish_UpdateStatus_CreatorOnlyAbandon(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"放弃测试","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 
 	// 创建者可以标记放弃
 	body := `{"status":"abandoned"}`
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/wishes/%d/status", int(wishID)), body, memberToken)
 	statusResp := testutil.AssertSuccessResponse(t, w)
 	statusData := testutil.ParseDataMap(statusResp)
-	assert.Equal(t, "abandoned", statusData["Status"])
+	assert.Equal(t, "abandoned", statusData["status"])
 }
 
 func TestHandler_Wish_Delete_ByCreator(t *testing.T) {
@@ -211,7 +211,7 @@ func TestHandler_Wish_Delete_ByCreator(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/wishes", `{"title":"删除测试","category":"other"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	wishID := data["ID"].(float64)
+	wishID := data["id"].(float64)
 
 	w := testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/wishes/%d", int(wishID)), nil, memberToken)
 	testutil.AssertSuccessResponse(t, w)

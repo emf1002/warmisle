@@ -25,7 +25,7 @@ func TestHandler_Forum_CreatePost_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/posts", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "今天天气真好！", data["Content"])
+	assert.Equal(t, "今天天气真好！", data["content"])
 }
 
 func TestHandler_Forum_CreatePost_EmptyContent(t *testing.T) {
@@ -49,7 +49,7 @@ func TestHandler_Forum_DeletePost_ByCreator(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"待删除"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	postID := data["ID"].(float64)
+	postID := data["id"].(float64)
 
 	w := testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/posts/%d", int(postID)), nil, memberToken)
 	testutil.AssertSuccessResponse(t, w)
@@ -64,7 +64,7 @@ func TestHandler_Forum_DeletePost_ByAdmin(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"管理员删除"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	postID := data["ID"].(float64)
+	postID := data["id"].(float64)
 
 	w := testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/posts/%d", int(postID)), nil, adminToken)
 	testutil.AssertSuccessResponse(t, w)
@@ -79,7 +79,7 @@ func TestHandler_Forum_DeletePost_Forbidden(t *testing.T) {
 
 	resp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"不能删"}`, memberToken)
 	data := testutil.ParseDataMap(testutil.ParseResponse(t, resp))
-	postID := data["ID"].(float64)
+	postID := data["id"].(float64)
 
 	// 创建另一个成员
 	hash, _ := pkg.HashPassword("testpass123")
@@ -104,7 +104,7 @@ func TestHandler_Forum_CreateTopic_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/topics", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "讨论话题", data["Title"])
+	assert.Equal(t, "讨论话题", data["title"])
 }
 
 func TestHandler_Forum_CreateTopic_EmptyTitle(t *testing.T) {
@@ -129,7 +129,7 @@ func TestHandler_Forum_CreateTopic_WithTag(t *testing.T) {
 	// 创建标签
 	tagResp := testutil.MakeRequest(r, "POST", "/api/tags", `{"name":"育儿"}`, adminToken)
 	tagData := testutil.ParseDataMap(testutil.ParseResponse(t, tagResp))
-	tagID := tagData["ID"].(float64)
+	tagID := tagData["id"].(float64)
 
 	body := fmt.Sprintf(`{"title":"育儿话题","content":"讨论育儿","tag_id":%d}`, int(tagID))
 	w := testutil.MakeRequest(r, "POST", "/api/topics", body, memberToken)
@@ -148,7 +148,7 @@ func TestHandler_Forum_TogglePin_AdminOnly(t *testing.T) {
 	// 创建话题
 	topicResp := testutil.MakeRequest(r, "POST", "/api/topics", `{"title":"可置顶","content":"内容"}`, memberToken)
 	topicData := testutil.ParseDataMap(testutil.ParseResponse(t, topicResp))
-	topicID := topicData["ID"].(float64)
+	topicID := topicData["id"].(float64)
 
 	// 普通成员不能置顶
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/topics/%d/pin", int(topicID)), nil, memberToken)
@@ -158,7 +158,7 @@ func TestHandler_Forum_TogglePin_AdminOnly(t *testing.T) {
 	w = testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/topics/%d/pin", int(topicID)), nil, adminToken)
 	pinResp := testutil.AssertSuccessResponse(t, w)
 	pinData := testutil.ParseDataMap(pinResp)
-	assert.Equal(t, true, pinData["IsPinned"])
+	assert.Equal(t, true, pinData["is_pinned"])
 }
 
 func TestHandler_Forum_GetTopic(t *testing.T) {
@@ -170,12 +170,12 @@ func TestHandler_Forum_GetTopic(t *testing.T) {
 
 	topicResp := testutil.MakeRequest(r, "POST", "/api/topics", `{"title":"查看话题","content":"内容"}`, memberToken)
 	topicData := testutil.ParseDataMap(testutil.ParseResponse(t, topicResp))
-	topicID := topicData["ID"].(float64)
+	topicID := topicData["id"].(float64)
 
 	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/topics/%d", int(topicID)), nil, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "查看话题", data["Title"])
+	assert.Equal(t, "查看话题", data["title"])
 }
 
 // === Comments ===
@@ -189,13 +189,13 @@ func TestHandler_Forum_CreateComment_Success(t *testing.T) {
 
 	postResp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"评论目标"}`, memberToken)
 	postData := testutil.ParseDataMap(testutil.ParseResponse(t, postResp))
-	postID := postData["ID"].(float64)
+	postID := postData["id"].(float64)
 
 	body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"content":"好文"}`, int(postID))
 	w := testutil.MakeRequest(r, "POST", "/api/comments", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "好文", data["Content"])
+	assert.Equal(t, "好文", data["content"])
 }
 
 func TestHandler_Forum_CreateComment_ReplyToLevel1(t *testing.T) {
@@ -207,20 +207,20 @@ func TestHandler_Forum_CreateComment_ReplyToLevel1(t *testing.T) {
 
 	postResp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"回复测试"}`, memberToken)
 	postData := testutil.ParseDataMap(testutil.ParseResponse(t, postResp))
-	postID := postData["ID"].(float64)
+	postID := postData["id"].(float64)
 
 	// 一级评论
 	c1Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"content":"一级"}`, int(postID))
 	c1Resp := testutil.MakeRequest(r, "POST", "/api/comments", c1Body, memberToken)
 	c1Data := testutil.ParseDataMap(testutil.ParseResponse(t, c1Resp))
-	c1ID := c1Data["ID"].(float64)
+	c1ID := c1Data["id"].(float64)
 
 	// 二级回复
 	c2Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"parent_id":%d,"content":"二级回复"}`, int(postID), int(c1ID))
 	w := testutil.MakeRequest(r, "POST", "/api/comments", c2Body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.NotNil(t, data["ParentID"])
+	assert.NotNil(t, data["parent_id"])
 }
 
 func TestHandler_Forum_CreateComment_NestingTooDeep(t *testing.T) {
@@ -232,19 +232,19 @@ func TestHandler_Forum_CreateComment_NestingTooDeep(t *testing.T) {
 
 	postResp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"嵌套测试"}`, memberToken)
 	postData := testutil.ParseDataMap(testutil.ParseResponse(t, postResp))
-	postID := postData["ID"].(float64)
+	postID := postData["id"].(float64)
 
 	// 一级
 	c1Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"content":"一级"}`, int(postID))
 	c1Resp := testutil.MakeRequest(r, "POST", "/api/comments", c1Body, memberToken)
 	c1Data := testutil.ParseDataMap(testutil.ParseResponse(t, c1Resp))
-	c1ID := c1Data["ID"].(float64)
+	c1ID := c1Data["id"].(float64)
 
 	// 二级
 	c2Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"parent_id":%d,"content":"二级"}`, int(postID), int(c1ID))
 	c2Resp := testutil.MakeRequest(r, "POST", "/api/comments", c2Body, memberToken)
 	c2Data := testutil.ParseDataMap(testutil.ParseResponse(t, c2Resp))
-	c2ID := c2Data["ID"].(float64)
+	c2ID := c2Data["id"].(float64)
 
 	// 三级应失败
 	c3Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"parent_id":%d,"content":"三级不允许"}`, int(postID), int(c2ID))
@@ -261,17 +261,17 @@ func TestHandler_Forum_DeleteComment_SyncDeleteReplies(t *testing.T) {
 
 	postResp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"删除测试"}`, memberToken)
 	postData := testutil.ParseDataMap(testutil.ParseResponse(t, postResp))
-	postID := postData["ID"].(float64)
+	postID := postData["id"].(float64)
 
 	c1Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"content":"一级"}`, int(postID))
 	c1Resp := testutil.MakeRequest(r, "POST", "/api/comments", c1Body, memberToken)
 	c1Data := testutil.ParseDataMap(testutil.ParseResponse(t, c1Resp))
-	c1ID := c1Data["ID"].(float64)
+	c1ID := c1Data["id"].(float64)
 
 	c2Body := fmt.Sprintf(`{"target_type":"post","target_id":%d,"parent_id":%d,"content":"二级"}`, int(postID), int(c1ID))
 	c2Resp := testutil.MakeRequest(r, "POST", "/api/comments", c2Body, memberToken)
 	c2Data := testutil.ParseDataMap(testutil.ParseResponse(t, c2Resp))
-	c2ID := c2Data["ID"].(float64)
+	c2ID := c2Data["id"].(float64)
 
 	// 删除一级
 	testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/comments/%d", int(c1ID)), nil, memberToken)
@@ -293,7 +293,7 @@ func TestHandler_Forum_ToggleLike(t *testing.T) {
 
 	postResp := testutil.MakeRequest(r, "POST", "/api/posts", `{"content":"点赞测试"}`, memberToken)
 	postData := testutil.ParseDataMap(testutil.ParseResponse(t, postResp))
-	postID := postData["ID"].(float64)
+	postID := postData["id"].(float64)
 
 	// 点赞
 	body := fmt.Sprintf(`{"target_type":"post","target_id":%d}`, int(postID))
@@ -322,7 +322,7 @@ func TestHandler_Forum_CreateVote_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/votes", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "周末去哪", data["Title"])
+	assert.Equal(t, "周末去哪", data["title"])
 }
 
 func TestHandler_Forum_CreateVote_WithDeadline(t *testing.T) {
@@ -337,7 +337,7 @@ func TestHandler_Forum_CreateVote_WithDeadline(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/votes", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.NotNil(t, data["Deadline"])
+	assert.NotNil(t, data["deadline"])
 }
 
 func TestHandler_Forum_Vote_CastAndDuplicate(t *testing.T) {
@@ -349,9 +349,9 @@ func TestHandler_Forum_Vote_CastAndDuplicate(t *testing.T) {
 
 	voteResp := testutil.MakeRequest(r, "POST", "/api/votes", `{"title":"投票","options":["A","B"]}`, memberToken)
 	voteData := testutil.ParseDataMap(testutil.ParseResponse(t, voteResp))
-	voteID := voteData["ID"].(float64)
+	voteID := voteData["id"].(float64)
 	options := voteData["options"].([]interface{})
-	optionID := options[0].(map[string]interface{})["ID"].(float64)
+	optionID := options[0].(map[string]interface{})["id"].(float64)
 
 	// 投票
 	castBody := fmt.Sprintf(`{"option_id":%d}`, int(optionID))
@@ -372,7 +372,7 @@ func TestHandler_Forum_DeleteVote_BeforeDeadline(t *testing.T) {
 
 	voteResp := testutil.MakeRequest(r, "POST", "/api/votes", `{"title":"可删除","options":["A","B"]}`, memberToken)
 	voteData := testutil.ParseDataMap(testutil.ParseResponse(t, voteResp))
-	voteID := voteData["ID"].(float64)
+	voteID := voteData["id"].(float64)
 
 	w := testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/votes/%d", int(voteID)), nil, memberToken)
 	testutil.AssertSuccessResponse(t, w)
@@ -387,12 +387,12 @@ func TestHandler_Forum_GetVote(t *testing.T) {
 
 	voteResp := testutil.MakeRequest(r, "POST", "/api/votes", `{"title":"查看投票","options":["A","B"]}`, memberToken)
 	voteData := testutil.ParseDataMap(testutil.ParseResponse(t, voteResp))
-	voteID := voteData["ID"].(float64)
+	voteID := voteData["id"].(float64)
 
 	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/votes/%d", int(voteID)), nil, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "查看投票", data["Title"])
+	assert.Equal(t, "查看投票", data["title"])
 }
 
 // === Feed ===
@@ -426,7 +426,7 @@ func TestHandler_Tag_Create_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/tags", body, adminToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "育儿", data["Name"])
+	assert.Equal(t, "育儿", data["name"])
 }
 
 func TestHandler_Tag_Create_ForbiddenForMember(t *testing.T) {
@@ -478,13 +478,13 @@ func TestHandler_Tag_Update_Success(t *testing.T) {
 
 	tagResp := testutil.MakeRequest(r, "POST", "/api/tags", `{"name":"旧名"}`, adminToken)
 	tagData := testutil.ParseDataMap(testutil.ParseResponse(t, tagResp))
-	tagID := tagData["ID"].(float64)
+	tagID := tagData["id"].(float64)
 
 	body := `{"name":"新名"}`
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/tags/%d", int(tagID)), body, adminToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "新名", data["Name"])
+	assert.Equal(t, "新名", data["name"])
 }
 
 func TestHandler_Tag_Delete_InUse(t *testing.T) {
@@ -496,7 +496,7 @@ func TestHandler_Tag_Delete_InUse(t *testing.T) {
 
 	tagResp := testutil.MakeRequest(r, "POST", "/api/tags", `{"name":"育儿"}`, adminToken)
 	tagData := testutil.ParseDataMap(testutil.ParseResponse(t, tagResp))
-	tagID := tagData["ID"].(float64)
+	tagID := tagData["id"].(float64)
 
 	// 创建引用该标签的话题
 	testutil.MakeRequest(r, "POST", "/api/topics",
@@ -516,7 +516,7 @@ func TestHandler_Tag_Delete_Success(t *testing.T) {
 
 	tagResp := testutil.MakeRequest(r, "POST", "/api/tags", `{"name":"可删除"}`, adminToken)
 	tagData := testutil.ParseDataMap(testutil.ParseResponse(t, tagResp))
-	tagID := tagData["ID"].(float64)
+	tagID := tagData["id"].(float64)
 
 	w := testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/tags/%d", int(tagID)), nil, adminToken)
 	testutil.AssertSuccessResponse(t, w)

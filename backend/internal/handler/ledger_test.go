@@ -27,8 +27,8 @@ func TestHandler_Ledger_Create_Success(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, float64(3550), data["Amount"])
-	assert.Equal(t, "午餐", data["Note"])
+	assert.Equal(t, float64(3550), data["amount"])
+	assert.Equal(t, "午餐", data["note"])
 }
 
 func TestHandler_Ledger_Create_ZeroAmount(t *testing.T) {
@@ -121,8 +121,8 @@ func TestHandler_Ledger_Update_ByCreator(t *testing.T) {
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/ledgers/%d", ledger.ID), body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "修改后", data["Note"])
-	assert.Equal(t, float64(5000), data["Amount"])
+	assert.Equal(t, "修改后", data["note"])
+	assert.Equal(t, float64(5000), data["amount"])
 }
 
 func TestHandler_Ledger_Update_ByNonCreator(t *testing.T) {

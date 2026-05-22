@@ -23,8 +23,8 @@ func TestHandler_Member_Create_Success(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "newuser", data["Username"])
-	assert.Equal(t, "新成员", data["Name"])
+	assert.Equal(t, "newuser", data["username"])
+	assert.Equal(t, "新成员", data["name"])
 }
 
 func TestHandler_Member_Create_DuplicateUsername(t *testing.T) {
@@ -89,7 +89,7 @@ func TestHandler_Member_Update_Success(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "修改后名称", data["Name"])
+	assert.Equal(t, "修改后名称", data["name"])
 }
 
 func TestHandler_Member_Update_CannotRemoveLastAdmin(t *testing.T) {
@@ -166,7 +166,7 @@ func TestHandler_Member_Enable_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/members/%d/enable", member.ID), nil, adminToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "active", data["Status"])
+	assert.Equal(t, "active", data["status"])
 }
 
 func TestHandler_Member_ResetPassword(t *testing.T) {
@@ -190,7 +190,7 @@ func TestHandler_Profile_Get(t *testing.T) {
 	w := testutil.MakeRequest(r, "GET", "/api/profile", nil, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "member", data["Username"])
+	assert.Equal(t, "member", data["username"])
 }
 
 func TestHandler_Profile_Update(t *testing.T) {
@@ -204,7 +204,7 @@ func TestHandler_Profile_Update(t *testing.T) {
 	w := testutil.MakeRequest(r, "PUT", "/api/profile", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "新名字", data["Name"])
+	assert.Equal(t, "新名字", data["name"])
 }
 
 func TestHandler_Profile_ChangePassword_Success(t *testing.T) {

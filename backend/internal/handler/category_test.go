@@ -23,8 +23,8 @@ func TestHandler_Category_Create_Success(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "expense", data["Type"])
-	assert.Equal(t, "交通", data["Name"])
+	assert.Equal(t, "expense", data["type"])
+	assert.Equal(t, "交通", data["name"])
 }
 
 func TestHandler_Category_Create_ForbiddenForMember(t *testing.T) {
@@ -92,7 +92,7 @@ func TestHandler_Category_Update_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/categories/%d", cat.ID), body, adminToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "美食", data["Name"])
+	assert.Equal(t, "美食", data["name"])
 }
 
 func TestHandler_Category_Delete_Success(t *testing.T) {

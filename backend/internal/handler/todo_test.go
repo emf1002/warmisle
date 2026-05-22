@@ -23,9 +23,9 @@ func TestHandler_Todo_Create_Success(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.Equal(t, "买菜", data["Title"])
-	assert.Equal(t, "important", data["Priority"])
-	assert.Equal(t, "pending", data["Status"])
+	assert.Equal(t, "买菜", data["title"])
+	assert.Equal(t, "important", data["priority"])
+	assert.Equal(t, "pending", data["status"])
 }
 
 func TestHandler_Todo_Create_EmptyTitle(t *testing.T) {
@@ -64,7 +64,7 @@ func TestHandler_Todo_Create_WithAssignee(t *testing.T) {
 	resp := testutil.AssertSuccessResponse(t, w)
 
 	data := testutil.ParseDataMap(resp)
-	assert.NotNil(t, data["Assignee"])
+	assert.NotNil(t, data["assignee"])
 }
 
 func TestHandler_Todo_List_WithFilter(t *testing.T) {
@@ -95,19 +95,19 @@ func TestHandler_Todo_Toggle_CompleteAndUncomplete(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/todos", `{"title":"完成测试"}`, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	todoID := data["ID"].(float64)
+	todoID := data["id"].(float64)
 
 	// 完成
 	w = testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/todos/%d/toggle", int(todoID)), nil, memberToken)
 	toggleResp := testutil.AssertSuccessResponse(t, w)
 	toggleData := testutil.ParseDataMap(toggleResp)
-	assert.Equal(t, "completed", toggleData["Status"])
+	assert.Equal(t, "completed", toggleData["status"])
 
 	// 恢复
 	w = testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/todos/%d/toggle", int(todoID)), nil, memberToken)
 	toggleResp2 := testutil.AssertSuccessResponse(t, w)
 	toggleData2 := testutil.ParseDataMap(toggleResp2)
-	assert.Equal(t, "pending", toggleData2["Status"])
+	assert.Equal(t, "pending", toggleData2["status"])
 }
 
 func TestHandler_Todo_Claim_Success(t *testing.T) {
@@ -121,7 +121,7 @@ func TestHandler_Todo_Claim_Success(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/todos", `{"title":"认领测试"}`, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	todoID := data["ID"].(float64)
+	todoID := data["id"].(float64)
 
 	// 创建第二个成员来认领
 	hash, _ := pkg.HashPassword("testpass123")
@@ -132,7 +132,7 @@ func TestHandler_Todo_Claim_Success(t *testing.T) {
 	w = testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/todos/%d/claim", int(todoID)), nil, m2Token)
 	claimResp := testutil.AssertSuccessResponse(t, w)
 	claimData := testutil.ParseDataMap(claimResp)
-	assert.NotNil(t, claimData["Assignee"])
+	assert.NotNil(t, claimData["assignee"])
 }
 
 func TestHandler_Todo_Update_ByCreator(t *testing.T) {
@@ -145,13 +145,13 @@ func TestHandler_Todo_Update_ByCreator(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/todos", `{"title":"原始标题"}`, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	todoID := data["ID"].(float64)
+	todoID := data["id"].(float64)
 
 	body := `{"title":"修改后标题","priority":"urgent"}`
 	w = testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/todos/%d", int(todoID)), body, memberToken)
 	updateResp := testutil.AssertSuccessResponse(t, w)
 	updateData := testutil.ParseDataMap(updateResp)
-	assert.Equal(t, "修改后标题", updateData["Title"])
+	assert.Equal(t, "修改后标题", updateData["title"])
 }
 
 func TestHandler_Todo_Delete_ByCreator(t *testing.T) {
@@ -164,7 +164,7 @@ func TestHandler_Todo_Delete_ByCreator(t *testing.T) {
 	w := testutil.MakeRequest(r, "POST", "/api/todos", `{"title":"待删除"}`, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
-	todoID := data["ID"].(float64)
+	todoID := data["id"].(float64)
 
 	w = testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/todos/%d", int(todoID)), nil, memberToken)
 	testutil.AssertSuccessResponse(t, w)
