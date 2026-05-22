@@ -1,0 +1,161 @@
+/* ==================== 亮色主题（晨屿） ==================== */
+[data-theme="light"] {
+  /* 品牌色 */
+  --color-brand: #E87461;
+  --color-brand-light: rgba(232, 116, 97, 0.1);
+  --color-brand-hover: #D05A48;
+
+  /* 语义色 */
+  --color-success: #389E0D;
+  --color-success-light: #F6FFED;
+  --color-warning: #E8A830;
+  --color-warning-light: #FFFBE6;
+  --color-danger: #E85D5D;
+  --color-danger-light: #FFF2F0;
+
+  /* 文字 */
+  --color-text-primary: #3D3530;
+  --color-text-secondary: #8A807A;
+  --color-text-disabled: #B8AFA8;
+  --color-muted: #8A807A;
+
+  /* 背景 */
+  --color-bg-layout: #FDF8F4;
+  --color-bg-container: #FFFFFF;
+  --color-bg-sidebar: #FDF8F4;
+  --color-bg-elevated: #FFFFFF;
+
+  /* 边框 */
+  --color-border: rgba(61, 53, 48, 0.08);
+  --color-border-secondary: rgba(61, 53, 48, 0.05);
+
+  /* 阴影 */
+  --shadow-level-0: none;
+  --shadow-level-1: 0 1px 4px rgba(61, 53, 48, 0.05);
+  --shadow-level-2: 0 2px 8px rgba(61, 53, 48, 0.08);
+  --shadow-level-3: 0 4px 16px rgba(61, 53, 48, 0.08);
+  --shadow-level-4: 0 8px 24px rgba(61, 53, 48, 0.1);
+
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* 特有变量 */
+  --sidebar-text: var(--color-text-secondary);
+  --sidebar-text-active: var(--color-brand);
+  --sidebar-border: var(--color-border);
+  --sidebar-hover-bg: rgba(232, 116, 97, 0.06);
+  --sidebar-active-bg: rgba(232, 116, 97, 0.1);
+  --topbar-bg: var(--color-bg-container);
+  --topbar-shadow: 0 1px 4px rgba(61, 53, 48, 0.05);
+  --tabbar-bg: var(--color-bg-container);
+  --card-bg: var(--color-bg-container);
+  --card-border: var(--color-border);
+  --input-bg: var(--color-bg-container);
+  --input-border: var(--color-border);
+  --dropdown-bg: var(--color-bg-container);
+  --dropdown-shadow: var(--shadow-level-3);
+
+  /* 图表色 */
+  --chart-color-1: #E87461;
+  --chart-color-2: #6BBAA7;
+  --chart-color-3: #F2B84B;
+  --chart-color-4: #B8D4E8;
+  --chart-color-5: #C5B3D9;
+  --chart-color-6: #F09888;
+  --chart-color-7: #EDE9E4;
+
+  /* 认证页 */
+  --auth-bg: var(--color-bg-layout);
+  --auth-card-bg: rgba(255, 255, 255, 0.72);
+  --auth-card-border: rgba(255, 255, 255, 0.6);
+  --auth-card-shadow: 0 4px 24px rgba(61, 53, 48, 0.06);
+}
+
+/* ==================== 暗色主题（夜屿） ==================== */
+[data-theme="dark"] {
+  /* 品牌色 */
+  --color-brand: #E5A84B;
+  --color-brand-light: rgba(229, 168, 75, 0.12);
+  --color-brand-hover: #F0C273;
+
+  /* 语义色 */
+  --color-success: #52C41A;
+  --color-success-light: rgba(82, 196, 26, 0.12);
+  --color-warning: #FAAD14;
+  --color-warning-light: rgba(250, 173, 20, 0.12);
+  --color-danger: #FF6B6B;
+  --color-danger-light: rgba(255, 107, 107, 0.12);
+
+  /* 文字 */
+  --color-text-primary: #E8E4DE;
+  --color-text-secondary: #8A94A8;
+  --color-text-disabled: #5A6478;
+  --color-muted: #5A6478;
+
+  /* 背景 */
+  --color-bg-layout: #0F1729;
+  --color-bg-container: rgba(26, 35, 64, 0.65);
+  --color-bg-sidebar: rgba(15, 23, 41, 0.95);
+  --color-bg-elevated: #1A2340;
+
+  /* 边框 */
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-secondary: rgba(255, 255, 255, 0.04);
+
+  /* 阴影 */
+  --shadow-level-0: none;
+  --shadow-level-1: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-level-2: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-level-3: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-level-4: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+
+  /* 特有变量 */
+  --sidebar-text: var(--color-text-secondary);
+  --sidebar-text-active: var(--color-brand);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-active-bg: rgba(229, 168, 75, 0.12);
+  --topbar-bg: rgba(15, 23, 41, 0.8);
+  --topbar-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --tabbar-bg: rgba(15, 23, 41, 0.95);
+  --card-bg: rgba(26, 35, 64, 0.65);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(255, 255, 255, 0.08);
+  --dropdown-bg: #1A2340;
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* 图表色 */
+  --chart-color-1: #E5A84B;
+  --chart-color-2: #F0C273;
+  --chart-color-3: #6BBAA7;
+  --chart-color-4: #B8D4E8;
+  --chart-color-5: #C5B3D9;
+  --chart-color-6: #FF6B6B;
+  --chart-color-7: rgba(255, 255, 255, 0.08);
+
+  /* 认证页 */
+  --auth-bg: #0F1729;
+  --auth-card-bg: rgba(26, 35, 64, 0.85);
+  --auth-card-border: rgba(255, 255, 255, 0.08);
+  --auth-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+
+  /* 背景渐变（暗色主题用） */
+  --bg-gradient: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(36, 48, 84, 0.5) 0%, transparent 60%),
+                 radial-gradient(ellipse 60% 50% at 80% 90%, rgba(40, 30, 60, 0.3) 0%, transparent 50%);
+}
+
+/* ==================== 全局 backdrop-filter 支持 ==================== */
+[data-theme="dark"] .ant-card,
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] .topbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
