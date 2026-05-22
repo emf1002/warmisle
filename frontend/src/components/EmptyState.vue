@@ -1,5 +1,5 @@
 <template>
-  <div class="empty-state">
+  <div class="empty-state" data-testid="empty-state">
     <div class="empty-icon">
       <svg aria-hidden="true" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="12" width="48" height="40" rx="4" stroke="var(--color-border)" stroke-width="2" fill="var(--color-border-secondary)" />
@@ -12,7 +12,7 @@
     <div v-if="type === 'no-data'" class="empty-action">
       <slot name="action" />
     </div>
-    <a v-if="type === 'no-result'" class="clear-link" @click="$emit('clear')">清除筛选条件</a>
+    <a v-if="type === 'no-result'" class="clear-link" @click="$emit('clear')" data-testid="clear-link">清除筛选条件</a>
   </div>
 </template>
 

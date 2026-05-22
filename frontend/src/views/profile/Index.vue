@@ -1,5 +1,5 @@
 <template>
-  <div class="profile-page">
+  <div class="profile-page" data-testid="profile-page">
     <a-card :bordered="false" class="profile-card">
       <!-- User Info Header -->
       <div class="profile-header">
@@ -51,7 +51,7 @@
 
       <!-- Actions -->
       <div class="profile-actions">
-        <a-button type="primary" block size="large" @click="openEdit" :style="{ minHeight: '44px' }">
+        <a-button type="primary" block size="large" @click="openEdit" :style="{ minHeight: '44px' }" data-testid="edit-profile-btn">
           ✏️ 修改个人信息
         </a-button>
         <a-button
@@ -59,6 +59,7 @@
           size="large"
           @click="handleChangePassword"
           :style="{ minHeight: '44px', marginTop: '12px' }"
+          data-testid="change-pwd-btn"
         >
           🔒 修改密码
         </a-button>
@@ -68,6 +69,7 @@
           size="large"
           @click="confirmLogout"
           :style="{ minHeight: '44px', marginTop: '12px' }"
+          data-testid="logout-btn"
         >
           🚪 退出登录
         </a-button>
@@ -82,6 +84,7 @@
       :confirm-loading="submitting"
       cancel-text="取消"
       ok-text="保存"
+      data-testid="profile-modal"
     >
       <a-form :model="form" layout="vertical">
         <a-form-item label="姓名">
@@ -89,6 +92,7 @@
             v-model:value="form.name"
             placeholder="1-20位显示名称"
             :maxlength="20"
+            data-testid="name-input"
           />
         </a-form-item>
         <a-form-item label="头像">
@@ -112,13 +116,14 @@
       :confirm-loading="pwdSubmitting"
       cancel-text="取消"
       ok-text="保存"
+      data-testid="pwd-modal"
     >
       <a-form :model="pwdForm" layout="vertical">
         <a-form-item label="当前密码" required>
-          <a-input-password v-model:value="pwdForm.old_password" placeholder="请输入当前密码" />
+          <a-input-password v-model:value="pwdForm.old_password" placeholder="请输入当前密码" data-testid="old-pwd-input" />
         </a-form-item>
         <a-form-item label="新密码" required>
-          <a-input-password v-model:value="pwdForm.new_password" placeholder="6-32位新密码" />
+          <a-input-password v-model:value="pwdForm.new_password" placeholder="6-32位新密码" data-testid="new-pwd-input" />
         </a-form-item>
       </a-form>
     </a-modal>

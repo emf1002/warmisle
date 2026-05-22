@@ -17,6 +17,7 @@
             placeholder="姓名"
             size="large"
             :min-height="44"
+            data-testid="name-input"
           />
         </a-form-item>
         <a-form-item name="username">
@@ -25,6 +26,7 @@
             placeholder="用户名，3-20位字母数字下划线"
             size="large"
             :min-height="44"
+            data-testid="username-input"
           />
         </a-form-item>
         <a-form-item name="password">
@@ -33,6 +35,7 @@
             placeholder="密码，6-32位"
             size="large"
             :min-height="44"
+            data-testid="password-input"
           />
         </a-form-item>
         <a-form-item>
@@ -42,6 +45,7 @@
             size="large"
             :loading="loading"
             block
+            data-testid="init-btn"
           >
             开始使用
           </a-button>

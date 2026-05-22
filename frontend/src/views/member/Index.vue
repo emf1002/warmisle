@@ -1,13 +1,13 @@
 <template>
-  <div class="member-page">
+  <div class="member-page" data-testid="member-page">
     <div class="page-header">
       <h2>成员管理</h2>
-      <a-button v-if="isAdmin" type="primary" @click="openCreate">
+      <a-button v-if="isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
         添加成员
       </a-button>
     </div>
 
-    <a-table :columns="columns" :data-source="members" row-key="id" :pagination="false">
+    <a-table :columns="columns" :data-source="members" row-key="id" :pagination="false" data-testid="member-table">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'name'">
           <span class="member-name">
@@ -30,13 +30,14 @@
         </template>
         <template v-if="column.key === 'action'">
           <a-space v-if="isAdmin">
-            <a-button type="link" size="small" @click="openEdit(record)">编辑</a-button>
+            <a-button type="link" size="small" @click="openEdit(record)" data-testid="edit-btn">编辑</a-button>
             <a-button
               v-if="record.status === 'active'"
               type="link"
               size="small"
               danger
               @click="confirmDisable(record)"
+              data-testid="disable-btn"
             >
               禁用
             </a-button>
@@ -45,13 +46,14 @@
               type="link"
               size="small"
               @click="handleEnable(record.id)"
+              data-testid="enable-btn"
             >
               启用
             </a-button>
             <a-button type="link" size="small" @click="confirmResetPwd(record)">
               重置密码
             </a-button>
-            <a-button type="link" size="small" danger @click="confirmDelete(record)">
+            <a-button type="link" size="small" danger @click="confirmDelete(record)" data-testid="delete-btn">
               删除
             </a-button>
           </a-space>
@@ -65,6 +67,7 @@
       :title="editingMember ? '编辑成员' : '添加成员'"
       @ok="handleSubmit"
       :confirm-loading="submitting"
+      data-testid="member-modal"
     >
       <a-form :model="form" layout="vertical">
         <a-form-item v-if="!editingMember" label="用户名" required>
@@ -72,6 +75,7 @@
             v-model:value="form.username"
             placeholder="3-20位字母、数字、下划线"
             :maxlength="20"
+            data-testid="username-input"
           />
         </a-form-item>
         <a-form-item v-if="!editingMember" label="密码" required>
@@ -79,6 +83,7 @@
             v-model:value="form.password"
             placeholder="6-32位密码"
             :maxlength="32"
+            data-testid="password-input"
           />
         </a-form-item>
         <a-form-item label="名称">
@@ -86,6 +91,7 @@
             v-model:value="form.name"
             placeholder="1-20位显示名称"
             :maxlength="20"
+            data-testid="name-input"
           />
         </a-form-item>
         <a-form-item label="头像">
@@ -99,7 +105,7 @@
           </div>
         </a-form-item>
         <a-form-item label="角色">
-          <a-select v-model:value="form.role">
+          <a-select v-model:value="form.role" data-testid="role-select">
             <a-select-option value="member">普通成员</a-select-option>
             <a-select-option value="admin">管理员</a-select-option>
           </a-select>

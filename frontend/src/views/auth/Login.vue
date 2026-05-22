@@ -17,6 +17,7 @@
             placeholder="用户名"
             size="large"
             :min-height="44"
+            data-testid="username-input"
           />
         </a-form-item>
         <a-form-item name="password">
@@ -25,6 +26,7 @@
             placeholder="密码"
             size="large"
             :min-height="44"
+            data-testid="password-input"
           />
         </a-form-item>
         <a-form-item>
@@ -34,6 +36,7 @@
             size="large"
             :loading="loading"
             block
+            data-testid="login-btn"
           >
             登 录
           </a-button>

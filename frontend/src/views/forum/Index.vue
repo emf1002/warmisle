@@ -1,10 +1,10 @@
 <template>
-  <div class="forum-page">
+  <div class="forum-page" data-testid="forum-page">
     <div class="page-header">
       <h2>家庭论坛</h2>
       <div class="header-actions">
-        <a-button @click="openCreatePost">发动态</a-button>
-        <a-button type="primary" @click="openCreateTopic">发话题</a-button>
+        <a-button @click="openCreatePost" data-testid="create-post-btn">发动态</a-button>
+        <a-button type="primary" @click="openCreateTopic" data-testid="create-topic-btn">发话题</a-button>
       </div>
     </div>
 
@@ -39,11 +39,11 @@
             </span>
           </div>
           <div class="feed-actions">
-            <span class="feed-action" @click.stop="handleLike(item)">
+            <span class="feed-action" @click.stop="handleLike(item)" data-testid="like-btn">
               <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
               <span>{{ item.like_count || 0 }}</span>
             </span>
-            <span class="feed-action" @click.stop="goToDetail(item)">
+            <span class="feed-action" @click.stop="goToDetail(item)" data-testid="comment-btn">
               💬 {{ item.comment_count || 0 }}
             </span>
             <a-dropdown v-if="canManage(item)" trigger="click">
@@ -63,10 +63,10 @@
       </div>
 
       <!-- Feed items -->
-      <div class="feed-list">
+      <div class="feed-list" data-testid="feed-list">
         <div v-for="(item, index) in feedItems" :key="item.type + '-' + item.id">
           <!-- Post card -->
-          <div v-if="item.type === 'post'" class="feed-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }">
+          <div v-if="item.type === 'post'" class="feed-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div class="feed-header">
               <span class="feed-author">
                 <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
@@ -78,11 +78,11 @@
               <p class="feed-content">{{ truncate(item.content, 200) }}</p>
             </div>
             <div class="feed-actions">
-              <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)">
+              <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)" data-testid="like-btn">
                 <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
                 <span>{{ item.like_count || 0 }}</span>
               </span>
-              <span class="feed-action" @click.stop="goToDetail(item)">
+              <span class="feed-action" @click.stop="goToDetail(item)" data-testid="comment-btn">
                 💬 {{ item.comment_count || 0 }}
               </span>
               <a-dropdown v-if="canManage(item)" trigger="click">
@@ -98,7 +98,7 @@
           </div>
 
           <!-- Topic card -->
-          <div v-else-if="item.type === 'topic'" class="feed-card topic-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }">
+          <div v-else-if="item.type === 'topic'" class="feed-card topic-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div v-if="item.is_pinned" class="feed-header">
               <span class="topic-pin-badge">📌 公告</span>
             </div>
@@ -113,11 +113,11 @@
               </span>
             </div>
             <div class="feed-actions">
-              <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)">
+              <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)" data-testid="like-btn">
                 <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
                 <span>{{ item.like_count || 0 }}</span>
               </span>
-              <span class="feed-action" @click.stop="goToDetail(item)">
+              <span class="feed-action" @click.stop="goToDetail(item)" data-testid="comment-btn">
                 💬 {{ item.comment_count || 0 }}
               </span>
               <a-dropdown v-if="canManage(item)" trigger="click">
@@ -156,6 +156,7 @@
       :confirm-loading="postSubmitting"
       @ok="handlePostSubmit"
       @cancel="postDialogOpen = false"
+      data-testid="post-modal"
     >
       <a-textarea
         v-model:value="postForm.content"
@@ -163,6 +164,7 @@
         :rows="4"
         placeholder="分享你的想法..."
         show-count
+        data-testid="post-content"
       />
     </a-modal>
 
@@ -197,6 +199,7 @@
       width="520px"
       @ok="handleTopicSubmit"
       @cancel="topicDialogOpen = false"
+      data-testid="topic-modal"
     >
       <a-form layout="vertical">
         <a-form-item label="标题" required>
@@ -204,6 +207,7 @@
             v-model:value="topicForm.title"
             :maxlength="100"
             placeholder="请输入话题标题"
+            data-testid="topic-title"
           />
         </a-form-item>
         <a-form-item label="内容">
@@ -213,6 +217,7 @@
             :rows="4"
             placeholder="可选，补充话题详情"
             show-count
+            data-testid="topic-content"
           />
         </a-form-item>
         <a-form-item label="标签">
@@ -221,6 +226,7 @@
             placeholder="选择标签（可选）"
             allow-clear
             style="width: 100%"
+            data-testid="topic-tag"
           >
             <a-select-option
               v-for="tag in tags"

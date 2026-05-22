@@ -1,8 +1,8 @@
 <template>
-  <div class="todo-page">
+  <div class="todo-page" data-testid="todo-page">
     <div class="page-header">
       <h2>待办管理</h2>
-      <a-button type="primary" @click="openCreate">新建待办</a-button>
+      <a-button type="primary" @click="openCreate" data-testid="add-btn">新建待办</a-button>
     </div>
 
     <div class="filter-row">
@@ -12,6 +12,7 @@
         allow-clear
         style="width: 140px"
         @change="onFilterChange"
+        data-testid="status-filter"
       >
         <a-select-option value="pending">待完成</a-select-option>
         <a-select-option value="completed">已完成</a-select-option>
@@ -27,7 +28,7 @@
           {{ m.avatar }} {{ m.name }}
         </a-select-option>
       </a-select>
-      <a-button size="small" @click="clearFilters">清除筛选</a-button>
+      <a-button size="small" @click="clearFilters" data-testid="clear-filters">清除筛选</a-button>
     </div>
 
     <div v-if="loading" class="loading-state">
@@ -44,18 +45,20 @@
       <EmptyState v-else type="no-result" description="没有找到匹配的待办事项" @clear="clearFilters" />
     </div>
 
-    <div v-else class="todo-list">
+    <div v-else class="todo-list" data-testid="todo-list">
       <div
         v-for="(todo, index) in todos"
         :key="todo.id"
         class="todo-item card-stagger"
         :class="{ completed: todo.status === 'completed' }"
         :style="{ animationDelay: `${index * 50}ms` }"
+        :data-testid="'todo-item-' + todo.id"
       >
         <div class="todo-main">
           <a-checkbox
             :checked="todo.status === 'completed'"
             class="todo-checkbox"
+            data-testid="todo-checkbox"
             @change="handleToggle(todo)"
           />
           <div class="todo-content" @click="canEdit(todo) ? openEdit(todo) : undefined">
@@ -78,7 +81,7 @@
                 </span>
                 <span v-else class="todo-unassigned">
                   未指派
-                  <a-button type="link" size="small" @click.stop="handleClaim(todo)">认领</a-button>
+                  <a-button type="link" size="small" @click.stop="handleClaim(todo)" data-testid="claim-btn">认领</a-button>
                 </span>
               </span>
               <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo) }">
@@ -87,8 +90,8 @@
             </div>
           </div>
           <div v-if="canEdit(todo)" class="todo-actions">
-            <a-button type="link" size="small" @click.stop="openEdit(todo)">编辑</a-button>
-            <a-button type="link" size="small" danger @click.stop="confirmDelete(todo)">删除</a-button>
+            <a-button type="link" size="small" @click.stop="openEdit(todo)" data-testid="edit-btn">编辑</a-button>
+            <a-button type="link" size="small" danger @click.stop="confirmDelete(todo)" data-testid="delete-btn">删除</a-button>
           </div>
         </div>
       </div>
@@ -110,13 +113,14 @@
       :confirm-loading="submitting"
       width="480px"
       @cancel="dialogOpen = false"
+      data-testid="todo-modal"
     >
       <template #footer>
         <div style="display: flex; justify-content: space-between">
           <a-button v-if="editingTodo" danger @click="confirmDelete(editingTodo)">删除</a-button>
           <div style="display: flex; gap: 8px">
             <a-button @click="dialogOpen = false">取消</a-button>
-            <a-button type="primary" :loading="submitting" @click="handleSubmit">
+            <a-button type="primary" :loading="submitting" @click="handleSubmit" data-testid="submit-btn">
               {{ editingTodo ? '保存' : '创建' }}
             </a-button>
           </div>
@@ -124,27 +128,27 @@
       </template>
       <a-form :model="form" layout="vertical">
         <a-form-item label="标题" required>
-          <a-input v-model:value="form.title" :maxlength="100" placeholder="请输入待办标题" />
+          <a-input v-model:value="form.title" :maxlength="100" placeholder="请输入待办标题" data-testid="title-input" />
         </a-form-item>
         <a-form-item label="描述">
-          <a-textarea v-model:value="form.description" :maxlength="500" :rows="3" placeholder="可选，最多500字" />
+          <a-textarea v-model:value="form.description" :maxlength="500" :rows="3" placeholder="可选，最多500字" data-testid="desc-input" />
         </a-form-item>
         <a-form-item label="优先级">
-          <a-select v-model:value="form.priority">
+          <a-select v-model:value="form.priority" data-testid="priority-select">
             <a-select-option value="normal">普通</a-select-option>
             <a-select-option value="important">重要</a-select-option>
             <a-select-option value="urgent">紧急</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="负责人">
-          <a-select v-model:value="form.assignee_id" placeholder="选择负责人" allow-clear>
+          <a-select v-model:value="form.assignee_id" placeholder="选择负责人" allow-clear data-testid="assignee-select">
             <a-select-option v-for="m in members" :key="m.id" :value="m.id">
               {{ m.avatar }} {{ m.name }}
             </a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="截止日期">
-          <a-date-picker v-model:value="form.due_date" format="YYYY-MM-DD" style="width: 100%" />
+          <a-date-picker v-model:value="form.due_date" format="YYYY-MM-DD" style="width: 100%" data-testid="due-date-picker" />
         </a-form-item>
       </a-form>
     </a-modal>

@@ -1,18 +1,18 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard" data-testid="dashboard-page">
     <!-- 月份切换 -->
     <div class="month-switcher">
-      <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月">
+      <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月" data-testid="month-prev">
         ◀
       </a-button>
       <span class="month-text">{{ selectedMonth.format('YYYY年M月') }}</span>
-      <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月">
+      <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月" data-testid="month-next">
         ▶
       </a-button>
     </div>
 
     <!-- 月度统计卡片 -->
-    <div class="summary-grid">
+    <div class="summary-grid" data-testid="summary-grid">
       <a-card :bordered="false" class="stat-card">
         <a-statistic title="收入" :value="summary.income / 100" :precision="2">
           <template #prefix><span class="income-prefix">+¥</span></template>
@@ -57,7 +57,7 @@
         <div v-if="upcomingTodos.length === 0" class="empty-section">
           <EmptyState type="no-data" description="暂无待办" />
         </div>
-        <a-list v-else :data-source="upcomingTodos" size="small">
+        <a-list v-else :data-source="upcomingTodos" size="small" data-testid="upcoming-todos">
           <template #renderItem="{ item: todo }">
             <a-list-item class="todo-item" @click="$router.push('/todo')">
               <div class="todo-item-content">
@@ -83,7 +83,7 @@
         <div v-if="wishTrends.length === 0" class="empty-section">
           <EmptyState type="no-data" description="暂无愿望" />
         </div>
-        <a-list v-else :data-source="wishTrends" size="small">
+        <a-list v-else :data-source="wishTrends" size="small" data-testid="wish-trends">
           <template #renderItem="{ item: trend }">
             <a-list-item class="clickable-item" @click="$router.push('/wish')">
               <a-list-item-meta>
@@ -109,7 +109,7 @@
         <div v-if="forumHot.length === 0" class="empty-section">
           <EmptyState type="no-data" description="暂无动态" />
         </div>
-        <a-list v-else :data-source="forumHot" size="small">
+        <a-list v-else :data-source="forumHot" size="small" data-testid="forum-hot">
           <template #renderItem="{ item: feed }">
             <a-list-item class="clickable-item" @click="$router.push('/forum')">
               <a-list-item-meta>

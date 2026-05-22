@@ -1,14 +1,14 @@
 <template>
-  <div class="category-page">
+  <div class="category-page" data-testid="category-page">
     <div class="page-header">
       <h2>分类管理</h2>
-      <a-button v-if="isAdmin" type="primary" @click="openCreate">
+      <a-button v-if="isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
         添加分类
       </a-button>
     </div>
 
     <!-- Expense categories -->
-    <div class="category-section">
+    <div class="category-section" data-testid="expense-categories">
       <h3 class="section-title">
         <span class="section-icon">📤</span> 支出分类
       </h3>
@@ -18,19 +18,20 @@
           v-for="cat in expenseCategories"
           :key="cat.id"
           class="category-card"
+          :data-testid="'category-card-' + cat.id"
         >
           <span class="category-icon">{{ cat.icon }}</span>
           <span class="category-name">{{ cat.name }}</span>
           <span v-if="isAdmin" class="category-actions">
-            <a-button type="link" size="small" @click="openEdit(cat)">编辑</a-button>
-            <a-button type="link" size="small" danger @click="confirmDelete(cat)">删除</a-button>
+            <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn">编辑</a-button>
+            <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn">删除</a-button>
           </span>
         </div>
       </div>
     </div>
 
     <!-- Income categories -->
-    <div class="category-section">
+    <div class="category-section" data-testid="income-categories">
       <h3 class="section-title">
         <span class="section-icon">📥</span> 收入分类
       </h3>
@@ -40,12 +41,13 @@
           v-for="cat in incomeCategories"
           :key="cat.id"
           class="category-card"
+          :data-testid="'category-card-' + cat.id"
         >
           <span class="category-icon">{{ cat.icon }}</span>
           <span class="category-name">{{ cat.name }}</span>
           <span v-if="isAdmin" class="category-actions">
-            <a-button type="link" size="small" @click="openEdit(cat)">编辑</a-button>
-            <a-button type="link" size="small" danger @click="confirmDelete(cat)">删除</a-button>
+            <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn">编辑</a-button>
+            <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn">删除</a-button>
           </span>
         </div>
       </div>
@@ -57,10 +59,11 @@
       :title="editingCategory ? '编辑分类' : '添加分类'"
       @ok="handleSubmit"
       :confirm-loading="submitting"
+      data-testid="category-modal"
     >
       <a-form :model="form" layout="vertical">
         <a-form-item label="类型" required>
-          <a-select v-model:value="form.type">
+          <a-select v-model:value="form.type" data-testid="type-select">
             <a-select-option value="expense">支出</a-select-option>
             <a-select-option value="income">收入</a-select-option>
           </a-select>
@@ -70,6 +73,7 @@
             v-model:value="form.name"
             placeholder="分类名称"
             :maxlength="20"
+            data-testid="name-input"
           />
         </a-form-item>
         <a-form-item label="图标">
@@ -89,6 +93,7 @@
             :max="999"
             placeholder="数字越小越靠前"
             style="width: 100%"
+            data-testid="sort-input"
           />
         </a-form-item>
       </a-form>

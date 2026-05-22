@@ -1,18 +1,19 @@
 <template>
-  <div class="wish-page">
+  <div class="wish-page" data-testid="wish-page">
     <div class="page-header">
       <h2>愿望清单</h2>
-      <a-button type="primary" @click="openCreate">新建愿望</a-button>
+      <a-button type="primary" @click="openCreate" data-testid="add-btn">新建愿望</a-button>
     </div>
 
     <div class="filter-row">
-      <a-segmented v-model:value="activeType" :options="typeOptions" @change="onTypeChange" />
+      <a-segmented v-model:value="activeType" :options="typeOptions" @change="onTypeChange" data-testid="type-switch" />
       <a-select
         v-model:value="filters.status"
         placeholder="全部状态"
         allow-clear
         style="width: 140px"
         @change="onFilterChange"
+        data-testid="status-filter"
       >
         <a-select-option value="pending">待定</a-select-option>
         <a-select-option value="agreed">已同意</a-select-option>
@@ -35,8 +36,8 @@
       <EmptyState v-else type="no-result" description="没有找到匹配的愿望" @clear="clearFilters" />
     </div>
 
-    <div v-else class="wish-grid">
-      <div v-for="wish in wishes" :key="wish.id" class="wish-card">
+    <div v-else class="wish-grid" data-testid="wish-grid">
+      <div v-for="wish in wishes" :key="wish.id" class="wish-card" :data-testid="'wish-card-' + wish.id">
         <div class="wish-card-header">
           <span class="wish-category-tag">
             {{ categoryLabel(wish.category) }}
@@ -61,6 +62,7 @@
               type="text"
               size="small"
               @click="handleVote(wish)"
+              data-testid="vote-btn"
             >
               👍 {{ wish.vote_count }}
             </a-button>
@@ -120,16 +122,17 @@
       width="480px"
       @ok="handleSubmit"
       @cancel="dialogOpen = false"
+      data-testid="wish-modal"
     >
       <a-form :model="form" layout="vertical">
         <a-form-item label="标题" required>
-          <a-input v-model:value="form.title" :maxlength="100" placeholder="请输入愿望标题" />
+          <a-input v-model:value="form.title" :maxlength="100" placeholder="请输入愿望标题" data-testid="title-input" />
         </a-form-item>
         <a-form-item label="描述">
-          <a-textarea v-model:value="form.description" :maxlength="500" :rows="3" placeholder="可选，最多500字" />
+          <a-textarea v-model:value="form.description" :maxlength="500" :rows="3" placeholder="可选，最多500字" data-testid="desc-input" />
         </a-form-item>
         <a-form-item label="分类">
-          <a-select v-model:value="form.category">
+          <a-select v-model:value="form.category" data-testid="category-select">
             <a-select-option value="item">物品</a-select-option>
             <a-select-option value="travel">旅行</a-select-option>
             <a-select-option value="experience">体验</a-select-option>
@@ -137,14 +140,14 @@
           </a-select>
         </a-form-item>
         <a-form-item label="优先级">
-          <a-select v-model:value="form.priority">
+          <a-select v-model:value="form.priority" data-testid="priority-select">
             <a-select-option value="normal">普通</a-select-option>
             <a-select-option value="important">重要</a-select-option>
             <a-select-option value="urgent">紧急</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="预估金额（元）">
-          <a-input-number v-model:value="form.amountYuan" :min="0" :precision="2" style="width: 100%" placeholder="可选" />
+          <a-input-number v-model:value="form.amountYuan" :min="0" :precision="2" style="width: 100%" placeholder="可选" data-testid="amount-input" />
         </a-form-item>
       </a-form>
     </a-modal>

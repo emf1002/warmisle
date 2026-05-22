@@ -1,5 +1,5 @@
 <template>
-  <div class="ledger-page">
+  <div class="ledger-page" data-testid="ledger-page">
     <!-- Page Header -->
     <div class="page-header">
       <h2>记账本</h2>
@@ -16,7 +16,7 @@
           ▶
         </a-button>
       </div>
-      <a-button type="primary" @click="openCreate()">记一笔</a-button>
+      <a-button type="primary" @click="openCreate()" data-testid="add-btn">记一笔</a-button>
     </div>
 
     <!-- Summary Bar -->
@@ -79,7 +79,7 @@
           {{ m.avatar }} {{ m.name }}
         </a-select-option>
       </a-select>
-      <a-button size="small" @click="clearFilters">清除筛选</a-button>
+      <a-button size="small" @click="clearFilters" data-testid="clear-filters">清除筛选</a-button>
     </div>
 
     <!-- Loading -->
@@ -95,7 +95,7 @@
     </div>
 
     <!-- Record List -->
-    <div v-else class="record-list">
+    <div v-else class="record-list" data-testid="record-list">
       <div v-for="group in groups" :key="group.date" class="date-group">
         <!-- Date Header -->
         <div class="date-header">
@@ -112,6 +112,7 @@
           class="ledger-item card-stagger"
           :class="{ clickable: canEdit(item) }"
           :style="{ animationDelay: `${index * 50}ms` }"
+          :data-testid="'ledger-item-' + item.id"
           @click="onItemClick(item)"
         >
           <div class="item-top">
@@ -153,6 +154,7 @@
       :title="editingRecord ? '编辑记录' : '记一笔'"
       :confirm-loading="submitting"
       width="480px"
+      data-testid="ledger-modal"
     >
       <template #footer>
         <div style="display: flex; justify-content: space-between">
@@ -160,12 +162,13 @@
             v-if="editingRecord"
             danger
             @click="confirmDelete"
+            data-testid="delete-btn"
           >
             删除
           </a-button>
           <div style="display: flex; gap: 8px">
             <a-button @click="dialogOpen = false">取消</a-button>
-            <a-button type="primary" :loading="submitting" @click="handleSubmit">
+            <a-button type="primary" :loading="submitting" @click="handleSubmit" data-testid="submit-btn">
               {{ editingRecord ? '保存' : '记账' }}
             </a-button>
           </div>
@@ -173,7 +176,7 @@
       </template>
       <a-form :model="form" layout="vertical">
         <a-form-item label="分类" required>
-          <a-select v-model:value="form.category_id" placeholder="选择分类">
+          <a-select v-model:value="form.category_id" placeholder="选择分类" data-testid="category-select">
             <a-select-opt-group label="支出分类">
               <a-select-option
                 v-for="cat in expenseCategories"
@@ -203,6 +206,7 @@
             placeholder="0.00"
             style="width: 100%"
             inputmode="decimal"
+            data-testid="amount-input"
           />
         </a-form-item>
         <a-form-item label="关联成员" required>
@@ -210,6 +214,7 @@
             v-model:value="form.member_ids"
             mode="multiple"
             placeholder="选择成员"
+            data-testid="member-select"
           >
             <a-select-option v-for="m in members" :key="m.id" :value="m.id">
               {{ m.avatar }} {{ m.name }}
@@ -222,6 +227,7 @@
             show-time
             format="YYYY-MM-DD HH:mm:ss"
             style="width: 100%"
+            data-testid="date-picker"
           />
         </a-form-item>
         <a-form-item label="备注">
@@ -230,6 +236,7 @@
             :maxlength="200"
             :rows="2"
             placeholder="可选，最多200字"
+            data-testid="note-input"
           />
         </a-form-item>
       </a-form>
