@@ -422,7 +422,7 @@ onUnmounted(() => {
 }
 
 [data-theme="dark"] .auth-title-compact {
-  color: #E8E4DE;
+  color: var(--color-text);
 }
 
 .auth-card {
