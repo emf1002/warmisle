@@ -52,4 +52,7 @@ echo   Build complete
 echo   Binary: %ROOT_DIR%dist\warmisle.exe
 echo ==============================
 
+explorer "%ROOT_DIR%dist"
+
+pause
 endlocal
