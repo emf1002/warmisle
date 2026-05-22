@@ -452,7 +452,7 @@ onMounted(async () => {
 }
 
 .todo-item.completed {
-  background: #f9fafb;
+  background: var(--color-bg-layout);
   opacity: 0.75;
 }
 

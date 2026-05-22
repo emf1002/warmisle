@@ -99,10 +99,6 @@ async function handleLogin() {
   color: var(--color-text-primary);
 }
 
-[data-theme="dark"] .auth-header h1 {
-  color: #E8E4DE;
-}
-
 .auth-header p {
   color: var(--color-text-secondary);
   margin: 0;

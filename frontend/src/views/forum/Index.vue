@@ -588,7 +588,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   padding: 48px 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .empty-state {

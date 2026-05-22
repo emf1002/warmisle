@@ -767,7 +767,7 @@ onMounted(() => {
 .comment-content,
 .reply-content {
   font-size: 14px;
-  color: #444;
+  color: var(--color-text-primary);
   line-height: 1.6;
   word-break: break-word;
   white-space: pre-wrap;
@@ -805,7 +805,7 @@ onMounted(() => {
 .replies-list {
   margin-top: 10px;
   padding: 10px 12px;
-  background: #fafafa;
+  background: var(--color-border-secondary);
   border-radius: var(--radius-md);
 }
 

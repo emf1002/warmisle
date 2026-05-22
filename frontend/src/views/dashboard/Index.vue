@@ -335,7 +335,7 @@ onMounted(() => {
 
 .chart-bar {
   height: 100%;
-  background: linear-gradient(90deg, #FF4D4F, var(--color-brand));
+  background: linear-gradient(90deg, var(--color-danger), var(--color-brand));
   border-radius: 6px;
   min-width: 2px;
   transition: width var(--duration-slow) ease;

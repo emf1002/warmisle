@@ -359,7 +359,7 @@ async function handlePwdSubmit() {
 }
 
 .nav-item:hover {
-  background: #fafafa;
+  background: var(--color-border-secondary);
   margin: 0 -8px;
   padding: 14px 8px;
   border-radius: 6px;
@@ -377,7 +377,7 @@ async function handlePwdSubmit() {
 
 .nav-item-arrow {
   font-size: 18px;
-  color: #ccc;
+  color: var(--color-text-disabled);
 }
 
 /* Emoji Picker */
