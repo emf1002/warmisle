@@ -7,105 +7,105 @@ import (
 )
 
 type Post struct {
-	ID        uint           `gorm:"primaryKey"`
-	Content   string         `gorm:"size:1000;not null"`
-	CreatorID uint           `gorm:"index;not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Content   string         `gorm:"size:1000;not null" json:"content"`
+	CreatorID uint           `gorm:"index;not null" json:"creator_id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	// 关联
-	Creator Member `gorm:"foreignKey:CreatorID"`
+	Creator Member `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
 func (Post) TableName() string { return "posts" }
 
 type Topic struct {
-	ID        uint           `gorm:"primaryKey"`
-	Title     string         `gorm:"size:100;not null"`
-	Content   string         `gorm:"size:2000"`
-	TagID     *uint          `gorm:"index"`
-	CreatorID uint           `gorm:"index;not null"`
-	IsPinned  bool           `gorm:"default:false"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Title     string         `gorm:"size:100;not null" json:"title"`
+	Content   string         `gorm:"size:2000" json:"content"`
+	TagID     *uint          `gorm:"index" json:"tag_id"`
+	CreatorID uint           `gorm:"index;not null" json:"creator_id"`
+	IsPinned  bool           `gorm:"default:false" json:"is_pinned"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	// 关联
-	Tag     Tag    `gorm:"foreignKey:TagID"`
-	Creator Member `gorm:"foreignKey:CreatorID"`
+	Tag     Tag    `gorm:"foreignKey:TagID" json:"tag,omitempty"`
+	Creator Member `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
 func (Topic) TableName() string { return "topics" }
 
 type Vote struct {
-	ID        uint           `gorm:"primaryKey"`
-	Title     string         `gorm:"size:100;not null"`
-	CreatorID uint           `gorm:"index;not null"`
-	IsMulti   bool           `gorm:"default:false"`
-	Deadline  *time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Title     string         `gorm:"size:100;not null" json:"title"`
+	CreatorID uint           `gorm:"index;not null" json:"creator_id"`
+	IsMulti   bool           `gorm:"default:false" json:"is_multi"`
+	Deadline  *time.Time     `json:"deadline"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	// 关联
-	Creator Member       `gorm:"foreignKey:CreatorID"`
-	Options []VoteOption `gorm:"foreignKey:VoteID"`
+	Creator Member       `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
+	Options []VoteOption `gorm:"foreignKey:VoteID" json:"options,omitempty"`
 }
 
 func (Vote) TableName() string { return "votes" }
 
 type VoteOption struct {
-	ID        uint      `gorm:"primaryKey"`
-	VoteID    uint      `gorm:"index;not null"`
-	Content   string    `gorm:"size:50;not null"`
-	SortOrder int       `gorm:"default:0"`
-	CreatedAt time.Time
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	VoteID    uint      `gorm:"index;not null" json:"vote_id"`
+	Content   string    `gorm:"size:50;not null" json:"content"`
+	SortOrder int       `gorm:"default:0" json:"sort_order"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func (VoteOption) TableName() string { return "vote_options" }
 
 type VoteRecord struct {
-	ID        uint      `gorm:"primaryKey"`
-	VoteID    uint      `gorm:"index;not null"`
-	OptionID  uint      `gorm:"index;not null"`
-	MemberID  uint      `gorm:"index;not null"`
-	CreatedAt time.Time
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	VoteID    uint      `gorm:"index;not null" json:"vote_id"`
+	OptionID  uint      `gorm:"index;not null" json:"option_id"`
+	MemberID  uint      `gorm:"index;not null" json:"member_id"`
+	CreatedAt time.Time `json:"created_at"`
 
 	// 关联
-	Member Member     `gorm:"foreignKey:MemberID"`
-	Option VoteOption `gorm:"foreignKey:OptionID"`
+	Member Member     `gorm:"foreignKey:MemberID" json:"member,omitempty"`
+	Option VoteOption `gorm:"foreignKey:OptionID" json:"option,omitempty"`
 }
 
 func (VoteRecord) TableName() string { return "vote_records" }
 
 type Comment struct {
-	ID         uint           `gorm:"primaryKey"`
-	TargetType string         `gorm:"size:10;not null"` // post / topic / wish
-	TargetID   uint           `gorm:"index;not null"`
-	ParentID   *uint          `gorm:"index"`
-	Content    string         `gorm:"size:500;not null"`
-	CreatorID  uint           `gorm:"index;not null"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  gorm.DeletedAt `gorm:"index"`
+	ID         uint           `gorm:"primaryKey" json:"id"`
+	TargetType string         `gorm:"size:10;not null" json:"target_type"` // post / topic / wish
+	TargetID   uint           `gorm:"index;not null" json:"target_id"`
+	ParentID   *uint          `gorm:"index" json:"parent_id"`
+	Content    string         `gorm:"size:500;not null" json:"content"`
+	CreatorID  uint           `gorm:"index;not null" json:"creator_id"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	// 关联
-	Creator Member  `gorm:"foreignKey:CreatorID"`
-	Parent  *Comment `gorm:"foreignKey:ParentID"`
+	Creator Member   `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
+	Parent  *Comment `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
 }
 
 func (Comment) TableName() string { return "comments" }
 
 type Like struct {
-	ID         uint      `gorm:"primaryKey"`
-	TargetType string    `gorm:"size:10;not null"` // post / topic / comment
-	TargetID   uint      `gorm:"index;not null"`
-	MemberID   uint      `gorm:"index;not null"`
-	CreatedAt  time.Time
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	TargetType string    `gorm:"size:10;not null" json:"target_type"` // post / topic / comment
+	TargetID   uint      `gorm:"index;not null" json:"target_id"`
+	MemberID   uint      `gorm:"index;not null" json:"member_id"`
+	CreatedAt  time.Time `json:"created_at"`
 
 	// 关联
-	Member Member `gorm:"foreignKey:MemberID"`
+	Member Member `gorm:"foreignKey:MemberID" json:"member,omitempty"`
 }
 
 func (Like) TableName() string { return "likes" }

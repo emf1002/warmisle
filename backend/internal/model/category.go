@@ -7,15 +7,15 @@ import (
 )
 
 type Category struct {
-	ID        uint           `gorm:"primaryKey"`
-	Type      string         `gorm:"size:10;not null"` // income / expense
-	Name      string         `gorm:"size:20;not null"`
-	Icon      string         `gorm:"size:10"`
-	SortOrder int            `gorm:"default:0"`
-	Preset    bool           `gorm:"default:false"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Type      string         `gorm:"size:10;not null" json:"type"` // income / expense
+	Name      string         `gorm:"size:20;not null" json:"name"`
+	Icon      string         `gorm:"size:10" json:"icon"`
+	SortOrder int            `gorm:"default:0" json:"sort_order"`
+	Preset    bool           `gorm:"default:false" json:"preset"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
 func (Category) TableName() string { return "categories" }
