@@ -19,7 +19,7 @@
       <a-menu
         v-model:selectedKeys="selectedKeys"
         mode="inline"
-        theme="dark"
+        :theme="isDarkTheme ? 'dark' : 'light'"
         class="sidebar-menu"
         @click="onMenuClick"
       >
@@ -76,29 +76,32 @@
         </div>
         <div v-else class="topbar-spacer" />
 
-        <a-dropdown>
-          <div class="user-trigger">
-            <a-avatar :size="isMobile ? 28 : 32" class="user-avatar">
-              <template #icon>
-                <span>{{ currentMember?.avatar || '👤' }}</span>
-              </template>
-            </a-avatar>
-            <span v-if="!isMobile" class="user-name">{{ currentMember?.name || '用户' }}</span>
-          </div>
-          <template #overlay>
-            <a-menu @click="onUserMenuClick">
-              <a-menu-item key="Profile">
-                <span>👤</span>
-                <span style="margin-left: 8px">个人中心</span>
-              </a-menu-item>
-              <a-menu-divider />
-              <a-menu-item key="Logout">
-                <span>🚪</span>
-                <span style="margin-left: 8px">退出登录</span>
-              </a-menu-item>
-            </a-menu>
-          </template>
-        </a-dropdown>
+        <div class="topbar-right">
+          <ThemeToggle />
+          <a-dropdown>
+            <div class="user-trigger">
+              <a-avatar :size="isMobile ? 28 : 32" class="user-avatar">
+                <template #icon>
+                  <span>{{ currentMember?.avatar || '👤' }}</span>
+                </template>
+              </a-avatar>
+              <span v-if="!isMobile" class="user-name">{{ currentMember?.name || '用户' }}</span>
+            </div>
+            <template #overlay>
+              <a-menu @click="onUserMenuClick">
+                <a-menu-item key="Profile">
+                  <span>👤</span>
+                  <span style="margin-left: 8px">个人中心</span>
+                </a-menu-item>
+                <a-menu-divider />
+                <a-menu-item key="Logout">
+                  <span>🚪</span>
+                  <span style="margin-left: 8px">退出登录</span>
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
+        </div>
       </header>
 
       <!-- 内容区 -->
@@ -128,10 +131,15 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getProfile } from '@/api/member'
+import { useThemeStore } from '@/stores/theme'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
+
+const isDarkTheme = computed(() => themeStore.theme === 'dark')
 
 // ---- 响应式检测 ----
 const isMobile = ref(window.innerWidth < 768)
@@ -274,6 +282,11 @@ function onBottomTabClick(key: string) {
   background: var(--color-bg-layout);
 }
 
+/* 暗色主题添加背景渐变 */
+[data-theme="dark"] .main-layout {
+  background-image: var(--bg-gradient);
+}
+
 /* ==================== 侧边栏 ==================== */
 .sidebar {
   position: fixed;
@@ -282,11 +295,17 @@ function onBottomTabClick(key: string) {
   bottom: 0;
   width: 220px;
   background: var(--color-bg-sidebar);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   z-index: var(--z-sticky);
   overflow-y: auto;
   transition: width var(--duration-normal) ease;
+}
+
+[data-theme="dark"] .sidebar {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .sidebar-collapsed {
@@ -309,7 +328,7 @@ function onBottomTabClick(key: string) {
   height: 56px;
   padding: 0 16px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--sidebar-border);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -323,7 +342,7 @@ function onBottomTabClick(key: string) {
 .sidebar-logo-text {
   font-size: 16px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   letter-spacing: 1px;
 }
 
@@ -332,8 +351,24 @@ function onBottomTabClick(key: string) {
   border-inline-end: none !important;
 }
 
-.sidebar-menu :deep(.ant-menu-item-selected) {
-  background-color: rgba(232, 115, 74, 0.2) !important;
+/* 亮色主题菜单覆盖 */
+[data-theme="light"] .sidebar-menu :deep(.ant-menu-item) {
+  color: var(--sidebar-text);
+}
+
+[data-theme="light"] .sidebar-menu :deep(.ant-menu-item:hover) {
+  background: var(--sidebar-hover-bg);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .sidebar-menu :deep(.ant-menu-item-selected) {
+  background: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-text-active) !important;
+}
+
+/* 暗色主题菜单覆盖 */
+[data-theme="dark"] .sidebar-menu :deep(.ant-menu-item-selected) {
+  background: var(--sidebar-active-bg) !important;
 }
 
 .menu-icon {
@@ -367,14 +402,20 @@ function onBottomTabClick(key: string) {
   right: 0;
   left: 220px;
   height: 56px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: var(--topbar-bg);
+  box-shadow: var(--topbar-shadow);
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding: 0 24px;
   z-index: calc(var(--z-sticky) - 1);
   transition: left var(--duration-normal) ease;
+}
+
+[data-theme="dark"] .topbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .topbar-compact {
@@ -397,6 +438,12 @@ function onBottomTabClick(key: string) {
   align-items: center;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .page-title {
   font-size: 16px;
   font-weight: 600;
@@ -409,12 +456,12 @@ function onBottomTabClick(key: string) {
   cursor: pointer;
   min-height: 44px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition: background var(--duration-fast) ease;
 }
 
 .user-trigger:hover {
-  background: #f0f0f0;
+  background: var(--sidebar-hover-bg);
 }
 
 .user-avatar {
@@ -424,7 +471,7 @@ function onBottomTabClick(key: string) {
 .user-name {
   margin-left: 8px;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
@@ -446,13 +493,18 @@ function onBottomTabClick(key: string) {
   left: 0;
   right: 0;
   height: 56px;
-  background: #fff;
+  background: var(--tabbar-bg);
   border-top: 1px solid var(--color-border-secondary);
   display: flex;
   align-items: center;
   z-index: var(--z-sticky);
   padding-bottom: env(safe-area-inset-bottom, 0);
   box-shadow: var(--shadow-level-2);
+}
+
+[data-theme="dark"] .tabbar {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .tabbar-item {
