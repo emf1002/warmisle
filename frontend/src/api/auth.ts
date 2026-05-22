@@ -8,6 +8,6 @@ export function checkInit() {
   return request.get('/init/check')
 }
 
-export function setupInit(name: string, username: string, password: string) {
-  return request.post('/init/setup', { name, username, password })
+export function setupInit(admin_name: string, username: string, password: string) {
+  return request.post('/init/setup', { admin_name, username, password })
 }
