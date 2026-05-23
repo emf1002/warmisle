@@ -436,7 +436,11 @@ async function fetchLedgers(isLoadMore = false) {
     summary.value = data.summary || { income: 0, expense: 0, balance: 0 }
     total.value = data.total || 0
   } catch {
-    // error handled by interceptor
+    if (!isLoadMore) {
+      groups.value = []
+      summary.value = { income: 0, expense: 0, balance: 0 }
+      total.value = 0
+    }
   } finally {
     loading.value = false
     loadingMore.value = false
@@ -523,10 +527,8 @@ async function handleSubmit() {
     }
     dialogOpen.value = false
     fetchLedgers()
-  } catch (e: any) {
-    if (e?.response?.data?.message) {
-      message.error(e.response.data.message)
-    }
+  } catch {
+    // error handled by interceptor
   } finally {
     submitting.value = false
   }

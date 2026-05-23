@@ -182,17 +182,32 @@ describe('Ledger view', () => {
     expect(text).toContain('今天')
   })
 
-  it('creates ledger and refreshes list', async () => {
+  it('creates ledger and refreshes list with updated data', async () => {
     mockCreateLedger.mockResolvedValue({ code: 0, message: 'ok', data: { id: 99 } })
 
     const updatedData = {
-      ...mockLedgersData,
-      data: {
-        ...mockLedgersData.data,
+      code: 0, message: 'ok', data: {
         summary: { income: 10000, expense: 4550, balance: 5450 },
+        groups: [{
+          date: '2026-05-23', daily_total: -4550,
+          items: [{
+            id: 99, amount: 1000, note: '新记录', category_id: 1, creator_id: 1,
+            occurred_at: '2026-05-23T14:00:00Z',
+            category: { id: 1, name: '餐饮', icon: '\uD83C\uDF71', type: 'expense' },
+            creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
+            members: [{ id: 1, name: '管理员', avatar: '\uD83D\uDC68' }],
+          }, {
+            id: 1, amount: 3550, note: '午餐', category_id: 1, creator_id: 1,
+            occurred_at: '2026-05-23T12:00:00Z',
+            category: { id: 1, name: '餐饮', icon: '\uD83C\uDF71', type: 'expense' },
+            creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
+            members: [{ id: 1, name: '管理员', avatar: '\uD83D\uDC68' }],
+          }],
+        }],
         total: 2,
       },
     }
+
     mockGetLedgers.mockResolvedValueOnce(mockLedgersData)
     mockGetLedgers.mockResolvedValueOnce(updatedData)
 
@@ -200,17 +215,13 @@ describe('Ledger view', () => {
     await flushPromises()
     await nextTick()
 
-    // Verify initial call
-    expect(mockGetLedgers).toHaveBeenCalledTimes(1)
-
-    // Simulate create by calling the component's internal method
     const vm = wrapper.vm as any
-    // Fill the form and submit
     vm.dialogOpen = true
     vm.form.category_id = 1
     vm.form.amount = 10
     vm.form.member_ids = [1]
     vm.form.note = '新记录'
+    vm.form.occurred_at = undefined
     await nextTick()
 
     await vm.handleSubmit()
@@ -218,8 +229,12 @@ describe('Ledger view', () => {
     await nextTick()
 
     expect(mockCreateLedger).toHaveBeenCalled()
-    // getLedgers should be called again after create
     expect(mockGetLedgers).toHaveBeenCalledTimes(2)
+
+    // Verify the new record appears in the rendered list
+    const text = wrapper.text()
+    expect(text).toContain('新记录')
+    expect(text).toContain('10.00')
   })
 
   it('deletes ledger and refreshes list', async () => {
