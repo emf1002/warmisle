@@ -87,6 +87,15 @@ const stubs: Record<string, any> = {
   'a-select-opt-group': { template: '<optgroup><slot /></optgroup>' },
   'a-checkbox': { template: '<input type="checkbox" />' },
   'a-date-picker': { template: '<input />' },
+  'a-tabs': {
+    props: ['activeKey'],
+    template: '<div><slot /></div>',
+    emits: ['update:activeKey'],
+  },
+  'a-tab-pane': {
+    props: ['key', 'tab'],
+    template: '<div><slot /></div>',
+  },
   'a-pagination': { template: '<div />' },
   'a-dropdown': { template: '<div><slot /></div>' },
   'a-menu': { template: '<ul><slot /></ul>' },

@@ -178,26 +178,36 @@
       </template>
       <a-form :model="form" layout="vertical">
         <a-form-item label="分类" required>
-          <a-select v-model:value="form.category_id" placeholder="选择分类" data-testid="category-select">
-            <a-select-opt-group label="支出分类">
-              <a-select-option
-                v-for="cat in expenseCategories"
-                :key="cat.id"
-                :value="cat.id"
-              >
-                {{ cat.icon }} {{ cat.name }}
-              </a-select-option>
-            </a-select-opt-group>
-            <a-select-opt-group label="收入分类">
-              <a-select-option
-                v-for="cat in incomeCategories"
-                :key="cat.id"
-                :value="cat.id"
-              >
-                {{ cat.icon }} {{ cat.name }}
-              </a-select-option>
-            </a-select-opt-group>
-          </a-select>
+          <a-tabs v-model:activeKey="categoryTab" size="small">
+            <a-tab-pane key="expense" tab="支出">
+              <div class="category-grid-picker">
+                <div
+                  v-for="cat in expenseCategories"
+                  :key="cat.id"
+                  :class="['category-pick-item', { active: form.category_id === cat.id }]"
+                  @click="form.category_id = cat.id"
+                  :data-testid="'cat-expense-' + cat.id"
+                >
+                  <span class="category-pick-icon">{{ cat.icon }}</span>
+                  <span class="category-pick-name">{{ cat.name }}</span>
+                </div>
+              </div>
+            </a-tab-pane>
+            <a-tab-pane key="income" tab="收入">
+              <div class="category-grid-picker">
+                <div
+                  v-for="cat in incomeCategories"
+                  :key="cat.id"
+                  :class="['category-pick-item', { active: form.category_id === cat.id }]"
+                  @click="form.category_id = cat.id"
+                  :data-testid="'cat-income-' + cat.id"
+                >
+                  <span class="category-pick-icon">{{ cat.icon }}</span>
+                  <span class="category-pick-name">{{ cat.name }}</span>
+                </div>
+              </div>
+            </a-tab-pane>
+          </a-tabs>
         </a-form-item>
         <a-form-item label="金额（元）" required>
           <a-input-number
@@ -333,6 +343,8 @@ const form = reactive({
   occurred_at: null as Dayjs | null,
   note: '',
 })
+
+const categoryTab = ref<'expense' | 'income'>('expense')
 
 // Computed
 const hasMore = computed(() => groups.value.length > 0 && page.value * pageSize < total.value)
@@ -472,6 +484,7 @@ function openCreate() {
   form.member_ids = []
   form.occurred_at = dayjs()
   form.note = ''
+  categoryTab.value = 'expense'
   dialogOpen.value = true
 }
 
@@ -482,6 +495,8 @@ function openEdit(record: LedgerItem) {
   form.member_ids = record.members ? record.members.map((m) => m.id) : []
   form.occurred_at = dayjs(record.occurred_at)
   form.note = record.note || ''
+  const cat = categories.value.find(c => c.id === record.category_id)
+  categoryTab.value = cat?.type === 'income' ? 'income' : 'expense'
   dialogOpen.value = true
 }
 
@@ -812,6 +827,49 @@ onMounted(async () => {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   flex-shrink: 0;
+}
+
+/* Category Grid Picker (in modal) */
+.category-grid-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.category-pick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 64px;
+  background: var(--color-bg-container);
+}
+
+.category-pick-item:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg-layout);
+}
+
+.category-pick-item.active {
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
+}
+
+.category-pick-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.category-pick-name {
+  font-size: 12px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
 }
 
 /* Load More */
