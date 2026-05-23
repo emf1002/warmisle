@@ -347,8 +347,8 @@ async function handleSubmit() {
     }
     dialogOpen.value = false
     fetchWishes()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   } finally {
     submitting.value = false
   }
@@ -366,8 +366,7 @@ async function handlePromote(wish: WishItem) {
         message.success('✅ 已提升为家庭愿望')
         fetchWishes()
       } catch (e: any) {
-        if (e?.response?.data?.message) message.error(e.response.data.message)
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })
@@ -378,8 +377,8 @@ async function handleStatusChange(wish: WishItem, status: string) {
     await updateWishStatus(wish.id, status)
     message.success('✅ 状态已更新')
     fetchWishes()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   }
 }
 
@@ -404,8 +403,6 @@ async function handleVote(wish: WishItem) {
           } catch { /* ignore */ }
         },
       })
-    } else {
-      message.error(msg || '操作失败')
     }
   }
 }
@@ -424,8 +421,7 @@ function confirmDelete(wish: WishItem) {
         dialogOpen.value = false
         fetchWishes()
       } catch (e: any) {
-        if (e?.response?.data?.message) message.error(e.response.data.message)
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })

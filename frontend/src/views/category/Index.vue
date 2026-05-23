@@ -206,10 +206,8 @@ async function handleSubmit() {
     }
     dialogOpen.value = false
     fetchCategories()
-  } catch (e: any) {
-    if (e?.response?.data?.message) {
-      message.error(e.response.data.message)
-    }
+  } catch {
+    // error handled by interceptor
   } finally {
     submitting.value = false
   }
@@ -228,10 +226,7 @@ function confirmDelete(record: any) {
         message.success('✅ 删除成功')
         fetchCategories()
       } catch (e: any) {
-        if (e?.response?.data?.message) {
-          message.error(e.response.data.message)
-        }
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })

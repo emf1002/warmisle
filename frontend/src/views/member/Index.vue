@@ -231,11 +231,8 @@ async function handleSubmit() {
     }
     dialogOpen.value = false
     fetchMembers()
-  } catch (e: any) {
-    // error handled by interceptor; show fallback if data has message
-    if (e?.response?.data?.message) {
-      message.error(e.response.data.message)
-    }
+  } catch {
+    // error handled by interceptor
   } finally {
     submitting.value = false
   }
@@ -254,9 +251,6 @@ function confirmDelete(record: any) {
         message.success('✅ 删除成功')
         fetchMembers()
       } catch (e: any) {
-        if (e?.response?.data?.message) {
-          message.error(e.response.data.message)
-        }
         throw e // prevent modal from closing on error
       }
     },
@@ -276,10 +270,7 @@ function confirmDisable(record: any) {
         message.success('✅ 已禁用')
         fetchMembers()
       } catch (e: any) {
-        if (e?.response?.data?.message) {
-          message.error(e.response.data.message)
-        }
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })
@@ -290,10 +281,8 @@ async function handleEnable(id: number) {
     await enableMember(id)
     message.success('✅ 已启用')
     fetchMembers()
-  } catch (e: any) {
-    if (e?.response?.data?.message) {
-      message.error(e.response.data.message)
-    }
+  } catch {
+    // error handled by interceptor
   }
 }
 
@@ -308,10 +297,7 @@ function confirmResetPwd(record: any) {
         await resetPassword(record.id)
         message.success('✅ 密码已重置')
       } catch (e: any) {
-        if (e?.response?.data?.message) {
-          message.error(e.response.data.message)
-        }
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })

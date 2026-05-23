@@ -455,8 +455,8 @@ async function handlePostSubmit() {
     }
     postDialogOpen.value = false
     fetchFeed()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   } finally {
     postSubmitting.value = false
   }
@@ -475,8 +475,7 @@ function confirmDeletePost(item: FeedItem) {
         message.success('✅ 删除成功')
         fetchFeed()
       } catch (e: any) {
-        if (e?.response?.data?.message) message.error(e.response.data.message)
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })
@@ -523,8 +522,8 @@ async function handleTopicSubmit() {
     }
     topicDialogOpen.value = false
     fetchFeed()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   } finally {
     topicSubmitting.value = false
   }
@@ -543,8 +542,7 @@ function confirmDeleteTopic(item: FeedItem) {
         message.success('✅ 删除成功')
         fetchFeed()
       } catch (e: any) {
-        if (e?.response?.data?.message) message.error(e.response.data.message)
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })
@@ -555,8 +553,8 @@ async function handleTogglePin(item: FeedItem) {
     await togglePinApi(item.id)
     message.success(item.is_pinned ? '✅ 已取消置顶' : '✅ 已置顶')
     fetchFeed()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   }
 }
 
