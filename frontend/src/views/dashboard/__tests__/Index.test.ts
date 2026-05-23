@@ -52,10 +52,10 @@ const antStubs: Record<string, any> = {
     props: ['value', 'title', 'precision'],
     template: '<div><slot name="prefix" /><span>{{ fmt() }}</span></div>',
     methods: {
-      fmt() {
-        const v = this.value ?? 0
-        return this.precision != null
-          ? Number(v).toFixed(Number(this.precision))
+      fmt(): string {
+        const v = (this as any).value ?? 0
+        return (this as any).precision != null
+          ? Number(v).toFixed(Number((this as any).precision))
           : String(v)
       },
     },
