@@ -416,8 +416,8 @@ async function handleLike() {
     const liked = res.data.liked
     topic.value.liked = liked
     topic.value.like_count += liked ? 1 : -1
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   }
 }
 
@@ -448,8 +448,8 @@ async function submitComment() {
     fetchComments()
     // Refresh topic to update comment count
     fetchTopic()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   } finally {
     commentSubmitting.value = false
   }
@@ -468,8 +468,8 @@ async function submitReply(parentComment: CommentItem) {
     cancelReply()
     fetchComments()
     fetchTopic()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   }
 }
 
@@ -489,8 +489,7 @@ function confirmDeleteComment(comment: CommentItem) {
         fetchComments()
         fetchTopic()
       } catch (e: any) {
-        if (e?.response?.data?.message) message.error(e.response.data.message)
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })
@@ -524,8 +523,8 @@ async function handleEditSubmit() {
     message.success('✅ 更新成功')
     editDialogOpen.value = false
     fetchTopic()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   } finally {
     editSubmitting.value = false
   }
@@ -546,8 +545,7 @@ function confirmDelete() {
         message.success('✅ 删除成功')
         router.push('/forum')
       } catch (e: any) {
-        if (e?.response?.data?.message) message.error(e.response.data.message)
-        throw e
+        throw e // prevent modal from closing on error
       }
     },
   })
@@ -561,8 +559,8 @@ async function handleTogglePin() {
     await togglePinApi(topic.value.id)
     message.success(topic.value.is_pinned ? '✅ 已取消置顶' : '✅ 已置顶')
     fetchTopic()
-  } catch (e: any) {
-    if (e?.response?.data?.message) message.error(e.response.data.message)
+  } catch {
+    // error handled by interceptor
   }
 }
 
