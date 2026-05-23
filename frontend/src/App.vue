@@ -1,5 +1,5 @@
 <template>
-  <a-config-provider :theme="themeConfig">
+  <a-config-provider :theme="themeConfig" :locale="zhCN">
     <component :is="layout">
       <router-view v-slot="{ Component: RouteComponent }">
         <transition name="page-fade" mode="out-in">
@@ -14,9 +14,14 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { theme } from 'ant-design-vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
 import MainLayout from '@/layouts/MainLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import { useThemeStore } from '@/stores/theme'
+
+dayjs.locale('zh-cn')
 
 const route = useRoute()
 const themeStore = useThemeStore()
