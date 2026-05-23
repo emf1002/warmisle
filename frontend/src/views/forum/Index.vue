@@ -153,6 +153,8 @@
     <a-modal
       v-model:open="postDialogOpen"
       :title="editingPostItem ? '编辑动态' : '发动态'"
+      ok-text="发布"
+      cancel-text="取消"
       :confirm-loading="postSubmitting"
       @ok="handlePostSubmit"
       @cancel="postDialogOpen = false"
@@ -195,6 +197,8 @@
     <a-modal
       v-model:open="topicDialogOpen"
       :title="editingTopicItem ? '编辑话题' : '发话题'"
+      ok-text="发布"
+      cancel-text="取消"
       :confirm-loading="topicSubmitting"
       width="520px"
       @ok="handleTopicSubmit"

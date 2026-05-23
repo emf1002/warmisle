@@ -57,6 +57,8 @@
     <a-modal
       v-model:open="dialogOpen"
       :title="editingCategory ? '编辑分类' : '添加分类'"
+      ok-text="保存"
+      cancel-text="取消"
       @ok="handleSubmit"
       :confirm-loading="submitting"
       data-testid="category-modal"

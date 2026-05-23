@@ -118,6 +118,8 @@
     <a-modal
       v-model:open="dialogOpen"
       :title="editingWish ? '编辑愿望' : '新建愿望'"
+      ok-text="保存"
+      cancel-text="取消"
       :confirm-loading="submitting"
       width="480px"
       @ok="handleSubmit"

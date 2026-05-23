@@ -188,6 +188,8 @@
     <a-modal
       v-model:open="editDialogOpen"
       title="编辑话题"
+      ok-text="保存"
+      cancel-text="取消"
       :confirm-loading="editSubmitting"
       width="520px"
       @ok="handleEditSubmit"

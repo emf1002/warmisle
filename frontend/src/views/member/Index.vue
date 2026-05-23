@@ -65,6 +65,8 @@
     <a-modal
       v-model:open="dialogOpen"
       :title="editingMember ? '编辑成员' : '添加成员'"
+      ok-text="保存"
+      cancel-text="取消"
       @ok="handleSubmit"
       :confirm-loading="submitting"
       data-testid="member-modal"
