@@ -57,16 +57,18 @@
         style="width: 140px"
         @change="onFilterChange"
       >
-        <a-select-opt-group label="支出">
+        <template v-if="expenseCategories.length > 0">
+          <a-select-option disabled :value="-1" class="category-group-label">支出</a-select-option>
           <a-select-option v-for="c in expenseCategories" :key="c.id" :value="c.id">
             {{ c.icon }} {{ c.name }}
           </a-select-option>
-        </a-select-opt-group>
-        <a-select-opt-group label="收入">
+        </template>
+        <template v-if="incomeCategories.length > 0">
+          <a-select-option disabled :value="-2" class="category-group-label">收入</a-select-option>
           <a-select-option v-for="c in incomeCategories" :key="c.id" :value="c.id">
             {{ c.icon }} {{ c.name }}
           </a-select-option>
-        </a-select-opt-group>
+        </template>
       </a-select>
       <a-select
         v-model:value="filters.creator_id"
@@ -649,6 +651,11 @@ onMounted(async () => {
   background: var(--color-bg-container);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-level-1);
+}
+
+.category-group-label {
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 /* Amount Colors */
