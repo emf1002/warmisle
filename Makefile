@@ -1,4 +1,4 @@
-.PHONY: dev build clean e2e-install e2e e2e-ui e2e-update e2e-report
+.PHONY: dev build clean test lint fmt e2e-install e2e e2e-ui e2e-update e2e-report
 
 dev:
 	@echo "Starting dev server..."
@@ -11,6 +11,18 @@ build:
 
 clean:
 	@rm -rf frontend/dist backend/frontend/dist dist
+
+test:
+	cd backend && go test ./...
+	cd frontend && npm test
+
+lint:
+	cd backend && golangci-lint run ./...
+	cd frontend && npx eslint src/
+
+fmt:
+	cd backend && gofmt -w .
+	cd frontend && npx eslint --fix src/
 
 # E2E 测试
 e2e-install:
