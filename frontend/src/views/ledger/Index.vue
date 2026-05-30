@@ -236,7 +236,8 @@
         <a-form-item label="日期">
           <a-date-picker
             v-model:value="form.occurred_at"
-            format="YYYY-MM-DD"
+            show-time
+            format="YYYY-MM-DD HH:mm:ss"
             style="width: 100%"
             data-testid="date-picker"
           />
@@ -383,7 +384,7 @@ function truncate(text: string, maxLen: number): string {
 }
 
 function canEdit(item: LedgerItem): boolean {
-  return item.creator_id === authStore.currentUserId || authStore.currentUserRole === 'admin'
+  return item.creator_id === authStore.currentUserId || authStore.isAdmin
 }
 
 // Methods
@@ -391,14 +392,14 @@ function getMonthParam(): string {
   return selectedMonth.value.format('YYYY-MM')
 }
 
-async function goPrevMonth() {
+function goPrevMonth() {
   selectedMonth.value = selectedMonth.value.subtract(1, 'month')
-  await fetchLedgers()
+  fetchLedgers()
 }
 
-async function goNextMonth() {
+function goNextMonth() {
   selectedMonth.value = selectedMonth.value.add(1, 'month')
-  await fetchLedgers()
+  fetchLedgers()
 }
 
 async function fetchLedgers(isLoadMore = false) {
@@ -445,15 +446,15 @@ async function loadMore() {
   await fetchLedgers(true)
 }
 
-async function onFilterChange() {
-  await fetchLedgers()
+function onFilterChange() {
+  fetchLedgers()
 }
 
-async function clearFilters() {
+function clearFilters() {
   filters.member_id = undefined
   filters.category_id = undefined
   filters.creator_id = undefined
-  await fetchLedgers()
+  fetchLedgers()
 }
 
 function openCreate() {
@@ -502,7 +503,7 @@ async function handleSubmit() {
   submitting.value = true
   try {
     const payload: any = {
-      amount: Math.round(form.amount! * 100),  // 元转分
+      amount: form.amount!,
       note: form.note,
       category_id: form.category_id,
       member_ids: form.member_ids,
@@ -512,17 +513,19 @@ async function handleSubmit() {
     }
 
     if (editingRecord.value) {
+      if (payload.amount !== undefined) {
+        payload.amount = form.amount!
+      }
       await updateLedger(editingRecord.value.id, payload)
       message.success('✅ 更新成功')
     } else {
       await createLedger(payload)
       message.success('✅ 记账成功')
     }
-    // 先刷新数据再关闭弹窗，确保数据加载完成后用户立即可见
-    await fetchLedgers()
     dialogOpen.value = false
+    fetchLedgers()
   } catch {
-    // API 错误已由 Axios 拦截器统一处理
+    // error handled by interceptor
   } finally {
     submitting.value = false
   }
@@ -540,8 +543,8 @@ function confirmDelete() {
       try {
         await deleteLedger(editingRecord.value!.id)
         message.success('✅ 删除成功')
-        await fetchLedgers()
         dialogOpen.value = false
+        fetchLedgers()
       } catch (e: any) {
         if (e?.response?.data?.message) {
           message.error(e.response.data.message)
@@ -564,7 +567,7 @@ onMounted(async () => {
   } catch {
     // error handled by interceptor
   }
-  await fetchLedgers()
+  fetchLedgers()
 })
 </script>
 

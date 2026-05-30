@@ -50,24 +50,8 @@ vi.mock('@/api/member', () => ({
   changePassword: vi.fn(),
 }))
 
-// Mock Modal.confirm from ant-design-vue to auto-call onOk
-vi.mock('@/stores/auth', () => {
-  function parseJwt(raw: string) {
-    if (!raw) return null
-    try { return JSON.parse(atob(raw.split('.')[1])) } catch { return null }
-  }
-  return {
-    useAuthStore: () => {
-      const token = localStorage.getItem('token') || ''
-      const payload = parseJwt(token)
-      return {
-        currentUserId: (payload?.member_id as number) || 0,
-        currentUserRole: payload?.role || '',
-        isAdmin: payload?.role === 'admin',
-      }
-    },
-  }
-})
+// Shared auth store mock (parses JWT from localStorage)
+import '@/test-utils/auth-mock'
 
 vi.mock('ant-design-vue', async (importOriginal) => {
   const actual = await importOriginal<any>()
