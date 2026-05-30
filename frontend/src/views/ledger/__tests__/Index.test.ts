@@ -103,6 +103,7 @@ const stubs: Record<string, any> = {
   'a-menu': { template: '<ul><slot /></ul>' },
   'a-menu-item': { template: '<li><slot /></li>' },
   'a-menu-divider': { template: '<hr />' },
+  'a-range-picker': { template: '<div><slot /></div>' },
   'a-segmented': { template: '<div />' },
   'router-link': { template: '<a><slot /></a>' },
   'router-view': { template: '<div><slot /></div>' },
@@ -131,7 +132,6 @@ const mockLedgersData = {
         occurred_at: '2026-05-23T12:00:00Z',
         category: { id: 1, name: '餐饮', icon: '\uD83C\uDF71', type: 'expense' },
         creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
-        members: [{ id: 1, name: '管理员', avatar: '\uD83D\uDC68' }],
       }],
     }],
     total: 1, page: 1, page_size: 20,
@@ -206,13 +206,11 @@ describe('Ledger view', () => {
             occurred_at: '2026-05-23T14:00:00Z',
             category: { id: 1, name: '餐饮', icon: '\uD83C\uDF71', type: 'expense' },
             creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
-            members: [{ id: 1, name: '管理员', avatar: '\uD83D\uDC68' }],
           }, {
             id: 1, amount: 3550, note: '午餐', category_id: 1, creator_id: 1,
             occurred_at: '2026-05-23T12:00:00Z',
             category: { id: 1, name: '餐饮', icon: '\uD83C\uDF71', type: 'expense' },
             creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
-            members: [{ id: 1, name: '管理员', avatar: '\uD83D\uDC68' }],
           }],
         }],
         total: 2,
@@ -230,7 +228,6 @@ describe('Ledger view', () => {
     vm.dialogOpen = true
     vm.form.category_id = 1
     vm.form.amount = 10
-    vm.form.member_ids = [1]
     vm.form.note = '新记录'
     vm.form.occurred_at = undefined
     await nextTick()
