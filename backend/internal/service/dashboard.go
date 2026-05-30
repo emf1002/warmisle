@@ -3,7 +3,7 @@ package service
 import (
 	"warmisle/internal/model"
 	"warmisle/internal/pkg"
-	"time"
+	"warmisle/internal/repository"
 )
 
 type DashboardService struct{}
@@ -23,15 +23,6 @@ type WishTrend struct {
 	model.Wish
 	Creator   model.Member `json:"creator"`
 	VoteCount int64        `json:"vote_count"`
-}
-
-type FeedItem struct {
-	Type      string       `json:"type"`
-	ID        uint         `json:"id"`
-	Title     string       `json:"title"`
-	Content   string       `json:"content"`
-	Creator   model.Member `json:"creator"`
-	CreatedAt time.Time    `json:"created_at"`
 }
 
 func (s *DashboardService) GetSummary(month string) (map[string]int64, error) {
@@ -122,8 +113,8 @@ func (s *DashboardService) GetWishTrends() ([]WishTrend, error) {
 	return trends, nil
 }
 
-func (s *DashboardService) GetForumHot() ([]FeedItem, error) {
-	var items []FeedItem
+func (s *DashboardService) GetForumHot() ([]repository.FeedItem, error) {
+	var items []repository.FeedItem
 
 	var posts []model.Post
 	pkg.DB.Preload("Creator").Order("created_at DESC").Limit(5).Find(&posts)
@@ -132,7 +123,7 @@ func (s *DashboardService) GetForumHot() ([]FeedItem, error) {
 		if len([]rune(content)) > 100 {
 			content = string([]rune(content)[:100]) + "..."
 		}
-		items = append(items, FeedItem{
+		items = append(items, repository.FeedItem{
 			Type:      "post",
 			ID:        p.ID,
 			Title:     "",
@@ -149,7 +140,7 @@ func (s *DashboardService) GetForumHot() ([]FeedItem, error) {
 		if len([]rune(content)) > 100 {
 			content = string([]rune(content)[:100]) + "..."
 		}
-		items = append(items, FeedItem{
+		items = append(items, repository.FeedItem{
 			Type:      "topic",
 			ID:        t.ID,
 			Title:     t.Title,
@@ -171,7 +162,7 @@ func (s *DashboardService) GetForumHot() ([]FeedItem, error) {
 		items = items[:5]
 	}
 	if items == nil {
-		items = []FeedItem{}
+		items = []repository.FeedItem{}
 	}
 
 	return items, nil
