@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 	"time"
 
@@ -22,16 +21,6 @@ func NewLedgerHandler() *LedgerHandler {
 
 func getCurrentMonth() string {
 	return time.Now().Format("2006-01")
-}
-
-func getMemberID(c *gin.Context) uint {
-	val, _ := c.Get("member_id")
-	return val.(uint)
-}
-
-func getRole(c *gin.Context) string {
-	val, _ := c.Get("role")
-	return val.(string)
 }
 
 // GET /api/ledgers
@@ -92,11 +81,9 @@ func (h *LedgerHandler) GetByID(c *gin.Context) {
 
 	result, err := h.svc.FindByID(uint(id))
 	if err != nil {
-		if errors.Is(err, service.ErrLedgerNotFound) {
-			pkg.Error(c, 404, 40001, "记账记录不存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrLedgerNotFound, 404, 40001, "记账记录不存在"},
+		)
 		return
 	}
 
@@ -128,7 +115,7 @@ func (h *LedgerHandler) Create(c *gin.Context) {
 		return
 	}
 
-	amountCents := int64(req.Amount * 100)
+	amountCents := int64(req.Amount)
 
 	occurredAt := time.Now()
 	if req.OccurredAt != "" {
@@ -151,19 +138,11 @@ func (h *LedgerHandler) Create(c *gin.Context) {
 
 	result, err := h.svc.Create(amountCents, req.Note, req.CategoryID, req.MemberIDs, occurredAt, creatorID)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidAmount) {
-			pkg.Error(c, 400, 40001, "金额必须大于 0")
-			return
-		}
-		if errors.Is(err, service.ErrLedgerCategoryNotFound) {
-			pkg.Error(c, 400, 40001, "分类不存在")
-			return
-		}
-		if errors.Is(err, service.ErrNoMembers) {
-			pkg.Error(c, 400, 40001, "请至少选择一位关联成员")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrInvalidAmount, 400, 40001, "金额必须大于 0"},
+			serviceError{service.ErrLedgerCategoryNotFound, 400, 40001, "分类不存在"},
+			serviceError{service.ErrNoMembers, 400, 40001, "请至少选择一位关联成员"},
+		)
 		return
 	}
 
@@ -198,7 +177,7 @@ func (h *LedgerHandler) Update(c *gin.Context) {
 			pkg.Error(c, 400, 40001, "金额必须大于 0")
 			return
 		}
-		cents := int64(*req.Amount * 100)
+		cents := int64(*req.Amount)
 		amountCents = &cents
 	}
 
@@ -223,27 +202,13 @@ func (h *LedgerHandler) Update(c *gin.Context) {
 
 	result, err := h.svc.Update(uint(id), amountCents, req.Note, req.CategoryID, req.MemberIDs, occurredAt, currentMemberID, currentRole)
 	if err != nil {
-		if errors.Is(err, service.ErrLedgerNotFound) {
-			pkg.Error(c, 404, 40001, "记账记录不存在")
-			return
-		}
-		if errors.Is(err, service.ErrLedgerPermissionDenied) {
-			pkg.Error(c, 403, 40301, "只能修改自己创建的记录")
-			return
-		}
-		if errors.Is(err, service.ErrInvalidAmount) {
-			pkg.Error(c, 400, 40001, "金额必须大于 0")
-			return
-		}
-		if errors.Is(err, service.ErrLedgerCategoryNotFound) {
-			pkg.Error(c, 400, 40001, "分类不存在")
-			return
-		}
-		if errors.Is(err, service.ErrNoMembers) {
-			pkg.Error(c, 400, 40001, "请至少选择一位关联成员")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrLedgerNotFound, 404, 40001, "记账记录不存在"},
+			serviceError{service.ErrLedgerPermissionDenied, 403, 40301, "只能修改自己创建的记录"},
+			serviceError{service.ErrInvalidAmount, 400, 40001, "金额必须大于 0"},
+			serviceError{service.ErrLedgerCategoryNotFound, 400, 40001, "分类不存在"},
+			serviceError{service.ErrNoMembers, 400, 40001, "请至少选择一位关联成员"},
+		)
 		return
 	}
 
@@ -262,15 +227,10 @@ func (h *LedgerHandler) Delete(c *gin.Context) {
 	currentRole := getRole(c)
 
 	if err := h.svc.Delete(uint(id), currentMemberID, currentRole); err != nil {
-		if errors.Is(err, service.ErrLedgerNotFound) {
-			pkg.Error(c, 404, 40001, "记账记录不存在")
-			return
-		}
-		if errors.Is(err, service.ErrLedgerPermissionDenied) {
-			pkg.Error(c, 403, 40301, "只能删除自己创建的记录")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrLedgerNotFound, 404, 40001, "记账记录不存在"},
+			serviceError{service.ErrLedgerPermissionDenied, 403, 40301, "只能删除自己创建的记录"},
+		)
 		return
 	}
 

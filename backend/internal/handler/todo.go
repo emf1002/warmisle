@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 	"time"
 
@@ -93,19 +92,11 @@ func (h *TodoHandler) Create(c *gin.Context) {
 
 	result, err := h.svc.Create(req.Title, req.Description, req.Priority, req.AssigneeID, dueDate, creatorID)
 	if err != nil {
-		if errors.Is(err, service.ErrTodoTitleRequired) {
-			pkg.Error(c, 400, 40001, "标题不能为空")
-			return
-		}
-		if errors.Is(err, service.ErrTodoInvalidPriority) {
-			pkg.Error(c, 400, 40001, "优先级无效")
-			return
-		}
-		if errors.Is(err, service.ErrTodoAssigneeNotFound) {
-			pkg.Error(c, 400, 40001, "指派的成员不存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrTodoTitleRequired, 400, 40001, "标题不能为空"},
+			serviceError{service.ErrTodoInvalidPriority, 400, 40001, "优先级无效"},
+			serviceError{service.ErrTodoAssigneeNotFound, 400, 40001, "指派的成员不存在"},
+		)
 		return
 	}
 
@@ -157,27 +148,13 @@ func (h *TodoHandler) Update(c *gin.Context) {
 
 	result, err := h.svc.Update(uint(id), req.Title, req.Description, req.Priority, req.AssigneeID, dueDate, currentMemberID, currentRole)
 	if err != nil {
-		if errors.Is(err, service.ErrTodoNotFound) {
-			pkg.Error(c, 404, 40001, "待办事项不存在")
-			return
-		}
-		if errors.Is(err, service.ErrTodoPermissionDenied) {
-			pkg.Error(c, 403, 40301, "只能编辑自己创建或负责的待办")
-			return
-		}
-		if errors.Is(err, service.ErrTodoTitleRequired) {
-			pkg.Error(c, 400, 40001, "标题不能为空")
-			return
-		}
-		if errors.Is(err, service.ErrTodoInvalidPriority) {
-			pkg.Error(c, 400, 40001, "优先级无效")
-			return
-		}
-		if errors.Is(err, service.ErrTodoAssigneeNotFound) {
-			pkg.Error(c, 400, 40001, "指派的成员不存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoPermissionDenied, 403, 40301, "只能编辑自己创建或负责的待办"},
+			serviceError{service.ErrTodoTitleRequired, 400, 40001, "标题不能为空"},
+			serviceError{service.ErrTodoInvalidPriority, 400, 40001, "优先级无效"},
+			serviceError{service.ErrTodoAssigneeNotFound, 400, 40001, "指派的成员不存在"},
+		)
 		return
 	}
 
@@ -196,15 +173,10 @@ func (h *TodoHandler) Delete(c *gin.Context) {
 	currentRole := getRole(c)
 
 	if err := h.svc.Delete(uint(id), currentMemberID, currentRole); err != nil {
-		if errors.Is(err, service.ErrTodoNotFound) {
-			pkg.Error(c, 404, 40001, "待办事项不存在")
-			return
-		}
-		if errors.Is(err, service.ErrTodoPermissionDenied) {
-			pkg.Error(c, 403, 40301, "只能删除自己创建的待办")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoPermissionDenied, 403, 40301, "只能删除自己创建的待办"},
+		)
 		return
 	}
 
@@ -224,15 +196,10 @@ func (h *TodoHandler) Toggle(c *gin.Context) {
 
 	result, err := h.svc.Toggle(uint(id), currentMemberID, currentRole)
 	if err != nil {
-		if errors.Is(err, service.ErrTodoNotFound) {
-			pkg.Error(c, 404, 40001, "待办事项不存在")
-			return
-		}
-		if errors.Is(err, service.ErrTodoPermissionDenied) {
-			pkg.Error(c, 403, 40301, "只能操作自己创建或负责的待办")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoPermissionDenied, 403, 40301, "只能操作自己创建或负责的待办"},
+		)
 		return
 	}
 
@@ -251,15 +218,10 @@ func (h *TodoHandler) Claim(c *gin.Context) {
 
 	result, err := h.svc.Claim(uint(id), currentMemberID)
 	if err != nil {
-		if errors.Is(err, service.ErrTodoNotFound) {
-			pkg.Error(c, 404, 40001, "待办事项不存在")
-			return
-		}
-		if errors.Is(err, service.ErrTodoAlreadyAssigned) {
-			pkg.Error(c, 400, 40001, "该待办已被认领")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoAlreadyAssigned, 400, 40001, "该待办已被认领"},
+		)
 		return
 	}
 

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 
 	"warmisle/internal/model"
@@ -40,11 +39,9 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 
 	cat, err := h.svc.Create(req.Type, req.Name, req.Icon, req.SortOrder)
 	if err != nil {
-		if errors.Is(err, service.ErrCategoryExists) {
-			pkg.Error(c, 409, 40002, "同类型下已存在同名分类")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrCategoryExists, 409, 40002, "同类型下已存在同名分类"},
+		)
 		return
 	}
 
@@ -78,15 +75,10 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 
 	cat, err := h.svc.Update(uint(id), req.Type, req.Name, req.Icon, req.SortOrder)
 	if err != nil {
-		if errors.Is(err, service.ErrCategoryNotFound) {
-			pkg.Error(c, 404, 40001, "分类不存在")
-			return
-		}
-		if errors.Is(err, service.ErrCategoryExists) {
-			pkg.Error(c, 409, 40002, "同类型下已存在同名分类")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrCategoryNotFound, 404, 40001, "分类不存在"},
+			serviceError{service.ErrCategoryExists, 409, 40002, "同类型下已存在同名分类"},
+		)
 		return
 	}
 
@@ -101,11 +93,9 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.svc.Delete(uint(id)); err != nil {
-		if errors.Is(err, service.ErrCategoryInUse) {
-			pkg.Error(c, 400, 40001, "该分类下有记账记录，无法删除")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrCategoryInUse, 400, 40001, "该分类下有记账记录，无法删除"},
+		)
 		return
 	}
 

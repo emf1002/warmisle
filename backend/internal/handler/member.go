@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 
 	"warmisle/internal/model"
@@ -36,19 +35,11 @@ func (h *MemberHandler) Create(c *gin.Context) {
 
 	member, err := h.svc.Create(req.Username, req.Password, req.Name, req.Avatar, req.Role)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidUsername) {
-			pkg.Error(c, 400, 40001, "用户名格式不正确（3-20位字母、数字、下划线）")
-			return
-		}
-		if errors.Is(err, service.ErrInvalidPassword) {
-			pkg.Error(c, 400, 40001, "密码长度需在6-32位之间")
-			return
-		}
-		if errors.Is(err, service.ErrUsernameTaken) {
-			pkg.Error(c, 409, 40002, "用户名已存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrInvalidUsername, 400, 40001, "用户名格式不正确（3-20位字母、数字、下划线）"},
+			serviceError{service.ErrInvalidPassword, 400, 40001, "密码长度需在6-32位之间"},
+			serviceError{service.ErrUsernameTaken, 409, 40002, "用户名已存在"},
+		)
 		return
 	}
 
@@ -76,19 +67,11 @@ func (h *MemberHandler) Update(c *gin.Context) {
 
 	member, err := h.svc.Update(uint(id), req.Name, req.Avatar, req.Role)
 	if err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		if errors.Is(err, service.ErrCannotDeleteLastAdmin) {
-			pkg.Error(c, 400, 40003, "不能修改最后一个管理员的角色")
-			return
-		}
-		if errors.Is(err, service.ErrInvalidName) {
-			pkg.Error(c, 400, 40001, "名称长度需在1-20位之间")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrCannotDeleteLastAdmin, 400, 40003, "不能修改最后一个管理员的角色"},
+			serviceError{service.ErrInvalidName, 400, 40001, "名称长度需在1-20位之间"},
+		)
 		return
 	}
 
@@ -106,19 +89,11 @@ func (h *MemberHandler) Delete(c *gin.Context) {
 	currentMemberID := memberIDVal.(uint)
 
 	if err := h.svc.Delete(uint(id), currentMemberID); err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		if errors.Is(err, service.ErrCannotDeleteLastAdmin) {
-			pkg.Error(c, 400, 40003, "不能删除最后一个管理员")
-			return
-		}
-		if errors.Is(err, service.ErrHasActivityRecords) {
-			pkg.Error(c, 400, 40004, "该成员有活动记录，建议禁用而非删除")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrCannotDeleteLastAdmin, 400, 40003, "不能删除最后一个管理员"},
+			serviceError{service.ErrHasActivityRecords, 400, 40004, "该成员有活动记录，建议禁用而非删除"},
+		)
 		return
 	}
 
@@ -136,19 +111,11 @@ func (h *MemberHandler) Disable(c *gin.Context) {
 	currentMemberID := memberIDVal.(uint)
 
 	if err := h.svc.Disable(uint(id), currentMemberID); err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		if errors.Is(err, service.ErrCannotDisableSelf) {
-			pkg.Error(c, 400, 40005, "不能禁用自己")
-			return
-		}
-		if errors.Is(err, service.ErrCannotDeleteLastAdmin) {
-			pkg.Error(c, 400, 40003, "不能禁用最后一个管理员")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrCannotDisableSelf, 400, 40005, "不能禁用自己"},
+			serviceError{service.ErrCannotDeleteLastAdmin, 400, 40003, "不能禁用最后一个管理员"},
+		)
 		return
 	}
 
@@ -164,11 +131,9 @@ func (h *MemberHandler) Enable(c *gin.Context) {
 
 	member, err := h.svc.Enable(uint(id))
 	if err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+		)
 		return
 	}
 
@@ -183,11 +148,9 @@ func (h *MemberHandler) ResetPassword(c *gin.Context) {
 	}
 
 	if err := h.svc.ResetPassword(uint(id)); err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+		)
 		return
 	}
 
@@ -225,11 +188,9 @@ func (h *MemberHandler) UpdateProfile(c *gin.Context) {
 
 	member, err := h.svc.UpdateProfile(memberID, req.Name, req.Avatar)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidName) {
-			pkg.Error(c, 400, 40001, "名称长度需在1-20位之间")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrInvalidName, 400, 40001, "名称长度需在1-20位之间"},
+		)
 		return
 	}
 
@@ -242,11 +203,9 @@ func (h *MemberHandler) GetProfile(c *gin.Context) {
 
 	member, err := h.svc.GetProfile(memberID)
 	if err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+		)
 		return
 	}
 
@@ -269,19 +228,11 @@ func (h *MemberHandler) ChangePassword(c *gin.Context) {
 	}
 
 	if err := h.svc.ChangePassword(memberID, req.OldPassword, req.NewPassword); err != nil {
-		if errors.Is(err, service.ErrMemberNotFound) {
-			pkg.Error(c, 404, 40001, "成员不存在")
-			return
-		}
-		if errors.Is(err, service.ErrIncorrectPassword) {
-			pkg.Error(c, 400, 40010, "原密码错误")
-			return
-		}
-		if errors.Is(err, service.ErrInvalidPassword) {
-			pkg.Error(c, 400, 40001, "新密码长度需在6-32位之间")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrIncorrectPassword, 400, 40010, "原密码错误"},
+			serviceError{service.ErrInvalidPassword, 400, 40001, "新密码长度需在6-32位之间"},
+		)
 		return
 	}
 

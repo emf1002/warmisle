@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"strconv"
 
 	"warmisle/internal/model"
@@ -44,15 +43,10 @@ func (h *TagHandler) Create(c *gin.Context) {
 
 	tag, err := h.svc.CreateTag(req.Name)
 	if err != nil {
-		if errors.Is(err, service.ErrForumContentRequired) {
-			pkg.Error(c, 400, 40001, "名称不能为空")
-			return
-		}
-		if errors.Is(err, service.ErrForumTagNameTaken) {
-			pkg.Error(c, 409, 40002, "标签名已存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrForumContentRequired, 400, 40001, "名称不能为空"},
+			serviceError{service.ErrForumTagNameTaken, 409, 40002, "标签名已存在"},
+		)
 		return
 	}
 	pkg.Success(c, tag)
@@ -76,19 +70,11 @@ func (h *TagHandler) Update(c *gin.Context) {
 
 	tag, err := h.svc.UpdateTag(uint(id), req.Name)
 	if err != nil {
-		if errors.Is(err, service.ErrForumTagNotFound) {
-			pkg.Error(c, 404, 40001, "标签不存在")
-			return
-		}
-		if errors.Is(err, service.ErrForumContentRequired) {
-			pkg.Error(c, 400, 40001, "名称不能为空")
-			return
-		}
-		if errors.Is(err, service.ErrForumTagNameTaken) {
-			pkg.Error(c, 409, 40002, "标签名已存在")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrForumTagNotFound, 404, 40001, "标签不存在"},
+			serviceError{service.ErrForumContentRequired, 400, 40001, "名称不能为空"},
+			serviceError{service.ErrForumTagNameTaken, 409, 40002, "标签名已存在"},
+		)
 		return
 	}
 	pkg.Success(c, tag)
@@ -103,11 +89,9 @@ func (h *TagHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.svc.DeleteTag(uint(id)); err != nil {
-		if errors.Is(err, service.ErrForumTagInUse) {
-			pkg.Error(c, 400, 40004, "该标签被话题引用，不能删除")
-			return
-		}
-		pkg.Error(c, 500, 50001, "服务器内部错误")
+		handleServiceError(c, err,
+			serviceError{service.ErrForumTagInUse, 400, 40004, "该标签被话题引用，不能删除"},
+		)
 		return
 	}
 	pkg.Success(c, nil)
