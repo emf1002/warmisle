@@ -30,10 +30,6 @@ func NewTodoService() *TodoService {
 	}
 }
 
-func validPriority(p string) bool {
-	return p == "normal" || p == "important" || p == "urgent"
-}
-
 func (s *TodoService) List(filter repository.TodoFilter) (*repository.TodoListResult, error) {
 	return s.repo.List(filter)
 }

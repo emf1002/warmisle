@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"time"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -14,7 +16,8 @@ func InitDatabase(dbPath string) error {
 		DriverName: "sqlite",
 		DSN:        dbPath + "?_journal_mode=WAL",
 	}), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger:  logger.Default.LogMode(logger.Warn),
+		NowFunc: func() time.Time { return time.Now().UTC() },
 	})
 	return err
 }

@@ -33,10 +33,6 @@ func NewWishService() *WishService {
 	}
 }
 
-func validWishPriority(p string) bool {
-	return p == "normal" || p == "important" || p == "urgent"
-}
-
 func (s *WishService) FindByID(id uint) (*repository.WishWithAssoc, error) {
 	result, err := s.repo.FindByID(id)
 	if err != nil {
@@ -57,7 +53,7 @@ func (s *WishService) Create(title, description, category, priority string, amou
 	if priority == "" {
 		priority = "normal"
 	}
-	if !validWishPriority(priority) {
+	if !validPriority(priority) {
 		return nil, ErrWishInvalidPriority
 	}
 
@@ -112,7 +108,7 @@ func (s *WishService) Update(id uint, title, description, category, priority *st
 		existing.Category = *category
 	}
 	if priority != nil {
-		if !validWishPriority(*priority) {
+		if !validPriority(*priority) {
 			return nil, ErrWishInvalidPriority
 		}
 		existing.Priority = *priority
