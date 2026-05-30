@@ -96,14 +96,7 @@
           />
         </a-form-item>
         <a-form-item label="头像">
-          <div class="emoji-picker">
-            <span
-              v-for="e in emojiList"
-              :key="e"
-              :class="['emoji-item', { active: form.avatar === e }]"
-              @click="form.avatar = e"
-            >{{ e }}</span>
-          </div>
+          <EmojiPicker v-model="form.avatar" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -136,15 +129,10 @@ import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
 import { getProfile, updateProfile, changePassword } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-
-const emojiList = [
-  '👨','👩','👦','👧','👶','👴','👵','🐶','🐱','🏠',
-  '💪','🎯','📚','🎮','🎨','🏀','🏊','🚗','✈️','🎵',
-  '📷','💰','🔑','🌟','🔥','❤️','🍀','⭐','🎪','🐕','🐈','🏸'
-]
 
 const profile = ref<any>({
   id: 0,

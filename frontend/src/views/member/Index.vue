@@ -97,14 +97,7 @@
           />
         </a-form-item>
         <a-form-item label="头像">
-          <div class="emoji-picker">
-            <span
-              v-for="e in emojiList"
-              :key="e"
-              :class="['emoji-item', { active: form.avatar === e }]"
-              @click="form.avatar = e"
-            >{{ e }}</span>
-          </div>
+          <EmojiPicker v-model="form.avatar" />
         </a-form-item>
         <a-form-item label="角色">
           <a-select v-model:value="form.role" data-testid="role-select">
@@ -130,12 +123,7 @@ import {
   resetPassword,
 } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
-
-const emojiList = [
-  '👨','👩','👦','👧','👶','👴','👵','🐶','🐱','🏠',
-  '💪','🎯','📚','🎮','🎨','🏀','🏊','🚗','✈️','🎵',
-  '📷','💰','🔑','🌟','🔥','❤️','🍀','⭐','🎪','🐕','🐈','🏸'
-]
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 const authStore = useAuthStore()
 

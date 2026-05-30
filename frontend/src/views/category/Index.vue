@@ -79,14 +79,7 @@
           />
         </a-form-item>
         <a-form-item label="图标">
-          <div class="emoji-picker">
-            <span
-              v-for="e in categoryEmojis"
-              :key="e"
-              :class="['emoji-item', { active: form.icon === e }]"
-              @click="form.icon = e"
-            >{{ e }}</span>
-          </div>
+          <EmojiPicker v-model="form.icon" />
         </a-form-item>
         <a-form-item label="排序">
           <a-input-number
@@ -113,12 +106,7 @@ import {
   deleteCategory,
 } from '@/api/category'
 import { useAuthStore } from '@/stores/auth'
-
-const categoryEmojis = [
-  '🍜','☕','🚗','🏠','🛒','📱','💊','🎓','👗','🎮',
-  '✈️','🏥','🐶','🎬','📚','💼','💰','🎁','📈','🏦',
-  '🧧','💳','💵','🎯','🌟','🔧','📦','🎵','🏀','🍀'
-]
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 const authStore = useAuthStore()
 
