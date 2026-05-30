@@ -12,21 +12,18 @@ var (
 	ErrLedgerNotFound         = errors.New("ledger not found")
 	ErrInvalidAmount          = errors.New("amount must be positive")
 	ErrLedgerCategoryNotFound = errors.New("category not found")
-	ErrNoMembers              = errors.New("at least one member required")
 	ErrLedgerPermissionDenied = errors.New("permission denied")
 )
 
 type LedgerService struct {
 	repo         *repository.LedgerRepo
 	categoryRepo *repository.CategoryRepo
-	memberRepo   *repository.MemberRepo
 }
 
 func NewLedgerService() *LedgerService {
 	return &LedgerService{
 		repo:         &repository.LedgerRepo{},
 		categoryRepo: &repository.CategoryRepo{},
-		memberRepo:   &repository.MemberRepo{},
 	}
 }
 
@@ -42,7 +39,7 @@ func (s *LedgerService) FindByID(id uint) (*repository.LedgerWithAssoc, error) {
 	return result, nil
 }
 
-func (s *LedgerService) Create(amount int64, note string, categoryID uint, memberIDs []uint, occurredAt time.Time, creatorID uint) (*repository.LedgerWithAssoc, error) {
+func (s *LedgerService) Create(amount int64, note string, categoryID uint, occurredAt time.Time, creatorID uint) (*repository.LedgerWithAssoc, error) {
 	if amount <= 0 {
 		return nil, ErrInvalidAmount
 	}
@@ -53,10 +50,6 @@ func (s *LedgerService) Create(amount int64, note string, categoryID uint, membe
 		return nil, wrapNotFound(err, ErrLedgerCategoryNotFound)
 	}
 
-	if len(memberIDs) == 0 {
-		return nil, ErrNoMembers
-	}
-
 	ledger := &model.Ledger{
 		Amount:     amount,
 		Note:       note,
@@ -65,14 +58,14 @@ func (s *LedgerService) Create(amount int64, note string, categoryID uint, membe
 		OccurredAt: model.FromTime(occurredAt),
 	}
 
-	if err := s.repo.Create(ledger, memberIDs); err != nil {
+	if err := s.repo.Create(ledger); err != nil {
 		return nil, err
 	}
 
 	return s.repo.FindByID(ledger.ID)
 }
 
-func (s *LedgerService) Update(id uint, amount *int64, note *string, categoryID *uint, memberIDs []uint, occurredAt *time.Time, currentMemberID uint, currentRole string) (*repository.LedgerWithAssoc, error) {
+func (s *LedgerService) Update(id uint, amount *int64, note *string, categoryID *uint, occurredAt *time.Time, currentMemberID uint, currentRole string) (*repository.LedgerWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, wrapNotFound(err, ErrLedgerNotFound)
@@ -106,19 +99,7 @@ func (s *LedgerService) Update(id uint, amount *int64, note *string, categoryID 
 		existing.OccurredAt = model.FromTime(*occurredAt)
 	}
 
-	// Members: if nil, keep existing; if empty, error; otherwise replace
-	if memberIDs != nil {
-		if len(memberIDs) == 0 {
-			return nil, ErrNoMembers
-		}
-	} else {
-		memberIDs = make([]uint, len(existing.Members))
-		for i, m := range existing.Members {
-			memberIDs[i] = m.ID
-		}
-	}
-
-	if err := s.repo.Update(&existing.Ledger, memberIDs); err != nil {
+	if err := s.repo.Update(&existing.Ledger); err != nil {
 		return nil, err
 	}
 
