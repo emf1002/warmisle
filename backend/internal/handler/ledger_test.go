@@ -18,11 +18,11 @@ func TestHandler_Ledger_Create_Success(t *testing.T) {
 	defer testutil.TeardownTestDB()
 
 	r := setupTestRouter()
-	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
+	_, _, _, memberToken := testutil.SeedAdminAndMember(t)
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	body := fmt.Sprintf(`{"amount":3550,"note":"午餐","category_id":%d,"member_ids":[%d],"occurred_at":"%s"}`,
-		cat.ID, member.ID, time.Now().Format(time.RFC3339))
+	body := fmt.Sprintf(`{"amount":3550,"note":"午餐","category_id":%d,"occurred_at":"%s"}`,
+		cat.ID, time.Now().Format(time.RFC3339))
 	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 
@@ -36,10 +36,10 @@ func TestHandler_Ledger_Create_ZeroAmount(t *testing.T) {
 	defer testutil.TeardownTestDB()
 
 	r := setupTestRouter()
-	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
+	_, _, _, memberToken := testutil.SeedAdminAndMember(t)
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	body := fmt.Sprintf(`{"amount":0,"note":"零元","category_id":%d,"member_ids":[%d]}`, cat.ID, member.ID)
+	body := fmt.Sprintf(`{"amount":0,"note":"零元","category_id":%d}`, cat.ID)
 	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
 	testutil.AssertErrorResponse(t, w, 400, 40001)
 }
@@ -49,23 +49,10 @@ func TestHandler_Ledger_Create_NegativeAmount(t *testing.T) {
 	defer testutil.TeardownTestDB()
 
 	r := setupTestRouter()
-	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
-	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
-
-	body := fmt.Sprintf(`{"amount":-10,"note":"负数","category_id":%d,"member_ids":[%d]}`, cat.ID, member.ID)
-	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
-	testutil.AssertErrorResponse(t, w, 400, 40001)
-}
-
-func TestHandler_Ledger_Create_NoMembers(t *testing.T) {
-	setupMemberTest()
-	defer testutil.TeardownTestDB()
-
-	r := setupTestRouter()
 	_, _, _, memberToken := testutil.SeedAdminAndMember(t)
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	body := fmt.Sprintf(`{"amount":10,"note":"无成员","category_id":%d,"member_ids":[]}`, cat.ID)
+	body := fmt.Sprintf(`{"amount":-10,"note":"负数","category_id":%d}`, cat.ID)
 	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
 	testutil.AssertErrorResponse(t, w, 400, 40001)
 }
@@ -75,9 +62,9 @@ func TestHandler_Ledger_Create_CategoryNotFound(t *testing.T) {
 	defer testutil.TeardownTestDB()
 
 	r := setupTestRouter()
-	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
+	_, _, _, memberToken := testutil.SeedAdminAndMember(t)
 
-	body := fmt.Sprintf(`{"amount":10,"note":"分类不存在","category_id":99999,"member_ids":[%d]}`, member.ID)
+	body := fmt.Sprintf(`{"amount":10,"note":"分类不存在","category_id":99999}`)
 	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
 	testutil.AssertErrorResponse(t, w, 400, 40001)
 }
@@ -94,10 +81,11 @@ func TestHandler_Ledger_List_ByMonth(t *testing.T) {
 	now := time.Now()
 	ledger := model.Ledger{Amount: 3000, Note: "当月", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(now)}
 	pkg.DB.Create(&ledger)
-	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
-	month := now.Format("2006-01")
-	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?month=%s", month), nil, memberToken)
+	startDate := now.Format("2006-01") + "-01"
+	firstOfNext := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	endDate := firstOfNext.Format("2006-01-02")
+	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?start_date=%s&end_date=%s", startDate, endDate), nil, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
 	assert.NotNil(t, data["summary"])
@@ -114,7 +102,6 @@ func TestHandler_Ledger_Update_ByCreator(t *testing.T) {
 	// 创建记录 (amount in cents)
 	ledger := model.Ledger{Amount: 2000, Note: "原始", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())}
 	pkg.DB.Create(&ledger)
-	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
 	// Update: amount 5000 cents = 50.00 yuan
 	body := `{"amount":5000,"note":"修改后"}`
@@ -142,7 +129,6 @@ func TestHandler_Ledger_Update_ByNonCreator(t *testing.T) {
 
 	ledger := model.Ledger{Amount: 2000, Note: "原始", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())}
 	pkg.DB.Create(&ledger)
-	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
 	body := `{"amount":50.00}`
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/ledgers/%d", ledger.ID), body, m2Token)
@@ -159,7 +145,6 @@ func TestHandler_Ledger_Delete_ByAdmin(t *testing.T) {
 
 	ledger := model.Ledger{Amount: 1000, Note: "待删除", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())}
 	pkg.DB.Create(&ledger)
-	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
 	w := testutil.MakeRequest(r, "DELETE", fmt.Sprintf("/api/ledgers/%d", ledger.ID), nil, adminToken)
 	testutil.AssertSuccessResponse(t, w)
