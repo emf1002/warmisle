@@ -19,15 +19,11 @@ func NewLedgerHandler() *LedgerHandler {
 	return &LedgerHandler{svc: service.NewLedgerService()}
 }
 
-func getCurrentMonth() string {
-	return time.Now().Format("2006-01")
-}
-
 // GET /api/ledgers
 func (h *LedgerHandler) List(c *gin.Context) {
 	var req struct {
-		Month      string `form:"month"`
-		MemberID   *uint  `form:"member_id"`
+		StartDate  string `form:"start_date"`
+		EndDate    string `form:"end_date"`
 		CategoryID *uint  `form:"category_id"`
 		CreatorID  *uint  `form:"creator_id"`
 		Page       int    `form:"page"`
@@ -39,8 +35,14 @@ func (h *LedgerHandler) List(c *gin.Context) {
 		return
 	}
 
-	if req.Month == "" {
-		req.Month = getCurrentMonth()
+	if req.StartDate == "" {
+		req.StartDate = time.Now().Format("2006-01") + "-01"
+	}
+	if req.EndDate == "" {
+		// First day of next month
+		now := time.Now()
+		firstOfNext := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+		req.EndDate = firstOfNext.Format("2006-01-02")
 	}
 	if req.Page <= 0 {
 		req.Page = 1
@@ -50,8 +52,8 @@ func (h *LedgerHandler) List(c *gin.Context) {
 	}
 
 	filter := repository.LedgerFilter{
-		Month:      req.Month,
-		MemberID:   req.MemberID,
+		StartDate:  req.StartDate,
+		EndDate:    req.EndDate,
 		CategoryID: req.CategoryID,
 		CreatorID:  req.CreatorID,
 		Page:       req.Page,
@@ -94,7 +96,6 @@ type createLedgerRequest struct {
 	Amount     float64 `json:"amount" binding:"required"`
 	Note       string  `json:"note"`
 	CategoryID uint    `json:"category_id" binding:"required"`
-	MemberIDs  []uint  `json:"member_ids" binding:"required"`
 	OccurredAt string  `json:"occurred_at"`
 }
 
@@ -108,10 +109,6 @@ func (h *LedgerHandler) Create(c *gin.Context) {
 
 	if req.Amount <= 0 {
 		pkg.Error(c, 400, 40001, "金额必须大于 0")
-		return
-	}
-	if len(req.MemberIDs) == 0 {
-		pkg.Error(c, 400, 40001, "请至少选择一位关联成员")
 		return
 	}
 
@@ -136,12 +133,11 @@ func (h *LedgerHandler) Create(c *gin.Context) {
 
 	creatorID := getMemberID(c)
 
-	result, err := h.svc.Create(amountCents, req.Note, req.CategoryID, req.MemberIDs, occurredAt, creatorID)
+	result, err := h.svc.Create(amountCents, req.Note, req.CategoryID, occurredAt, creatorID)
 	if err != nil {
 		handleServiceError(c, err,
 			serviceError{service.ErrInvalidAmount, 400, 40001, "金额必须大于 0"},
 			serviceError{service.ErrLedgerCategoryNotFound, 400, 40001, "分类不存在"},
-			serviceError{service.ErrNoMembers, 400, 40001, "请至少选择一位关联成员"},
 		)
 		return
 	}
@@ -153,7 +149,6 @@ type updateLedgerRequest struct {
 	Amount     *float64 `json:"amount"`
 	Note       *string  `json:"note"`
 	CategoryID *uint    `json:"category_id"`
-	MemberIDs  []uint   `json:"member_ids"`
 	OccurredAt *string  `json:"occurred_at"`
 }
 
@@ -200,14 +195,13 @@ func (h *LedgerHandler) Update(c *gin.Context) {
 	currentMemberID := getMemberID(c)
 	currentRole := getRole(c)
 
-	result, err := h.svc.Update(uint(id), amountCents, req.Note, req.CategoryID, req.MemberIDs, occurredAt, currentMemberID, currentRole)
+	result, err := h.svc.Update(uint(id), amountCents, req.Note, req.CategoryID, occurredAt, currentMemberID, currentRole)
 	if err != nil {
 		handleServiceError(c, err,
 			serviceError{service.ErrLedgerNotFound, 404, 40401, "记账记录不存在"},
 			serviceError{service.ErrLedgerPermissionDenied, 403, 40301, "只能修改自己创建的记录"},
 			serviceError{service.ErrInvalidAmount, 400, 40001, "金额必须大于 0"},
 			serviceError{service.ErrLedgerCategoryNotFound, 400, 40001, "分类不存在"},
-			serviceError{service.ErrNoMembers, 400, 40001, "请至少选择一位关联成员"},
 		)
 		return
 	}

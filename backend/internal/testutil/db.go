@@ -28,7 +28,6 @@ func SetupTestDB() *gorm.DB {
 		&model.Member{},
 		&model.Category{},
 		&model.Ledger{},
-		&model.LedgerMember{},
 		&model.Todo{},
 		&model.TodoLog{},
 		&model.Wish{},
