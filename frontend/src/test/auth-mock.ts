@@ -6,7 +6,7 @@
  *
  * Usage in a test file (must appear BEFORE the import of the component under test):
  *
- *   import '@/test-utils/auth-mock'
+ *   import '@/test/auth-mock'
  *
  * Then set the token in beforeEach:
  *

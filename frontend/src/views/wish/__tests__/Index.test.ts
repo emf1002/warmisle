@@ -36,7 +36,7 @@ vi.mock('@/api/wish', () => ({
 }))
 
 // Shared auth store mock (parses JWT from localStorage)
-import '@/test-utils/auth-mock'
+import '@/test/auth-mock'
 
 import WishIndex from '../Index.vue'
 

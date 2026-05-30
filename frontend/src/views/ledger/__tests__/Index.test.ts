@@ -51,7 +51,7 @@ vi.mock('@/api/member', () => ({
 }))
 
 // Shared auth store mock (parses JWT from localStorage)
-import '@/test-utils/auth-mock'
+import '@/test/auth-mock'
 
 vi.mock('ant-design-vue', async (importOriginal) => {
   const actual = await importOriginal<any>()

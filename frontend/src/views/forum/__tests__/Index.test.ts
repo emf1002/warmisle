@@ -54,7 +54,7 @@ vi.mock('@/utils/request', () => ({
 }))
 
 // Shared auth store mock (parses JWT from localStorage)
-import '@/test-utils/auth-mock'
+import '@/test/auth-mock'
 
 import Forum from '../Index.vue'
 

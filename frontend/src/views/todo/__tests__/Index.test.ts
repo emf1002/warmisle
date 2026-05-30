@@ -45,7 +45,7 @@ vi.mock('@/api/member', () => ({
 }))
 
 // Shared auth store mock (parses JWT from localStorage)
-import '@/test-utils/auth-mock'
+import '@/test/auth-mock'
 
 import TodoIndex from '../Index.vue'
 
