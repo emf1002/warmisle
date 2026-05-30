@@ -39,12 +39,37 @@ vi.mock('@/api/forum', () => ({
 const mockPush = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: mockPush }),
+  useRoute: () => ({ params: {} }),
+  createRouter: vi.fn(),
+  createWebHashHistory: vi.fn(),
 }))
 
 vi.mock('ant-design-vue', () => ({
   message: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
   Modal: { confirm: vi.fn() },
 }))
+
+vi.mock('@/utils/request', () => ({
+  default: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn(), interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } },
+}))
+
+vi.mock('@/stores/auth', () => {
+  function parseJwt(raw: string) {
+    if (!raw) return null
+    try { return JSON.parse(atob(raw.split('.')[1])) } catch { return null }
+  }
+  return {
+    useAuthStore: () => {
+      const token = localStorage.getItem('token') || ''
+      const payload = parseJwt(token)
+      return {
+        currentUserId: (payload?.member_id as number) || 0,
+        currentUserRole: payload?.role || '',
+        isAdmin: payload?.role === 'admin',
+      }
+    },
+  }
+})
 
 import Forum from '../Index.vue'
 

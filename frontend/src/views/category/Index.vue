@@ -2,7 +2,7 @@
   <div class="category-page" data-testid="category-page">
     <div class="page-header">
       <h2>分类管理</h2>
-      <a-button v-if="isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
+      <a-button v-if="authStore.isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
         添加分类
       </a-button>
     </div>
@@ -22,7 +22,7 @@
         >
           <span class="category-icon">{{ cat.icon }}</span>
           <span class="category-name">{{ cat.name }}</span>
-          <span v-if="isAdmin" class="category-actions">
+          <span v-if="authStore.isAdmin" class="category-actions">
             <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn">编辑</a-button>
             <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn">删除</a-button>
           </span>
@@ -45,7 +45,7 @@
         >
           <span class="category-icon">{{ cat.icon }}</span>
           <span class="category-name">{{ cat.name }}</span>
-          <span v-if="isAdmin" class="category-actions">
+          <span v-if="authStore.isAdmin" class="category-actions">
             <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn">编辑</a-button>
             <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn">删除</a-button>
           </span>
@@ -112,12 +112,15 @@ import {
   updateCategory,
   deleteCategory,
 } from '@/api/category'
+import { useAuthStore } from '@/stores/auth'
 
 const categoryEmojis = [
   '🍜','☕','🚗','🏠','🛒','📱','💊','🎓','👗','🎮',
   '✈️','🏥','🐶','🎬','📚','💼','💰','🎁','📈','🏦',
   '🧧','💳','💵','🎯','🌟','🔧','📦','🎵','🏀','🍀'
 ]
+
+const authStore = useAuthStore()
 
 const categories = ref<any[]>([])
 const dialogOpen = ref(false)
@@ -129,17 +132,6 @@ const form = reactive({
   name: '',
   icon: '📦',
   sort_order: 0,
-})
-
-const isAdmin = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return false
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role === 'admin'
-  } catch {
-    return false
-  }
 })
 
 const expenseCategories = computed(() =>

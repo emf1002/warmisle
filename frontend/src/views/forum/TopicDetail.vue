@@ -56,7 +56,7 @@
             <template #overlay>
               <a-menu>
                 <a-menu-item @click="openEditDialog">编辑</a-menu-item>
-                <a-menu-item v-if="isAdmin" @click="handleTogglePin">
+                <a-menu-item v-if="authStore.isAdmin" @click="handleTogglePin">
                   {{ topic.is_pinned ? '取消置顶' : '置顶' }}
                 </a-menu-item>
                 <a-menu-item danger @click="confirmDelete">删除话题</a-menu-item>
@@ -249,6 +249,7 @@ import {
   toggleLike,
   getTags,
 } from '@/api/forum'
+import { useAuthStore } from '@/stores/auth'
 
 interface MemberInfo {
   id: number
@@ -292,6 +293,7 @@ interface CommentItem {
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const topicId = computed(() => Number(route.params.id))
 
@@ -315,37 +317,15 @@ const editForm = reactive({
   tag_id: undefined as number | undefined,
 })
 
-const currentUserId = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return 0
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return (payload.member_id as number) || 0
-  } catch {
-    return 0
-  }
-})
-
-const isAdmin = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return false
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role === 'admin'
-  } catch {
-    return false
-  }
-})
-
 const canManage = computed(() => {
   if (!topic.value) return false
-  if (isAdmin.value) return true
-  return topic.value.creator_id === currentUserId.value
+  if (authStore.isAdmin) return true
+  return topic.value.creator_id === authStore.currentUserId
 })
 
 function canDeleteComment(comment: CommentItem): boolean {
-  if (isAdmin.value) return true
-  return comment.creator_id === currentUserId.value
+  if (authStore.isAdmin) return true
+  return comment.creator_id === authStore.currentUserId
 }
 
 function timeAgo(date: string): string {

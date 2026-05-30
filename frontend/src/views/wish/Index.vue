@@ -72,19 +72,19 @@
                 <a-menu>
                   <a-menu-item @click="openEdit(wish)">编辑</a-menu-item>
                   <a-menu-item
-                    v-if="wish.type === 'personal' && wish.creator_id === currentUserId"
+                    v-if="wish.type === 'personal' && wish.creator_id === authStore.currentUserId"
                     @click="handlePromote(wish)"
                   >
                     提升为家庭愿望
                   </a-menu-item>
                   <a-menu-item
-                    v-if="isAdmin && wish.status !== 'agreed'"
+                    v-if="authStore.isAdmin && wish.status !== 'agreed'"
                     @click="handleStatusChange(wish, 'agreed')"
                   >
                     标记为同意
                   </a-menu-item>
                   <a-menu-item
-                    v-if="isAdmin && wish.status !== 'achieved'"
+                    v-if="authStore.isAdmin && wish.status !== 'achieved'"
                     @click="handleStatusChange(wish, 'achieved')"
                   >
                     标记为已实现
@@ -164,6 +164,7 @@ import {
   updateWishStatus, voteWish, unvoteWish,
 } from '@/api/wish'
 import EmptyState from '@/components/EmptyState.vue'
+import { useAuthStore } from '@/stores/auth'
 
 interface WishItem {
   id: number
@@ -178,6 +179,8 @@ interface WishItem {
   vote_count: number
   creator: { id: number; name: string; avatar: string }
 }
+
+const authStore = useAuthStore()
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -200,32 +203,14 @@ const typeOptions = [
 
 const hasFilters = computed(() => !!filters.status)
 
-const currentUserId = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return 0
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return (payload.member_id as number) || 0
-  } catch { return 0 }
-})
-
-const isAdmin = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return false
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role === 'admin'
-  } catch { return false }
-})
-
 function canEdit(wish: WishItem): boolean {
-  if (isAdmin.value) return true
-  return wish.creator_id === currentUserId.value
+  if (authStore.isAdmin) return true
+  return wish.creator_id === authStore.currentUserId
 }
 
 function canAbandon(wish: WishItem): boolean {
-  if (isAdmin.value) return true
-  return wish.creator_id === currentUserId.value
+  if (authStore.isAdmin) return true
+  return wish.creator_id === authStore.currentUserId
 }
 
 function priorityColor(p: string): string {

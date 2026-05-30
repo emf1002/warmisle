@@ -236,8 +236,7 @@
         <a-form-item label="日期">
           <a-date-picker
             v-model:value="form.occurred_at"
-            show-time
-            format="YYYY-MM-DD HH:mm:ss"
+            format="YYYY-MM-DD"
             style="width: 100%"
             data-testid="date-picker"
           />
@@ -269,6 +268,7 @@ import {
 } from '@/api/ledger'
 import { getCategories } from '@/api/category'
 import { getMembers } from '@/api/member'
+import { useAuthStore } from '@/stores/auth'
 
 // Types
 interface Member {
@@ -315,6 +315,7 @@ interface Filters {
 }
 
 // State
+const authStore = useAuthStore()
 const loading = ref(false)
 const loadingMore = ref(false)
 const submitting = ref(false)
@@ -357,28 +358,6 @@ const incomeCategories = computed(() =>
   categories.value.filter((c) => c.type === 'income')
 )
 
-const currentUserRole = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return ''
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role || ''
-  } catch {
-    return ''
-  }
-})
-
-const currentUserId = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return 0
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return (payload.member_id as number) || 0
-  } catch {
-    return 0
-  }
-})
-
 // Helpers
 function formatYuan(cents: number): string {
   return `\u00A5${(cents / 100).toFixed(2)}`
@@ -404,7 +383,7 @@ function truncate(text: string, maxLen: number): string {
 }
 
 function canEdit(item: LedgerItem): boolean {
-  return item.creator_id === currentUserId.value || currentUserRole.value === 'admin'
+  return item.creator_id === authStore.currentUserId || authStore.currentUserRole === 'admin'
 }
 
 // Methods
@@ -412,14 +391,14 @@ function getMonthParam(): string {
   return selectedMonth.value.format('YYYY-MM')
 }
 
-function goPrevMonth() {
+async function goPrevMonth() {
   selectedMonth.value = selectedMonth.value.subtract(1, 'month')
-  fetchLedgers()
+  await fetchLedgers()
 }
 
-function goNextMonth() {
+async function goNextMonth() {
   selectedMonth.value = selectedMonth.value.add(1, 'month')
-  fetchLedgers()
+  await fetchLedgers()
 }
 
 async function fetchLedgers(isLoadMore = false) {
@@ -466,15 +445,15 @@ async function loadMore() {
   await fetchLedgers(true)
 }
 
-function onFilterChange() {
-  fetchLedgers()
+async function onFilterChange() {
+  await fetchLedgers()
 }
 
-function clearFilters() {
+async function clearFilters() {
   filters.member_id = undefined
   filters.category_id = undefined
   filters.creator_id = undefined
-  fetchLedgers()
+  await fetchLedgers()
 }
 
 function openCreate() {
@@ -523,7 +502,7 @@ async function handleSubmit() {
   submitting.value = true
   try {
     const payload: any = {
-      amount: form.amount!,
+      amount: Math.round(form.amount! * 100),  // 元转分
       note: form.note,
       category_id: form.category_id,
       member_ids: form.member_ids,
@@ -533,19 +512,17 @@ async function handleSubmit() {
     }
 
     if (editingRecord.value) {
-      if (payload.amount !== undefined) {
-        payload.amount = form.amount!
-      }
       await updateLedger(editingRecord.value.id, payload)
       message.success('✅ 更新成功')
     } else {
       await createLedger(payload)
       message.success('✅ 记账成功')
     }
+    // 先刷新数据再关闭弹窗，确保数据加载完成后用户立即可见
+    await fetchLedgers()
     dialogOpen.value = false
-    fetchLedgers()
   } catch {
-    // error handled by interceptor
+    // API 错误已由 Axios 拦截器统一处理
   } finally {
     submitting.value = false
   }
@@ -563,8 +540,8 @@ function confirmDelete() {
       try {
         await deleteLedger(editingRecord.value!.id)
         message.success('✅ 删除成功')
+        await fetchLedgers()
         dialogOpen.value = false
-        fetchLedgers()
       } catch (e: any) {
         if (e?.response?.data?.message) {
           message.error(e.response.data.message)
@@ -587,7 +564,7 @@ onMounted(async () => {
   } catch {
     // error handled by interceptor
   }
-  fetchLedgers()
+  await fetchLedgers()
 })
 </script>
 

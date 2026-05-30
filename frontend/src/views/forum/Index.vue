@@ -50,7 +50,7 @@
               <span class="feed-action" @click.stop>⋯</span>
               <template #overlay>
                 <a-menu @click="(e: any) => onMenuClick(e, item)">
-                  <a-menu-item v-if="isAdmin" key="pin">
+                  <a-menu-item v-if="authStore.isAdmin" key="pin">
                     {{ item.is_pinned ? '取消置顶' : '置顶' }}
                   </a-menu-item>
                   <a-menu-item key="edit">编辑</a-menu-item>
@@ -124,7 +124,7 @@
                 <span class="feed-action" @click.stop>⋯</span>
                 <template #overlay>
                   <a-menu @click="(e: any) => onMenuClick(e, item)">
-                    <a-menu-item v-if="isAdmin" key="pin">
+                    <a-menu-item v-if="authStore.isAdmin" key="pin">
                       {{ item.is_pinned ? '取消置顶' : '置顶' }}
                     </a-menu-item>
                     <a-menu-item key="edit">编辑</a-menu-item>
@@ -263,6 +263,7 @@ import {
   getTags,
 } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
+import { useAuthStore } from '@/stores/auth'
 
 interface MemberInfo {
   id: number
@@ -291,6 +292,7 @@ interface FeedItem {
 }
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const isMobile = ref(window.innerWidth < 768)
 const showCreateSheet = ref(false)
@@ -323,28 +325,6 @@ const topicForm = reactive({
   tag_id: undefined as number | undefined,
 })
 
-const currentUserId = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return 0
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return (payload.member_id as number) || 0
-  } catch {
-    return 0
-  }
-})
-
-const isAdmin = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return false
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role === 'admin'
-  } catch {
-    return false
-  }
-})
-
 function truncate(text: string, maxLen: number): string {
   if (!text) return ''
   if (text.length <= maxLen) return text
@@ -371,8 +351,8 @@ function goToDetail(item: FeedItem) {
 }
 
 function canManage(item: FeedItem): boolean {
-  if (isAdmin.value) return true
-  return item.creator.id === currentUserId.value
+  if (authStore.isAdmin) return true
+  return item.creator.id === authStore.currentUserId
 }
 
 function handleFeedAction(key: string, item: FeedItem) {

@@ -2,7 +2,7 @@
   <div class="member-page" data-testid="member-page">
     <div class="page-header">
       <h2>成员管理</h2>
-      <a-button v-if="isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
+      <a-button v-if="authStore.isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
         添加成员
       </a-button>
     </div>
@@ -29,7 +29,7 @@
           </a-tag>
         </template>
         <template v-if="column.key === 'action'">
-          <a-space v-if="isAdmin">
+          <a-space v-if="authStore.isAdmin">
             <a-button type="link" size="small" @click="openEdit(record)" data-testid="edit-btn">编辑</a-button>
             <a-button
               v-if="record.status === 'active'"
@@ -129,12 +129,15 @@ import {
   enableMember,
   resetPassword,
 } from '@/api/member'
+import { useAuthStore } from '@/stores/auth'
 
 const emojiList = [
   '👨','👩','👦','👧','👶','👴','👵','🐶','🐱','🏠',
   '💪','🎯','📚','🎮','🎨','🏀','🏊','🚗','✈️','🎵',
   '📷','💰','🔑','🌟','🔥','❤️','🍀','⭐','🎪','🐕','🐈','🏸'
 ]
+
+const authStore = useAuthStore()
 
 const members = ref<any[]>([])
 const dialogOpen = ref(false)
@@ -149,17 +152,6 @@ const form = reactive({
   role: 'member',
 })
 
-const isAdmin = computed(() => {
-  const token = localStorage.getItem('token')
-  if (!token) return false
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role === 'admin'
-  } catch {
-    return false
-  }
-})
-
 const columns = computed(() => {
   const cols: any[] = [
     { title: '成员', key: 'name', dataIndex: 'name' },
@@ -167,7 +159,7 @@ const columns = computed(() => {
     { title: '角色', key: 'role', dataIndex: 'role' },
     { title: '状态', key: 'status', dataIndex: 'status' },
   ]
-  if (isAdmin.value) {
+  if (authStore.isAdmin) {
     cols.push({ title: '操作', key: 'action', width: 280 })
   }
   return cols

@@ -163,6 +163,7 @@ import dayjs from 'dayjs'
 import { getTodoList, createTodo, updateTodo, deleteTodo, toggleTodo, claimTodo } from '@/api/todo'
 import { getMembers } from '@/api/member'
 import EmptyState from '@/components/EmptyState.vue'
+import { useAuthStore } from '@/stores/auth'
 
 interface Member {
   id: number
@@ -185,6 +186,8 @@ interface TodoItem {
   creator: Member
 }
 
+const authStore = useAuthStore()
+
 const loading = ref(false)
 const submitting = ref(false)
 const dialogOpen = ref(false)
@@ -202,28 +205,10 @@ const filters = reactive({
 
 const hasFilters = computed(() => filters.status || filters.assignee_id)
 
-function getCurrentUserId(): number {
-  const token = localStorage.getItem('token')
-  if (!token) return 0
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return (payload.member_id as number) || 0
-  } catch { return 0 }
-}
-
-function getCurrentUserRole(): string {
-  const token = localStorage.getItem('token')
-  if (!token) return ''
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.role || ''
-  } catch { return '' }
-}
-
 function canEdit(todo: TodoItem): boolean {
-  if (getCurrentUserRole() === 'admin') return true
-  if (todo.creator_id === getCurrentUserId()) return true
-  if (todo.assignee_id === getCurrentUserId()) return true
+  if (authStore.currentUserRole === 'admin') return true
+  if (todo.creator_id === authStore.currentUserId) return true
+  if (todo.assignee_id === authStore.currentUserId) return true
   return false
 }
 
