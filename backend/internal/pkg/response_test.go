@@ -74,15 +74,3 @@ func TestError_403Forbidden(t *testing.T) {
 
 	assert.Equal(t, 403, w.Code)
 }
-
-func TestPageData_Structure(t *testing.T) {
-	pd := PageData{
-		List:     []string{"a", "b"},
-		Total:    2,
-		Page:     1,
-		PageSize: 20,
-	}
-	assert.Equal(t, int64(2), pd.Total)
-	assert.Equal(t, 1, pd.Page)
-	assert.Equal(t, 20, pd.PageSize)
-}

@@ -8,13 +8,6 @@ type Response struct {
 	Data    interface{} `json:"data"`
 }
 
-type PageData struct {
-	List     interface{} `json:"list"`
-	Total    int64       `json:"total"`
-	Page     int         `json:"page"`
-	PageSize int         `json:"page_size"`
-}
-
 func Success(c *gin.Context, data interface{}) {
 	c.JSON(200, Response{Code: 0, Message: "ok", Data: data})
 }
