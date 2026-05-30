@@ -1,5 +1,6 @@
 import '@/styles/themes.css'
 import '@/styles/global.css'
+import '@/styles/components.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import Antd from 'ant-design-vue'

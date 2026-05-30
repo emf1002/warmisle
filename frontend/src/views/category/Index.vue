@@ -232,17 +232,6 @@ function confirmDelete(record: any) {
   padding: 24px;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
 .category-section {
   margin-bottom: 32px;
 }
@@ -300,32 +289,4 @@ function confirmDelete(record: any) {
   flex-shrink: 0;
 }
 
-.emoji-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.emoji-item {
-  font-size: 24px;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
-  min-width: 40px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.emoji-item:hover {
-  border-color: var(--color-border);
-}
-
-.emoji-item.active {
-  border-color: var(--color-brand);
-  background: var(--color-brand-light);
-}
 </style>

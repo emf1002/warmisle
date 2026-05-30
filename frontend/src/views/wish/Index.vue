@@ -415,36 +415,6 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.page-header h2 { margin: 0; }
-
-.filter-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 48px 0;
-  color: var(--color-text-secondary);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 48px 0;
-}
-
 .wish-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -514,12 +484,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.pagination-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
 }
 
 .vote-ended {

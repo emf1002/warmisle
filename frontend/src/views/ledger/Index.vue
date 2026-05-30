@@ -617,19 +617,6 @@ onMounted(async () => {
   color: var(--color-text-secondary);
 }
 
-/* Filter Row */
-.filter-row {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-md);
-  flex-wrap: wrap;
-  align-items: center;
-  padding: var(--space-sm);
-  background: var(--color-bg-container);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-level-1);
-}
-
 .category-group-label {
   font-weight: 600;
   color: var(--color-text-secondary);
@@ -650,21 +637,6 @@ onMounted(async () => {
   font-size: 16px;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-}
-
-/* Loading & Empty */
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 48px 0;
-  color: var(--color-text-secondary);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 48px 0;
-  color: var(--color-text-secondary);
 }
 
 /* Date Group */

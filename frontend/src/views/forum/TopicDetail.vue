@@ -550,18 +550,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 48px 0;
-  color: var(--color-text-secondary);
-}
-
-.empty-state {
-  padding: 48px 0;
-}
-
 /* Topic card */
 .topic-card {
   background: var(--color-bg-container);

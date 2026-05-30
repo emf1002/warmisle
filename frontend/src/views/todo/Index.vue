@@ -363,40 +363,6 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.page-header h2 { margin: 0; }
-
-.filter-row {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-md);
-  flex-wrap: wrap;
-  align-items: center;
-  padding: var(--space-sm);
-  background: var(--color-bg-container);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-level-1);
-}
-
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 48px 0;
-  color: var(--color-text-secondary);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 48px 0;
-}
-
 .todo-list {
   display: flex;
   flex-direction: column;
@@ -527,12 +493,6 @@ onMounted(async () => {
   gap: 0;
   flex-shrink: 0;
   min-height: 44px;
-}
-
-.pagination-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
 }
 
 @media (max-width: 767px) {

@@ -536,33 +536,9 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
 .header-actions {
   display: flex;
   gap: 8px;
-}
-
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 48px 0;
-  color: var(--color-text-secondary);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 48px 0;
 }
 
 /* ==================== Pinned Section ==================== */
@@ -781,13 +757,6 @@ onMounted(() => {
 .sheet-option-label {
   font-size: 16px;
   font-weight: 500;
-}
-
-/* ==================== Pagination ==================== */
-.pagination-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
 }
 
 /* ==================== Mobile ==================== */
