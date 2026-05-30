@@ -12,7 +12,7 @@
       @mouseleave="onSidebarMouseLeave"
     >
       <div class="sidebar-logo" @click="$router.push('/')">
-        <span class="sidebar-logo-icon">🏠</span>
+        <LogoIcon :size="32" />
         <span class="sidebar-logo-text">暖屿</span>
       </div>
 
@@ -133,6 +133,7 @@ import { useAuthStore } from '@/stores/auth'
 import { getProfile } from '@/api/member'
 import { useThemeStore } from '@/stores/theme'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import LogoIcon from '@/components/LogoIcon.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -325,18 +326,13 @@ function onBottomTabClick(key: string) {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 56px;
   padding: 0 16px;
   cursor: pointer;
   border-bottom: 1px solid var(--sidebar-border);
   overflow: hidden;
   white-space: nowrap;
-}
-
-.sidebar-logo-icon {
-  font-size: 20px;
-  margin-right: 8px;
-  flex-shrink: 0;
 }
 
 .sidebar-logo-text {

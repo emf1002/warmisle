@@ -72,7 +72,7 @@
       <!-- 右侧：卡片区 -->
       <div class="auth-card-wrapper">
         <div v-if="!showBrand || isMobile" class="auth-header-compact">
-          <span class="auth-logo-icon">🏠</span>
+          <LogoIcon :size="28" />
           <h1 class="auth-title-compact">暖屿 · WarmIsle</h1>
         </div>
         <div class="auth-card">
@@ -89,6 +89,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useThemeStore } from '@/stores/theme'
+import LogoIcon from '@/components/LogoIcon.vue'
 
 const themeStore = useThemeStore()
 const isDark = computed(() => themeStore.theme === 'dark')
@@ -405,12 +406,10 @@ onUnmounted(() => {
 .auth-header-compact {
   text-align: center;
   margin-bottom: 24px;
-}
-
-.auth-logo-icon {
-  font-size: 48px;
-  display: block;
-  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .auth-title-compact {

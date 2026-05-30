@@ -154,7 +154,7 @@ describe('Category API', () => {
     it('returns success response', async () => {
       mockRequest.delete.mockResolvedValue({ code: 0, message: 'ok', data: null })
 
-      const res = await deleteCategory(5)
+      const res = await deleteCategory(5) as any
       expect(res.code).toBe(0)
     })
   })
