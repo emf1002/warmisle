@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
 export function getLedgers(params: {
-  month?: string
-  member_id?: number
+  start_date?: string
+  end_date?: string
   category_id?: number
   creator_id?: number
   page?: number
@@ -19,7 +19,6 @@ export function createLedger(data: {
   amount: number
   note?: string
   category_id: number
-  member_ids: number[]
   occurred_at?: string
 }) {
   return request.post('/ledgers', data)
@@ -29,7 +28,6 @@ export function updateLedger(id: number, data: {
   amount?: number
   note?: string
   category_id?: number
-  member_ids?: number[]
   occurred_at?: string
 }) {
   return request.put(`/ledgers/${id}`, data)

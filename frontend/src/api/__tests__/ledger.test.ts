@@ -43,10 +43,10 @@ describe('Ledger API', () => {
         },
       })
 
-      const res = await getLedgers({ month: '2026-05', page: 1, page_size: 20 })
+      const res = await getLedgers({ start_date: '2026-05-01', end_date: '2026-05-31', page: 1, page_size: 20 })
 
       expect(mockRequest.get).toHaveBeenCalledWith('/ledgers', {
-        params: { month: '2026-05', page: 1, page_size: 20 },
+        params: { start_date: '2026-05-01', end_date: '2026-05-31', page: 1, page_size: 20 },
       })
 
       // Top-level response keys
@@ -110,7 +110,6 @@ describe('Ledger API', () => {
         amount: 5000,
         note: '晚餐',
         category_id: 2,
-        member_ids: [1],
         occurred_at: '2026-05-23',
       }
 
