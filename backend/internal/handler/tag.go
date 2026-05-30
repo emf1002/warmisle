@@ -71,7 +71,7 @@ func (h *TagHandler) Update(c *gin.Context) {
 	tag, err := h.svc.UpdateTag(uint(id), req.Name)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumTagNotFound, 404, 40001, "标签不存在"},
+			serviceError{service.ErrForumTagNotFound, 404, 40401, "标签不存在"},
 			serviceError{service.ErrForumContentRequired, 400, 40001, "名称不能为空"},
 			serviceError{service.ErrForumTagNameTaken, 409, 40002, "标签名已存在"},
 		)

@@ -77,7 +77,7 @@ func (h *ForumHandler) UpdatePost(c *gin.Context) {
 	result, err := h.svc.UpdatePost(uint(id), req.Content, getMemberID(c), getRole(c))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumPostNotFound, 404, 40001, "动态不存在"},
+			serviceError{service.ErrForumPostNotFound, 404, 40401, "动态不存在"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "只能编辑自己的动态"},
 			serviceError{service.ErrForumContentRequired, 400, 40001, "内容不能为空"},
 		)
@@ -96,7 +96,7 @@ func (h *ForumHandler) DeletePost(c *gin.Context) {
 
 	if err := h.svc.DeletePost(uint(id), getMemberID(c), getRole(c)); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumPostNotFound, 404, 40001, "动态不存在"},
+			serviceError{service.ErrForumPostNotFound, 404, 40401, "动态不存在"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "只能删除自己的动态"},
 		)
 		return
@@ -147,7 +147,7 @@ func (h *ForumHandler) UpdateTopic(c *gin.Context) {
 	result, err := h.svc.UpdateTopic(uint(id), req.Title, req.Content, req.TagID, getMemberID(c), getRole(c))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumTopicNotFound, 404, 40001, "话题不存在"},
+			serviceError{service.ErrForumTopicNotFound, 404, 40401, "话题不存在"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "只能编辑自己的话题"},
 			serviceError{service.ErrForumTitleRequired, 400, 40001, "标题不能为空"},
 		)
@@ -166,7 +166,7 @@ func (h *ForumHandler) DeleteTopic(c *gin.Context) {
 
 	if err := h.svc.DeleteTopic(uint(id), getMemberID(c), getRole(c)); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumTopicNotFound, 404, 40001, "话题不存在"},
+			serviceError{service.ErrForumTopicNotFound, 404, 40401, "话题不存在"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "只能删除自己的话题"},
 		)
 		return
@@ -185,7 +185,7 @@ func (h *ForumHandler) TogglePin(c *gin.Context) {
 	result, err := h.svc.TogglePin(uint(id), getRole(c))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumTopicNotFound, 404, 40001, "话题不存在"},
+			serviceError{service.ErrForumTopicNotFound, 404, 40401, "话题不存在"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "权限不足"},
 		)
 		return
@@ -204,7 +204,7 @@ func (h *ForumHandler) GetTopic(c *gin.Context) {
 	result, err := h.svc.GetTopic(uint(id), getMemberID(c))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumTopicNotFound, 404, 40001, "话题不存在"},
+			serviceError{service.ErrForumTopicNotFound, 404, 40401, "话题不存在"},
 		)
 		return
 	}
@@ -254,7 +254,7 @@ func (h *ForumHandler) CreateComment(c *gin.Context) {
 		handleServiceError(c, err,
 			serviceError{service.ErrForumInvalidTargetType, 400, 40001, "无效的评论目标类型"},
 			serviceError{service.ErrForumContentRequired, 400, 40001, "内容不能为空"},
-			serviceError{service.ErrForumCommentNotFound, 404, 40001, "父评论不存在"},
+			serviceError{service.ErrForumCommentNotFound, 404, 40401, "父评论不存在"},
 			serviceError{service.ErrForumNestingTooDeep, 400, 40001, "不能回复二级评论"},
 		)
 		return
@@ -272,7 +272,7 @@ func (h *ForumHandler) DeleteComment(c *gin.Context) {
 
 	if err := h.svc.DeleteComment(uint(id), getMemberID(c), getRole(c)); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumCommentNotFound, 404, 40001, "评论不存在"},
+			serviceError{service.ErrForumCommentNotFound, 404, 40401, "评论不存在"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "只能删除自己的评论"},
 		)
 		return
@@ -342,7 +342,7 @@ func (h *ForumHandler) DeleteVote(c *gin.Context) {
 
 	if err := h.svc.DeleteVote(uint(id), getMemberID(c), getRole(c)); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumVoteNotFound, 404, 40001, "投票不存在"},
+			serviceError{service.ErrForumVoteNotFound, 404, 40401, "投票不存在"},
 			serviceError{service.ErrForumVoteDeadlinePassed, 400, 40001, "投票已截止，不能删除"},
 			serviceError{service.ErrForumPermissionDenied, 403, 40301, "只能删除自己创建的投票"},
 		)
@@ -370,7 +370,7 @@ func (h *ForumHandler) Vote(c *gin.Context) {
 	result, err := h.svc.Vote(uint(id), req.OptionID, getMemberID(c))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumVoteNotFound, 404, 40001, "投票不存在"},
+			serviceError{service.ErrForumVoteNotFound, 404, 40401, "投票不存在"},
 			serviceError{service.ErrForumVoteDeadlinePassed, 400, 40001, "投票已截止"},
 			serviceError{service.ErrForumAlreadyVoted, 400, 40001, "已投票"},
 		)
@@ -390,7 +390,7 @@ func (h *ForumHandler) GetVote(c *gin.Context) {
 	result, err := h.svc.GetVote(uint(id), getMemberID(c))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrForumVoteNotFound, 404, 40001, "投票不存在"},
+			serviceError{service.ErrForumVoteNotFound, 404, 40401, "投票不存在"},
 		)
 		return
 	}

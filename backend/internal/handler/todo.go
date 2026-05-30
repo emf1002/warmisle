@@ -149,7 +149,7 @@ func (h *TodoHandler) Update(c *gin.Context) {
 	result, err := h.svc.Update(uint(id), req.Title, req.Description, req.Priority, req.AssigneeID, dueDate, currentMemberID, currentRole)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoNotFound, 404, 40401, "待办事项不存在"},
 			serviceError{service.ErrTodoPermissionDenied, 403, 40301, "只能编辑自己创建或负责的待办"},
 			serviceError{service.ErrTodoTitleRequired, 400, 40001, "标题不能为空"},
 			serviceError{service.ErrTodoInvalidPriority, 400, 40001, "优先级无效"},
@@ -174,7 +174,7 @@ func (h *TodoHandler) Delete(c *gin.Context) {
 
 	if err := h.svc.Delete(uint(id), currentMemberID, currentRole); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoNotFound, 404, 40401, "待办事项不存在"},
 			serviceError{service.ErrTodoPermissionDenied, 403, 40301, "只能删除自己创建的待办"},
 		)
 		return
@@ -197,7 +197,7 @@ func (h *TodoHandler) Toggle(c *gin.Context) {
 	result, err := h.svc.Toggle(uint(id), currentMemberID, currentRole)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoNotFound, 404, 40401, "待办事项不存在"},
 			serviceError{service.ErrTodoPermissionDenied, 403, 40301, "只能操作自己创建或负责的待办"},
 		)
 		return
@@ -219,7 +219,7 @@ func (h *TodoHandler) Claim(c *gin.Context) {
 	result, err := h.svc.Claim(uint(id), currentMemberID)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrTodoNotFound, 404, 40001, "待办事项不存在"},
+			serviceError{service.ErrTodoNotFound, 404, 40401, "待办事项不存在"},
 			serviceError{service.ErrTodoAlreadyAssigned, 400, 40001, "该待办已被认领"},
 		)
 		return

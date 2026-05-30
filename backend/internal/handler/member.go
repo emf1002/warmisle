@@ -68,7 +68,7 @@ func (h *MemberHandler) Update(c *gin.Context) {
 	member, err := h.svc.Update(uint(id), req.Name, req.Avatar, req.Role)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 			serviceError{service.ErrCannotDeleteLastAdmin, 400, 40003, "不能修改最后一个管理员的角色"},
 			serviceError{service.ErrInvalidName, 400, 40001, "名称长度需在1-20位之间"},
 		)
@@ -90,7 +90,7 @@ func (h *MemberHandler) Delete(c *gin.Context) {
 
 	if err := h.svc.Delete(uint(id), currentMemberID); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 			serviceError{service.ErrCannotDeleteLastAdmin, 400, 40003, "不能删除最后一个管理员"},
 			serviceError{service.ErrHasActivityRecords, 400, 40004, "该成员有活动记录，建议禁用而非删除"},
 		)
@@ -112,7 +112,7 @@ func (h *MemberHandler) Disable(c *gin.Context) {
 
 	if err := h.svc.Disable(uint(id), currentMemberID); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 			serviceError{service.ErrCannotDisableSelf, 400, 40005, "不能禁用自己"},
 			serviceError{service.ErrCannotDeleteLastAdmin, 400, 40003, "不能禁用最后一个管理员"},
 		)
@@ -132,7 +132,7 @@ func (h *MemberHandler) Enable(c *gin.Context) {
 	member, err := h.svc.Enable(uint(id))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 		)
 		return
 	}
@@ -149,7 +149,7 @@ func (h *MemberHandler) ResetPassword(c *gin.Context) {
 
 	if err := h.svc.ResetPassword(uint(id)); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 		)
 		return
 	}
@@ -204,7 +204,7 @@ func (h *MemberHandler) GetProfile(c *gin.Context) {
 	member, err := h.svc.GetProfile(memberID)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 		)
 		return
 	}
@@ -229,7 +229,7 @@ func (h *MemberHandler) ChangePassword(c *gin.Context) {
 
 	if err := h.svc.ChangePassword(memberID, req.OldPassword, req.NewPassword); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrMemberNotFound, 404, 40001, "成员不存在"},
+			serviceError{service.ErrMemberNotFound, 404, 40401, "成员不存在"},
 			serviceError{service.ErrIncorrectPassword, 400, 40010, "原密码错误"},
 			serviceError{service.ErrInvalidPassword, 400, 40001, "新密码长度需在6-32位之间"},
 		)

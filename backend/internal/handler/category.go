@@ -76,7 +76,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 	cat, err := h.svc.Update(uint(id), req.Type, req.Name, req.Icon, req.SortOrder)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrCategoryNotFound, 404, 40001, "分类不存在"},
+			serviceError{service.ErrCategoryNotFound, 404, 40401, "分类不存在"},
 			serviceError{service.ErrCategoryExists, 409, 40002, "同类型下已存在同名分类"},
 		)
 		return

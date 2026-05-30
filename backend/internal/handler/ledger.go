@@ -82,7 +82,7 @@ func (h *LedgerHandler) GetByID(c *gin.Context) {
 	result, err := h.svc.FindByID(uint(id))
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrLedgerNotFound, 404, 40001, "记账记录不存在"},
+			serviceError{service.ErrLedgerNotFound, 404, 40401, "记账记录不存在"},
 		)
 		return
 	}
@@ -203,7 +203,7 @@ func (h *LedgerHandler) Update(c *gin.Context) {
 	result, err := h.svc.Update(uint(id), amountCents, req.Note, req.CategoryID, req.MemberIDs, occurredAt, currentMemberID, currentRole)
 	if err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrLedgerNotFound, 404, 40001, "记账记录不存在"},
+			serviceError{service.ErrLedgerNotFound, 404, 40401, "记账记录不存在"},
 			serviceError{service.ErrLedgerPermissionDenied, 403, 40301, "只能修改自己创建的记录"},
 			serviceError{service.ErrInvalidAmount, 400, 40001, "金额必须大于 0"},
 			serviceError{service.ErrLedgerCategoryNotFound, 400, 40001, "分类不存在"},
@@ -228,7 +228,7 @@ func (h *LedgerHandler) Delete(c *gin.Context) {
 
 	if err := h.svc.Delete(uint(id), currentMemberID, currentRole); err != nil {
 		handleServiceError(c, err,
-			serviceError{service.ErrLedgerNotFound, 404, 40001, "记账记录不存在"},
+			serviceError{service.ErrLedgerNotFound, 404, 40401, "记账记录不存在"},
 			serviceError{service.ErrLedgerPermissionDenied, 403, 40301, "只能删除自己创建的记录"},
 		)
 		return
