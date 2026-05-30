@@ -17,7 +17,9 @@ func setupMemberTest() {
 	initJWT()
 }
 
-// setupTestRouter 创建完整的 Gin 路由，注册所有端点和中间件
+// setupTestRouter creates a full Gin router with all endpoints and middleware.
+// Note: This mirrors routes.Register() but cannot import routes directly
+// due to the circular dependency (routes -> handler -> routes).
 func setupTestRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
