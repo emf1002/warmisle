@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8C42;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E85D2C;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF8F0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFF0E0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Badge background -->
+  <rect x="1" y="1" width="30" height="30" rx="6" fill="url(#bgGrad)" stroke="url(#badgeGrad)" stroke-width="1.5"/>
+
+  <!-- Sun rays -->
+  <line x1="16" y1="4" x2="16" y2="7" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="16" y1="25" x2="16" y2="28" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="4" y1="16" x2="7" y2="16" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="25" y1="16" x2="28" y2="16" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- House roof -->
+  <polygon points="16,9 9,16 23,16" fill="url(#badgeGrad)"/>
+
+  <!-- House body -->
+  <rect x="11" y="16" width="10" height="7" rx="0.5" fill="url(#badgeGrad)"/>
+
+  <!-- Door -->
+  <rect x="14" y="18" width="4" height="5" rx="0.5" fill="#FFF8F0"/>
+
+  <!-- Island wave -->
+  <path d="M8,25 Q12,23 16,25 Q20,27 24,25" stroke="#4ECDC4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>
