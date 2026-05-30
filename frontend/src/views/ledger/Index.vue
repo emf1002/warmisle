@@ -5,17 +5,15 @@
       <h2>记账本</h2>
     </div>
 
-    <!-- Month Switcher -->
+    <!-- Date Range Picker -->
     <div class="month-row">
-      <div class="month-switcher">
-        <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月">
-          ◀
-        </a-button>
-        <span class="month-text">{{ selectedMonth.format('YYYY年M月') }}</span>
-        <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月">
-          ▶
-        </a-button>
-      </div>
+      <a-range-picker
+        v-model:value="dateRange"
+        format="YYYY-MM-DD"
+        :presets="rangePresets"
+        @change="onDateRangeChange"
+        data-testid="date-range-picker"
+      />
       <a-button type="primary" @click="openCreate()" data-testid="add-btn">记一笔</a-button>
     </div>
 
@@ -39,17 +37,6 @@
 
     <!-- Filters -->
     <div class="filter-row">
-      <a-select
-        v-model:value="filters.member_id"
-        placeholder="全部成员"
-        allow-clear
-        style="width: 140px"
-        @change="onFilterChange"
-      >
-        <a-select-option v-for="m in members" :key="m.id" :value="m.id">
-          {{ m.avatar }} {{ m.name }}
-        </a-select-option>
-      </a-select>
       <a-select
         v-model:value="filters.category_id"
         placeholder="全部分类"
@@ -92,7 +79,7 @@
 
     <!-- Empty State -->
     <div v-else-if="groups.length === 0" class="empty-state">
-      <p>本月还没有记录，记一笔吧</p>
+      <p>当前时间段还没有记录，记一笔吧</p>
       <a-button type="primary" @click="openCreate()">记一笔</a-button>
     </div>
 
@@ -132,11 +119,6 @@
             <span class="item-note">{{ truncate(item.note, 30) }}</span>
           </div>
           <div class="item-bottom">
-            <span v-if="item.members && item.members.length > 0" class="item-members">
-              关联：<span v-for="m in item.members.slice(0, 4)" :key="m.id" class="member-tag">{{ m.avatar }}</span>
-              <span v-if="item.members.length > 4" class="member-more">等 {{ item.members.length }} 人</span>
-            </span>
-            <span v-else class="item-members"></span>
             <span class="item-amount" :class="item.category.type === 'income' ? 'income-amount' : 'expense-amount'">
               {{ item.category.type === 'income' ? '+' : '-' }}¥{{ (item.amount / 100).toFixed(2) }}
             </span>
@@ -221,18 +203,6 @@
             data-testid="amount-input"
           />
         </a-form-item>
-        <a-form-item label="关联成员" required>
-          <a-select
-            v-model:value="form.member_ids"
-            mode="multiple"
-            placeholder="选择成员"
-            data-testid="member-select"
-          >
-            <a-select-option v-for="m in members" :key="m.id" :value="m.id">
-              {{ m.avatar }} {{ m.name }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
         <a-form-item label="日期">
           <a-date-picker
             v-model:value="form.occurred_at"
@@ -295,7 +265,6 @@ interface LedgerItem {
   occurred_at: string
   category: Category
   creator: Member
-  members: Member[]
 }
 
 interface LedgerGroup {
@@ -311,7 +280,6 @@ interface LedgerSummary {
 }
 
 interface Filters {
-  member_id: number | undefined
   category_id: number | undefined
   creator_id: number | undefined
 }
@@ -324,7 +292,7 @@ const submitting = ref(false)
 const dialogOpen = ref(false)
 const editingRecord = ref<LedgerItem | null>(null)
 
-const selectedMonth = ref<Dayjs>(dayjs())
+const dateRange = ref<[Dayjs, Dayjs]>([dayjs().startOf('month'), dayjs().endOf('month')])
 const members = ref<Member[]>([])
 const categories = ref<Category[]>([])
 const groups = ref<LedgerGroup[]>([])
@@ -333,8 +301,15 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = 20
 
+const rangePresets = [
+  { label: '本月', value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
+  { label: '上月', value: [dayjs().subtract(1, 'month').startOf('month'), dayjs().subtract(1, 'month').endOf('month')] as [Dayjs, Dayjs] },
+  { label: '近三个月', value: [dayjs().subtract(2, 'month').startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
+  { label: '近半年', value: [dayjs().subtract(5, 'month').startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
+  { label: '今年', value: [dayjs().startOf('year'), dayjs().endOf('year')] as [Dayjs, Dayjs] },
+]
+
 const filters = reactive<Filters>({
-  member_id: undefined,
   category_id: undefined,
   creator_id: undefined,
 })
@@ -342,7 +317,6 @@ const filters = reactive<Filters>({
 const form = reactive({
   category_id: undefined as number | undefined,
   amount: null as number | null,
-  member_ids: [] as number[],
   occurred_at: null as Dayjs | null,
   note: '',
 })
@@ -370,18 +344,11 @@ function canEdit(item: LedgerItem): boolean {
 }
 
 // Methods
-function getMonthParam(): string {
-  return selectedMonth.value.format('YYYY-MM')
-}
-
-function goPrevMonth() {
-  selectedMonth.value = selectedMonth.value.subtract(1, 'month')
-  fetchLedgers()
-}
-
-function goNextMonth() {
-  selectedMonth.value = selectedMonth.value.add(1, 'month')
-  fetchLedgers()
+function onDateRangeChange(dates: [Dayjs, Dayjs] | null) {
+  if (dates) {
+    dateRange.value = dates
+    fetchLedgers()
+  }
 }
 
 async function fetchLedgers(isLoadMore = false) {
@@ -394,11 +361,11 @@ async function fetchLedgers(isLoadMore = false) {
 
   try {
     const params: Record<string, unknown> = {
-      month: getMonthParam(),
+      start_date: dateRange.value[0].format('YYYY-MM-DD'),
+      end_date: dateRange.value[1].add(1, 'day').format('YYYY-MM-DD'),
       page: page.value,
       page_size: pageSize,
     }
-    if (filters.member_id) params.member_id = filters.member_id
     if (filters.category_id) params.category_id = filters.category_id
     if (filters.creator_id) params.creator_id = filters.creator_id
 
@@ -433,7 +400,6 @@ function onFilterChange() {
 }
 
 function clearFilters() {
-  filters.member_id = undefined
   filters.category_id = undefined
   filters.creator_id = undefined
   fetchLedgers()
@@ -443,7 +409,6 @@ function openCreate() {
   editingRecord.value = null
   form.category_id = undefined
   form.amount = null
-  form.member_ids = []
   form.occurred_at = dayjs()
   form.note = ''
   categoryTab.value = 'expense'
@@ -454,7 +419,6 @@ function openEdit(record: LedgerItem) {
   editingRecord.value = record
   form.category_id = record.category_id
   form.amount = record.amount / 100
-  form.member_ids = record.members ? record.members.map((m) => m.id) : []
   form.occurred_at = dayjs(record.occurred_at)
   form.note = record.note || ''
   const cat = categories.value.find(c => c.id === record.category_id)
@@ -477,10 +441,6 @@ async function handleSubmit() {
     message.error('❌ 金额必须大于 0')
     return
   }
-  if (form.member_ids.length === 0) {
-    message.error('❌ 请至少选择一位关联成员')
-    return
-  }
 
   submitting.value = true
   try {
@@ -488,7 +448,6 @@ async function handleSubmit() {
       amount: form.amount!,
       note: form.note,
       category_id: form.category_id,
-      member_ids: form.member_ids,
     }
     if (form.occurred_at) {
       payload.occurred_at = form.occurred_at.toISOString()
@@ -567,31 +526,6 @@ onMounted(async () => {
   align-items: center;
   margin-bottom: 16px;
   gap: 12px;
-}
-
-.month-switcher {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.month-arrow {
-  min-width: 44px;
-  min-height: 44px;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-}
-
-.month-arrow:disabled {
-  color: var(--color-text-disabled);
-  cursor: not-allowed;
-}
-
-.month-text {
-  font-size: 16px;
-  font-weight: 600;
-  min-width: 110px;
-  text-align: center;
 }
 
 /* Summary Bar */
@@ -731,28 +665,11 @@ onMounted(async () => {
   word-break: break-word;
 }
 
-/* Bottom: members + amount */
+/* Bottom: amount */
 .item-bottom {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
-}
-
-.item-members {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.member-tag {
-  font-size: 14px;
-}
-
-.member-more {
-  font-size: 11px;
-  color: var(--color-muted);
 }
 
 .item-amount {
