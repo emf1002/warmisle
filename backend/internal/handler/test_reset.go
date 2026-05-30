@@ -12,7 +12,7 @@ import (
 // 仅在 HC_TEST_MODE=true 时可用
 func TestReset(c *gin.Context) {
 	if os.Getenv("HC_TEST_MODE") != "true" {
-		c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "not found"})
+		pkg.Error(c, http.StatusNotFound, 404, "not found")
 		return
 	}
 
@@ -80,5 +80,5 @@ func TestReset(c *gin.Context) {
 		('宠物', 1, datetime('now'))
 	`)
 
-	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "ok"})
+	pkg.Success(c, nil)
 }
