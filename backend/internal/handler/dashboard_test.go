@@ -39,11 +39,11 @@ func TestHandler_Dashboard_Summary_WithData(t *testing.T) {
 	incomeCat := testutil.SeedTestCategory("income", "工资", "💰", 1)
 	expenseCat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	now := time.Now()
+	now := model.FromTime(time.Now())
 	pkg.DB.Create(&model.Ledger{Amount: 10000, Note: "工资", CategoryID: incomeCat.ID, CreatorID: member.ID, OccurredAt: now})
 	pkg.DB.Create(&model.Ledger{Amount: 3000, Note: "午餐", CategoryID: expenseCat.ID, CreatorID: member.ID, OccurredAt: now})
 
-	month := now.Format("2006-01")
+	month := now.ToTime().Format("2006-01")
 	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/dashboard/summary?month=%s", month), nil, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 
@@ -61,7 +61,7 @@ func TestHandler_Dashboard_ExpenseChart(t *testing.T) {
 	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
 
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
-	pkg.DB.Create(&model.Ledger{Amount: 5000, Note: "餐饮", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: time.Now()})
+	pkg.DB.Create(&model.Ledger{Amount: 5000, Note: "餐饮", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())})
 
 	month := time.Now().Format("2006-01")
 	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/dashboard/expense-chart?month=%s", month), nil, memberToken)

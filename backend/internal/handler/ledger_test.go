@@ -21,7 +21,7 @@ func TestHandler_Ledger_Create_Success(t *testing.T) {
 	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	body := fmt.Sprintf(`{"amount":35.50,"note":"午餐","category_id":%d,"member_ids":[%d],"occurred_at":"%s"}`,
+	body := fmt.Sprintf(`{"amount":3550,"note":"午餐","category_id":%d,"member_ids":[%d],"occurred_at":"%s"}`,
 		cat.ID, member.ID, time.Now().Format(time.RFC3339))
 	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
@@ -92,7 +92,7 @@ func TestHandler_Ledger_List_ByMonth(t *testing.T) {
 
 	// 创建当月记录 (amount in cents)
 	now := time.Now()
-	ledger := model.Ledger{Amount: 3000, Note: "当月", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: now}
+	ledger := model.Ledger{Amount: 3000, Note: "当月", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(now)}
 	pkg.DB.Create(&ledger)
 	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
@@ -112,12 +112,12 @@ func TestHandler_Ledger_Update_ByCreator(t *testing.T) {
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
 	// 创建记录 (amount in cents)
-	ledger := model.Ledger{Amount: 2000, Note: "原始", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: time.Now()}
+	ledger := model.Ledger{Amount: 2000, Note: "原始", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())}
 	pkg.DB.Create(&ledger)
 	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
-	// Update: amount 50.00 yuan = 5000 cents
-	body := `{"amount":50.00,"note":"修改后"}`
+	// Update: amount 5000 cents = 50.00 yuan
+	body := `{"amount":5000,"note":"修改后"}`
 	w := testutil.MakeRequest(r, "PUT", fmt.Sprintf("/api/ledgers/%d", ledger.ID), body, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
@@ -140,7 +140,7 @@ func TestHandler_Ledger_Update_ByNonCreator(t *testing.T) {
 
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	ledger := model.Ledger{Amount: 2000, Note: "原始", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: time.Now()}
+	ledger := model.Ledger{Amount: 2000, Note: "原始", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())}
 	pkg.DB.Create(&ledger)
 	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 
@@ -157,7 +157,7 @@ func TestHandler_Ledger_Delete_ByAdmin(t *testing.T) {
 	_, member, adminToken, _ := testutil.SeedAdminAndMember(t)
 	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
 
-	ledger := model.Ledger{Amount: 1000, Note: "待删除", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: time.Now()}
+	ledger := model.Ledger{Amount: 1000, Note: "待删除", CategoryID: cat.ID, CreatorID: member.ID, OccurredAt: model.FromTime(time.Now())}
 	pkg.DB.Create(&ledger)
 	pkg.DB.Create(&model.LedgerMember{LedgerID: ledger.ID, MemberID: member.ID})
 

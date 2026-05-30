@@ -123,7 +123,7 @@ func (r *LedgerRepo) groupByDate(ledgers []model.Ledger) []LedgerGroup {
 	var order []string
 
 	for _, l := range ledgers {
-		dateKey := l.OccurredAt.Format("2006-01-02")
+		dateKey := time.Time(l.OccurredAt).Format("2006-01-02")
 		item := LedgerWithAssoc{
 			Ledger:   l,
 			Category: l.Category,
@@ -219,4 +219,4 @@ func (r *LedgerRepo) Delete(id uint) error {
 }
 
 // Ensure LedgerWithAssoc embeds include OccurredAt for date grouping
-var _ time.Time = model.Ledger{}.OccurredAt
+var _ time.Time = time.Time(model.Ledger{}.OccurredAt)

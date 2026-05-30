@@ -4,14 +4,19 @@ import (
 	"warmisle/internal/model"
 	"warmisle/internal/pkg"
 
-	"github.com/glebarez/sqlite"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	_ "modernc.org/sqlite" // register "sqlite" driver
 )
 
-// SetupTestDB creates an in-memory SQLite database, auto-migrates all models, and sets pkg.DB
+// SetupTestDB creates an in-memory SQLite database, auto-migrates all models, and sets pkg.DB.
+// Uses the same GORM driver (gorm.io/driver/sqlite + modernc.org/sqlite) as production.
 func SetupTestDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+	db, err := gorm.Open(sqlite.New(sqlite.Config{
+		DriverName: "sqlite",
+		DSN:        ":memory:",
+	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {

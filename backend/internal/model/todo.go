@@ -14,8 +14,8 @@ type Todo struct {
 	Status      string         `gorm:"size:10;default:pending" json:"status"`    // pending / completed
 	AssigneeID  *uint          `gorm:"index" json:"assignee_id"`
 	CreatorID   uint           `gorm:"index;not null" json:"creator_id"`
-	DueDate     *time.Time     `json:"due_date"`
-	CompletedAt *time.Time     `json:"completed_at"`
+	DueDate     *LocalTime     `json:"due_date"`
+	CompletedAt *LocalTime     `json:"completed_at"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"deleted_at"`

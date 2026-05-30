@@ -12,7 +12,7 @@ type Ledger struct {
 	Note       string         `gorm:"size:200" json:"note"`
 	CategoryID uint           `gorm:"index" json:"category_id"`
 	CreatorID  uint           `gorm:"index" json:"creator_id"`
-	OccurredAt time.Time      `gorm:"index" json:"occurred_at"`
+	OccurredAt LocalTime      `gorm:"index" json:"occurred_at"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deleted_at"`

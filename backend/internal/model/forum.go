@@ -43,7 +43,7 @@ type Vote struct {
 	Title     string         `gorm:"size:100;not null" json:"title"`
 	CreatorID uint           `gorm:"index;not null" json:"creator_id"`
 	IsMulti   bool           `gorm:"default:false" json:"is_multi"`
-	Deadline  *time.Time     `json:"deadline"`
+	Deadline  *LocalTime     `json:"deadline"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
