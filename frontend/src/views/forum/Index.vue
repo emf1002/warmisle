@@ -250,7 +250,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
-import dayjs from 'dayjs'
+import { truncate, timeAgo } from '@/utils/format'
 import {
   getFeed,
   createPost,
@@ -324,25 +324,6 @@ const topicForm = reactive({
   content: '',
   tag_id: undefined as number | undefined,
 })
-
-function truncate(text: string, maxLen: number): string {
-  if (!text) return ''
-  if (text.length <= maxLen) return text
-  return text.slice(0, maxLen) + '...'
-}
-
-function timeAgo(date: string): string {
-  const d = dayjs(date)
-  const now = dayjs()
-  const diffMins = now.diff(d, 'minute')
-  if (diffMins < 1) return '刚刚'
-  if (diffMins < 60) return `${diffMins}分钟前`
-  const diffHours = now.diff(d, 'hour')
-  if (diffHours < 24) return `${diffHours}小时前`
-  const diffDays = now.diff(d, 'day')
-  if (diffDays < 7) return `${diffDays}天前`
-  return d.format('M月D日')
-}
 
 function goToDetail(item: FeedItem) {
   if (item.type === 'topic') {

@@ -189,8 +189,8 @@ describe('Ledger view', () => {
     await nextTick()
 
     const text = wrapper.text()
-    // The date 2026-05-23 is today, so it should render "今天"
-    expect(text).toContain('今天')
+    // The date 2026-05-23 renders as "5月23日 周六"
+    expect(text).toContain('5月23日 周六')
   })
 
   it('creates ledger and refreshes list with updated data', async () => {

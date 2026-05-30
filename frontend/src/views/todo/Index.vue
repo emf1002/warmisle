@@ -85,7 +85,7 @@
                 </span>
               </span>
               <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo) }">
-                📅 {{ formatDate(todo.due_date) }}
+                📅 {{ formatDate(todo.due_date) }}截止
               </span>
             </div>
           </div>
@@ -160,6 +160,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
+import { priorityColor, priorityLabel, formatDate } from '@/utils/format'
 import { getTodoList, createTodo, updateTodo, deleteTodo, toggleTodo, claimTodo } from '@/api/todo'
 import { getMembers } from '@/api/member'
 import EmptyState from '@/components/EmptyState.vue'
@@ -210,30 +211,6 @@ function canEdit(todo: TodoItem): boolean {
   if (todo.creator_id === authStore.currentUserId) return true
   if (todo.assignee_id === authStore.currentUserId) return true
   return false
-}
-
-function priorityColor(p: string): string {
-  if (p === 'urgent') return 'red'
-  if (p === 'important') return 'orange'
-  return 'default'
-}
-
-function priorityLabel(p: string): string {
-  if (p === 'urgent') return '紧急'
-  if (p === 'important') return '重要'
-  return '普通'
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr)
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const yesterday = new Date(today.getTime() - 86400000)
-  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  if (target.getTime() === today.getTime()) return '今天截止'
-  if (target.getTime() === yesterday.getTime()) return '昨天截止'
-  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-  return `${d.getMonth() + 1}月${d.getDate()}日 周${weekDays[d.getDay()]}截止`
 }
 
 function isOverdue(todo: TodoItem): boolean {

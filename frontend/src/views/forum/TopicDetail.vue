@@ -237,6 +237,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
+import { timeAgo } from '@/utils/format'
 import dayjs from 'dayjs'
 import {
   getTopic,
@@ -326,19 +327,6 @@ const canManage = computed(() => {
 function canDeleteComment(comment: CommentItem): boolean {
   if (authStore.isAdmin) return true
   return comment.creator_id === authStore.currentUserId
-}
-
-function timeAgo(date: string): string {
-  const d = dayjs(date)
-  const now = dayjs()
-  const diffMins = now.diff(d, 'minute')
-  if (diffMins < 1) return '刚刚'
-  if (diffMins < 60) return `${diffMins}分钟前`
-  const diffHours = now.diff(d, 'hour')
-  if (diffHours < 24) return `${diffHours}小时前`
-  const diffDays = now.diff(d, 'day')
-  if (diffDays < 7) return `${diffDays}天前`
-  return d.format('M月D日')
 }
 
 function formatTime(date: string): string {

@@ -132,6 +132,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { getSummary, getExpenseChart, getUpcomingTodos, getWishTrends, getForumHot } from '@/api/dashboard'
 import EmptyState from '@/components/EmptyState.vue'
+import { formatDate, timeAgo } from '@/utils/format'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 
@@ -178,26 +179,6 @@ function getPercent(amount: number): number {
 
 function isOverdue(date: string): boolean {
   return dayjs(date).isBefore(dayjs(), 'day')
-}
-
-function formatDate(date: string): string {
-  const d = dayjs(date)
-  const today = dayjs()
-  if (d.isSame(today, 'day')) return '今天'
-  if (d.isSame(today.subtract(1, 'day'), 'day')) return '昨天'
-  return d.format('M月D日')
-}
-
-function timeAgo(date: string): string {
-  const d = dayjs(date)
-  const now = dayjs()
-  const diffMins = now.diff(d, 'minute')
-  if (diffMins < 60) return `${diffMins}分钟前`
-  const diffHours = now.diff(d, 'hour')
-  if (diffHours < 24) return `${diffHours}小时前`
-  const diffDays = now.diff(d, 'day')
-  if (diffDays < 7) return `${diffDays}天前`
-  return d.format('M月D日')
 }
 
 onMounted(() => {

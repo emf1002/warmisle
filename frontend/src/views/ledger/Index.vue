@@ -261,6 +261,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
+import { formatDate, truncate } from '@/utils/format'
 import {
   getLedgers,
   createLedger,
@@ -362,25 +363,6 @@ const incomeCategories = computed(() =>
 // Helpers
 function formatYuan(cents: number): string {
   return `\u00A5${(cents / 100).toFixed(2)}`
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr)
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const yesterday = new Date(today.getTime() - 86400000)
-  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-
-  if (target.getTime() === today.getTime()) return '今天'
-  if (target.getTime() === yesterday.getTime()) return '昨天'
-
-  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-  return `${d.getMonth() + 1}月${d.getDate()}日 周${weekDays[d.getDay()]}`
-}
-
-function truncate(text: string, maxLen: number): string {
-  if (text.length <= maxLen) return text
-  return text.slice(0, maxLen) + '...'
 }
 
 function canEdit(item: LedgerItem): boolean {

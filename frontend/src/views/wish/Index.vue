@@ -159,6 +159,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { message, Modal } from 'ant-design-vue'
+import { priorityColor, priorityLabel } from '@/utils/format'
 import {
   getWishList, createWish, updateWish, deleteWish, promoteWish,
   updateWishStatus, voteWish, unvoteWish,
@@ -211,18 +212,6 @@ function canEdit(wish: WishItem): boolean {
 function canAbandon(wish: WishItem): boolean {
   if (authStore.isAdmin) return true
   return wish.creator_id === authStore.currentUserId
-}
-
-function priorityColor(p: string): string {
-  if (p === 'urgent') return 'red'
-  if (p === 'important') return 'orange'
-  return 'default'
-}
-
-function priorityLabel(p: string): string {
-  if (p === 'urgent') return '紧急'
-  if (p === 'important') return '重要'
-  return '普通'
 }
 
 function statusColor(s: string): string {
