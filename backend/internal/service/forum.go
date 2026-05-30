@@ -6,8 +6,6 @@ import (
 
 	"warmisle/internal/model"
 	"warmisle/internal/repository"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -59,10 +57,7 @@ func (s *ForumService) CreatePost(content string, creatorID uint) (*repository.P
 func (s *ForumService) UpdatePost(id uint, content string, currentMemberID uint, currentRole string) (*repository.PostWithMeta, error) {
 	existing, err := s.repo.FindPostByID(id, currentMemberID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrForumPostNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrForumPostNotFound)
 	}
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
 		return nil, ErrForumPermissionDenied
@@ -80,10 +75,7 @@ func (s *ForumService) UpdatePost(id uint, content string, currentMemberID uint,
 func (s *ForumService) DeletePost(id uint, currentMemberID uint, currentRole string) error {
 	existing, err := s.repo.FindPostByID(id, currentMemberID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrForumPostNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrForumPostNotFound)
 	}
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
 		return ErrForumPermissionDenied
@@ -107,10 +99,7 @@ func (s *ForumService) CreateTopic(title, content string, tagID *uint, creatorID
 func (s *ForumService) UpdateTopic(id uint, title, content *string, tagID *uint, currentMemberID uint, currentRole string) (*repository.TopicWithMeta, error) {
 	existing, err := s.repo.FindTopicByID(id, currentMemberID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrForumTopicNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrForumTopicNotFound)
 	}
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
 		return nil, ErrForumPermissionDenied
@@ -136,10 +125,7 @@ func (s *ForumService) UpdateTopic(id uint, title, content *string, tagID *uint,
 func (s *ForumService) DeleteTopic(id uint, currentMemberID uint, currentRole string) error {
 	existing, err := s.repo.FindTopicByID(id, currentMemberID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrForumTopicNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrForumTopicNotFound)
 	}
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
 		return ErrForumPermissionDenied
@@ -153,10 +139,7 @@ func (s *ForumService) TogglePin(id uint, currentRole string) (*repository.Topic
 	}
 	existing, err := s.repo.FindTopicByID(id, 0)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrForumTopicNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrForumTopicNotFound)
 	}
 	existing.IsPinned = !existing.IsPinned
 	if err := s.repo.UpdateTopic(&existing.Topic); err != nil {
@@ -168,10 +151,7 @@ func (s *ForumService) TogglePin(id uint, currentRole string) (*repository.Topic
 func (s *ForumService) GetTopic(id uint, currentMemberID uint) (*repository.TopicWithMeta, error) {
 	result, err := s.repo.FindTopicByID(id, currentMemberID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrForumTopicNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrForumTopicNotFound)
 	}
 	return result, nil
 }
@@ -189,10 +169,7 @@ func (s *ForumService) CreateComment(targetType string, targetID uint, parentID 
 	if parentID != nil {
 		parent, err := s.repo.FindCommentByID(*parentID)
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, ErrForumCommentNotFound
-			}
-			return nil, err
+			return nil, wrapNotFound(err, ErrForumCommentNotFound)
 		}
 		if parent.ParentID != nil {
 			return nil, ErrForumNestingTooDeep
@@ -215,10 +192,7 @@ func (s *ForumService) CreateComment(targetType string, targetID uint, parentID 
 func (s *ForumService) DeleteComment(id uint, currentMemberID uint, currentRole string) error {
 	comment, err := s.repo.FindCommentByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrForumCommentNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrForumCommentNotFound)
 	}
 	if comment.CreatorID != currentMemberID && currentRole != "admin" {
 		return ErrForumPermissionDenied
@@ -252,7 +226,7 @@ func (s *ForumService) CreateVote(title string, options []string, isMulti bool, 
 		Title:     title,
 		CreatorID: creatorID,
 		IsMulti:   isMulti,
-		Deadline:  deadline,
+		Deadline:  model.FromTimePtr(deadline),
 	}
 	voteOptions := make([]model.VoteOption, len(options))
 	for i, opt := range options {
@@ -269,7 +243,7 @@ func (s *ForumService) DeleteVote(id uint, currentMemberID uint, currentRole str
 	if err != nil {
 		return ErrForumVoteNotFound
 	}
-	if vote.Deadline != nil && time.Now().After(*vote.Deadline) {
+	if vote.Deadline != nil && time.Now().After(vote.Deadline.ToTime()) {
 		return ErrForumVoteDeadlinePassed
 	}
 	if vote.CreatorID != currentMemberID && currentRole != "admin" {
@@ -283,7 +257,7 @@ func (s *ForumService) Vote(id uint, optionID, memberID uint) (*repository.VoteW
 	if err != nil {
 		return nil, ErrForumVoteNotFound
 	}
-	if vote.Deadline != nil && time.Now().After(*vote.Deadline) {
+	if vote.Deadline != nil && time.Now().After(vote.Deadline.ToTime()) {
 		return nil, ErrForumVoteDeadlinePassed
 	}
 	hasVoted, err := s.repo.HasVotedForVote(id, memberID)

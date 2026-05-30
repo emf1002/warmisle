@@ -6,8 +6,6 @@ import (
 
 	"warmisle/internal/model"
 	"warmisle/internal/repository"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -39,10 +37,7 @@ func (s *LedgerService) List(filter repository.LedgerFilter) (*repository.ListRe
 func (s *LedgerService) FindByID(id uint) (*repository.LedgerWithAssoc, error) {
 	result, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrLedgerNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrLedgerNotFound)
 	}
 	return result, nil
 }
@@ -55,10 +50,7 @@ func (s *LedgerService) Create(amount int64, note string, categoryID uint, membe
 	// Validate category exists
 	_, err := s.categoryRepo.FindByID(categoryID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrLedgerCategoryNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrLedgerCategoryNotFound)
 	}
 
 	if len(memberIDs) == 0 {
@@ -70,7 +62,7 @@ func (s *LedgerService) Create(amount int64, note string, categoryID uint, membe
 		Note:       note,
 		CategoryID: categoryID,
 		CreatorID:  creatorID,
-		OccurredAt: occurredAt,
+		OccurredAt: model.FromTime(occurredAt),
 	}
 
 	if err := s.repo.Create(ledger, memberIDs); err != nil {
@@ -83,10 +75,7 @@ func (s *LedgerService) Create(amount int64, note string, categoryID uint, membe
 func (s *LedgerService) Update(id uint, amount *int64, note *string, categoryID *uint, memberIDs []uint, occurredAt *time.Time, currentMemberID uint, currentRole string) (*repository.LedgerWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrLedgerNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrLedgerNotFound)
 	}
 
 	// Permission check: only creator or admin can update
@@ -108,16 +97,13 @@ func (s *LedgerService) Update(id uint, amount *int64, note *string, categoryID 
 	if categoryID != nil {
 		_, err := s.categoryRepo.FindByID(*categoryID)
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, ErrLedgerCategoryNotFound
-			}
-			return nil, err
+			return nil, wrapNotFound(err, ErrLedgerCategoryNotFound)
 		}
 		existing.CategoryID = *categoryID
 	}
 
 	if occurredAt != nil {
-		existing.OccurredAt = *occurredAt
+		existing.OccurredAt = model.FromTime(*occurredAt)
 	}
 
 	// Members: if nil, keep existing; if empty, error; otherwise replace
@@ -142,10 +128,7 @@ func (s *LedgerService) Update(id uint, amount *int64, note *string, categoryID 
 func (s *LedgerService) Delete(id uint, currentMemberID uint, currentRole string) error {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrLedgerNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrLedgerNotFound)
 	}
 
 	// Permission check: only creator or admin can delete

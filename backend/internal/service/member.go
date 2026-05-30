@@ -120,10 +120,7 @@ func (s *MemberService) Update(id uint, name, avatar, role string) (*model.Membe
 
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrMemberNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrMemberNotFound)
 	}
 
 	// If changing role from admin to member, check it's not the last admin
@@ -156,10 +153,7 @@ func (s *MemberService) Update(id uint, name, avatar, role string) (*model.Membe
 func (s *MemberService) Delete(id uint, currentMemberID uint) error {
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrMemberNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrMemberNotFound)
 	}
 
 	// Cannot delete last admin
@@ -192,10 +186,7 @@ func (s *MemberService) Disable(id uint, currentMemberID uint) error {
 
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrMemberNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrMemberNotFound)
 	}
 
 	// Cannot disable last admin
@@ -216,10 +207,7 @@ func (s *MemberService) Disable(id uint, currentMemberID uint) error {
 func (s *MemberService) Enable(id uint) (*model.Member, error) {
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrMemberNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrMemberNotFound)
 	}
 
 	member.Status = "active"
@@ -237,10 +225,7 @@ func (s *MemberService) ResetPassword(id uint) error {
 
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrMemberNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrMemberNotFound)
 	}
 	member.Password = hash
 	return s.repo.Update(member)
@@ -255,10 +240,7 @@ func (s *MemberService) UpdateProfile(id uint, name, avatar string) (*model.Memb
 
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrMemberNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrMemberNotFound)
 	}
 
 	if name != "" {
@@ -277,10 +259,7 @@ func (s *MemberService) UpdateProfile(id uint, name, avatar string) (*model.Memb
 func (s *MemberService) GetProfile(id uint) (*model.Member, error) {
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrMemberNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrMemberNotFound)
 	}
 	return member, nil
 }
@@ -288,10 +267,7 @@ func (s *MemberService) GetProfile(id uint) (*model.Member, error) {
 func (s *MemberService) ChangePassword(id uint, oldPwd, newPwd string) error {
 	member, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrMemberNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrMemberNotFound)
 	}
 
 	if !pkg.CheckPassword(member.Password, oldPwd) {

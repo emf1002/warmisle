@@ -7,8 +7,6 @@ import (
 
 	"warmisle/internal/model"
 	"warmisle/internal/repository"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -43,10 +41,7 @@ func (s *TodoService) List(filter repository.TodoFilter) (*repository.TodoListRe
 func (s *TodoService) FindByID(id uint) (*repository.TodoWithAssoc, error) {
 	result, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTodoNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrTodoNotFound)
 	}
 	return result, nil
 }
@@ -66,10 +61,7 @@ func (s *TodoService) Create(title, description, priority string, assigneeID *ui
 	if assigneeID != nil {
 		_, err := s.memberRepo.FindByID(*assigneeID)
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, ErrTodoAssigneeNotFound
-			}
-			return nil, err
+			return nil, wrapNotFound(err, ErrTodoAssigneeNotFound)
 		}
 	}
 
@@ -80,7 +72,7 @@ func (s *TodoService) Create(title, description, priority string, assigneeID *ui
 		Status:      "pending",
 		AssigneeID:  assigneeID,
 		CreatorID:   creatorID,
-		DueDate:     dueDate,
+		DueDate:     model.FromTimePtr(dueDate),
 	}
 
 	if err := s.repo.Create(todo); err != nil {
@@ -103,10 +95,7 @@ func (s *TodoService) Create(title, description, priority string, assigneeID *ui
 func (s *TodoService) Update(id uint, title, description, priority *string, assigneeID *uint, dueDate *time.Time, currentMemberID uint, currentRole string) (*repository.TodoWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTodoNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrTodoNotFound)
 	}
 
 	// Permission: creator, assignee, or admin
@@ -156,7 +145,7 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 		oldStr := ""
 		newStr := ""
 		if existing.DueDate != nil {
-			oldStr = existing.DueDate.Format("2006-01-02")
+			oldStr = existing.DueDate.ToTime().Format("2006-01-02")
 		}
 		if dueDate != nil {
 			newStr = dueDate.Format("2006-01-02")
@@ -166,7 +155,7 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 				TodoID: id, FieldName: "due_date",
 				OldValue: oldStr, NewValue: newStr, OperatorID: currentMemberID,
 			})
-			existing.DueDate = dueDate
+			existing.DueDate = model.FromTimePtr(dueDate)
 		}
 	}
 
@@ -174,10 +163,7 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 		if *assigneeID != 0 {
 			_, err := s.memberRepo.FindByID(*assigneeID)
 			if err != nil {
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					return nil, ErrTodoAssigneeNotFound
-				}
-				return nil, err
+				return nil, wrapNotFound(err, ErrTodoAssigneeNotFound)
 			}
 		}
 
@@ -212,10 +198,7 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 func (s *TodoService) Delete(id uint, currentMemberID uint, currentRole string) error {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrTodoNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrTodoNotFound)
 	}
 
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
@@ -228,10 +211,7 @@ func (s *TodoService) Delete(id uint, currentMemberID uint, currentRole string) 
 func (s *TodoService) Toggle(id uint, currentMemberID uint, currentRole string) (*repository.TodoWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTodoNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrTodoNotFound)
 	}
 
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
@@ -240,7 +220,7 @@ func (s *TodoService) Toggle(id uint, currentMemberID uint, currentRole string) 
 		}
 	}
 
-	now := time.Now()
+	now := model.FromTime(time.Now())
 	if existing.Status == "pending" {
 		existing.Status = "completed"
 		existing.CompletedAt = &now
@@ -259,10 +239,7 @@ func (s *TodoService) Toggle(id uint, currentMemberID uint, currentRole string) 
 func (s *TodoService) Claim(id uint, currentMemberID uint) (*repository.TodoWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTodoNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrTodoNotFound)
 	}
 
 	if existing.AssigneeID != nil {

@@ -53,10 +53,7 @@ func (s *CategoryService) Create(typ, name, icon string, sortOrder int) (*model.
 func (s *CategoryService) Update(id uint, typ, name, icon string, sortOrder *int) (*model.Category, error) {
 	c, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrCategoryNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrCategoryNotFound)
 	}
 
 	// Check uniqueness if name or type changed

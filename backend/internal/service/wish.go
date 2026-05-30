@@ -5,8 +5,6 @@ import (
 
 	"warmisle/internal/model"
 	"warmisle/internal/repository"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -42,10 +40,7 @@ func validWishPriority(p string) bool {
 func (s *WishService) FindByID(id uint) (*repository.WishWithAssoc, error) {
 	result, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrWishNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrWishNotFound)
 	}
 	return result, nil
 }
@@ -94,10 +89,7 @@ func (s *WishService) Create(title, description, category, priority string, amou
 func (s *WishService) Update(id uint, title, description, category, priority *string, amount *int64, currentMemberID uint, currentRole string) (*repository.WishWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrWishNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrWishNotFound)
 	}
 
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
@@ -139,10 +131,7 @@ func (s *WishService) Update(id uint, title, description, category, priority *st
 func (s *WishService) Delete(id uint, currentMemberID uint, currentRole string) error {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrWishNotFound
-		}
-		return err
+		return wrapNotFound(err, ErrWishNotFound)
 	}
 
 	if existing.CreatorID != currentMemberID && currentRole != "admin" {
@@ -155,10 +144,7 @@ func (s *WishService) Delete(id uint, currentMemberID uint, currentRole string) 
 func (s *WishService) Promote(id uint, currentMemberID uint) (*repository.WishWithAssoc, error) {
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrWishNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrWishNotFound)
 	}
 
 	if existing.CreatorID != currentMemberID {
@@ -181,10 +167,7 @@ func (s *WishService) UpdateStatus(id uint, status string, currentMemberID uint,
 
 	existing, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrWishNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrWishNotFound)
 	}
 
 	if currentRole != "admin" {
@@ -206,10 +189,7 @@ func (s *WishService) UpdateStatus(id uint, status string, currentMemberID uint,
 func (s *WishService) Vote(id, currentMemberID uint) (*repository.WishWithAssoc, error) {
 	_, err := s.repo.FindByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrWishNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrWishNotFound)
 	}
 
 	hasVoted, err := s.repo.HasVoted(id, currentMemberID)
@@ -233,10 +213,7 @@ func (s *WishService) Vote(id, currentMemberID uint) (*repository.WishWithAssoc,
 
 func (s *WishService) Unvote(id, currentMemberID uint) (*repository.WishWithAssoc, error) {
 	if _, err := s.repo.FindByID(id); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrWishNotFound
-		}
-		return nil, err
+		return nil, wrapNotFound(err, ErrWishNotFound)
 	}
 
 	hasVoted, err := s.repo.HasVoted(id, currentMemberID)
