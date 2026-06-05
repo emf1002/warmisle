@@ -24,38 +24,38 @@
         @click="onMenuClick"
       >
         <a-menu-item key="Dashboard">
-          <template #icon><span class="menu-icon">🏠</span></template>
+          <template #icon><Icon name="LayoutDashboard" :size="18" /></template>
           <span>仪表盘</span>
         </a-menu-item>
         <a-menu-item key="Ledger">
-          <template #icon><span class="menu-icon">💰</span></template>
+          <template #icon><Icon name="Wallet" :size="18" /></template>
           <span>记账本</span>
         </a-menu-item>
         <a-menu-item key="Todo">
-          <template #icon><span class="menu-icon">✅</span></template>
+          <template #icon><Icon name="ListTodo" :size="18" /></template>
           <span>待办管理</span>
         </a-menu-item>
         <a-menu-item key="Wish">
-          <template #icon><span class="menu-icon">💫</span></template>
+          <template #icon><Icon name="Star" :size="18" /></template>
           <span>愿望清单</span>
         </a-menu-item>
         <a-menu-item key="Forum">
-          <template #icon><span class="menu-icon">💬</span></template>
+          <template #icon><Icon name="MessageSquare" :size="18" /></template>
           <span>家庭论坛</span>
         </a-menu-item>
 
         <a-menu-divider />
 
         <a-menu-item key="Members" v-if="isAdmin">
-          <template #icon><span class="menu-icon">👥</span></template>
+          <template #icon><Icon name="Users" :size="18" /></template>
           <span>成员管理</span>
         </a-menu-item>
         <a-menu-item key="Categories" v-if="isAdmin">
-          <template #icon><span class="menu-icon">📂</span></template>
+          <template #icon><Icon name="FolderOpen" :size="18" /></template>
           <span>分类管理</span>
         </a-menu-item>
         <a-menu-item key="Profile">
-          <template #icon><span class="menu-icon">👤</span></template>
+          <template #icon><Icon name="UserCircle" :size="18" /></template>
           <span>个人中心</span>
         </a-menu-item>
       </a-menu>
@@ -119,7 +119,7 @@
         :class="{ 'tabbar-item-active': activeBottomTab === tab.key }"
         @click="onBottomTabClick(tab.key)"
       >
-        <span class="tabbar-icon">{{ tab.icon }}</span>
+        <span class="tabbar-icon"><Icon :name="tab.icon" :size="22" /></span>
         <span class="tabbar-label">{{ tab.label }}</span>
       </div>
     </nav>
@@ -134,6 +134,7 @@ import { getProfile } from '@/api/member'
 import { useThemeStore } from '@/stores/theme'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import LogoIcon from '@/components/LogoIcon.vue'
+import Icon from '@/components/Icon.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -252,11 +253,11 @@ function onUserMenuClick({ key }: { key: string }) {
 
 // ---- 底部TabBar ----
 const bottomTabs = [
-  { key: 'Dashboard', icon: '🏠', label: '仪表盘', routeName: 'Dashboard' },
-  { key: 'Ledger', icon: '💰', label: '记账', routeName: 'Ledger' },
-  { key: 'Todo', icon: '✅', label: '待办', routeName: 'Todo' },
-  { key: 'Forum', icon: '💬', label: '论坛', routeName: 'Forum' },
-  { key: 'Profile', icon: '👤', label: '我的', routeName: 'Profile' },
+  { key: 'Dashboard', icon: 'LayoutDashboard', label: '仪表盘', routeName: 'Dashboard' },
+  { key: 'Ledger', icon: 'Wallet', label: '记账', routeName: 'Ledger' },
+  { key: 'Todo', icon: 'ListTodo', label: '待办', routeName: 'Todo' },
+  { key: 'Forum', icon: 'MessageSquare', label: '论坛', routeName: 'Forum' },
+  { key: 'Profile', icon: 'UserCircle', label: '我的', routeName: 'Profile' },
 ]
 
 const activeBottomTab = ref(routeToMenuKey[route.name as string] || 'Dashboard')
@@ -369,9 +370,11 @@ function onBottomTabClick(key: string) {
 
 .menu-icon {
   font-size: 16px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
-  text-align: center;
+  height: 20px;
 }
 
 /* ==================== 主内容区 ==================== */
@@ -535,8 +538,20 @@ function onBottomTabClick(key: string) {
 }
 
 .tabbar-icon {
-  font-size: 20px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  transition: all var(--duration-fast) ease;
+  color: var(--color-muted);
+  margin-bottom: 2px;
+}
+
+.tabbar-item.router-link-active .tabbar-icon {
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
 }
 
 .tabbar-label {

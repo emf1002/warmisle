@@ -7,6 +7,7 @@
   /* 品牌色 */
   --color-brand: #E87461;
   --color-brand-light: rgba(232, 116, 97, 0.1);
+  --color-brand-bg: rgba(232, 116, 97, 0.12);
   --color-brand-hover: #D05A48;
 
   /* 语义色 */
@@ -94,6 +95,7 @@
   /* 品牌色 */
   --color-brand: #E5A84B;
   --color-brand-light: rgba(229, 168, 75, 0.12);
+  --color-brand-bg: rgba(229, 168, 75, 0.15);
   --color-brand-hover: #F0C273;
 
   /* 语义色 */

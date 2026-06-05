@@ -5,13 +5,14 @@
     :title="isDark ? '切换到亮色主题' : '切换到暗色主题'"
     @click="themeStore.toggleTheme()"
   >
-    <span class="theme-toggle-icon">{{ isDark ? '🌙' : '☀️' }}</span>
+    <Icon :name="isDark ? 'Sun' : 'Moon'" :size="18" />
   </button>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
+import Icon from '@/components/Icon.vue'
 
 const themeStore = useThemeStore()
 const isDark = computed(() => themeStore.theme === 'dark')
@@ -34,10 +35,5 @@ const isDark = computed(() => themeStore.theme === 'dark')
 
 .theme-toggle:hover {
   background: var(--sidebar-hover-bg);
-}
-
-.theme-toggle-icon {
-  font-size: 18px;
-  line-height: 1;
 }
 </style>
