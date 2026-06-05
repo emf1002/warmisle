@@ -71,8 +71,7 @@ export class LedgerPage extends BasePage {
 
   /** 滚动到 sentinel 触发无限加载 */
   async scrollToLoadMore() {
-    const sentinel = this.page.getByTestId('load-sentinel');
-    await sentinel.scrollIntoViewIfNeeded();
+    await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   }
 
   /** 断言汇总栏文本 */

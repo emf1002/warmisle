@@ -50,8 +50,12 @@ func TestSeedLedgers(c *gin.Context) {
 
 	db := pkg.DB
 
-	// 解析日期范围，默认近 7 天
-	endDate := time.Now()
+	// 解析日期范围，默认当前月份（与 ledger API 默认行为一致）
+	// ledger API 查询: occurred_at >= 'YYYY-MM-01' AND occurred_at < 'YYYY-MM-DD'
+	// 其中 DD = endOf('month').add(1,'day') = 下月1日，所以实际包含整月数据
+	// seed 端点的 endDate 作为 exclusive upper bound，应设为下月1日
+	now := time.Now()
+	endDate := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC) // 下月 1 日
 	if req.EndDate != "" {
 		var err error
 		endDate, err = time.Parse("2006-01-02", req.EndDate)
@@ -61,7 +65,7 @@ func TestSeedLedgers(c *gin.Context) {
 		}
 	}
 
-	startDate := endDate.AddDate(0, 0, -6) // 默认 7 天前
+	startDate := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC) // 本月 1 日
 	if req.StartDate != "" {
 		var err error
 		startDate, err = time.Parse("2006-01-02", req.StartDate)
@@ -135,18 +139,18 @@ func TestSeedLedgers(c *gin.Context) {
 		return
 	}
 
-	// 计算 summary
+	// 计算 summary（与 ledger API 一致，按日期范围过滤）
 	var income, expense int64
 	db.Table("ledgers").
 		Select("COALESCE(SUM(ledgers.amount), 0)").
 		Joins("JOIN categories ON categories.id = ledgers.category_id").
-		Where("categories.type = ? AND ledgers.deleted_at IS NULL", "income").
+		Where("categories.type = ? AND ledgers.deleted_at IS NULL AND ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", "income", startDate, endDate).
 		Scan(&income)
 
 	db.Table("ledgers").
 		Select("COALESCE(SUM(ledgers.amount), 0)").
 		Joins("JOIN categories ON categories.id = ledgers.category_id").
-		Where("categories.type = ? AND ledgers.deleted_at IS NULL", "expense").
+		Where("categories.type = ? AND ledgers.deleted_at IS NULL AND ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", "expense", startDate, endDate).
 		Scan(&expense)
 
 	pkg.Success(c, seedResult{

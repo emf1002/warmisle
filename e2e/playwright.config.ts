@@ -1,4 +1,8 @@
+import path from 'path';
 import { defineConfig } from '@playwright/test';
+
+const rootDir = path.resolve(__dirname, '..');
+const binaryPath = path.join(rootDir, 'dist', 'warmisle.exe');
 
 export default defineConfig({
   testDir: './tests',
@@ -21,8 +25,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: '../dist/warmisle.exe',
-    cwd: '..',
+    command: binaryPath,
+    cwd: rootDir,
     port: 8080,
     timeout: 30000,
     reuseExistingServer: true,
