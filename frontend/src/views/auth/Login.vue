@@ -14,21 +14,28 @@
         <a-form-item name="username">
           <a-input
             v-model:value="form.username"
-            placeholder="用户名"
+            placeholder="请输入用户名"
             size="large"
             :min-height="44"
             data-testid="username-input"
-          />
+          >
+            <template #prefix><Icon name="User" :size="16" color="var(--color-muted)" /></template>
+          </a-input>
         </a-form-item>
         <a-form-item name="password">
           <a-input-password
             v-model:value="form.password"
-            placeholder="密码"
+            placeholder="请输入密码"
             size="large"
             :min-height="44"
             data-testid="password-input"
-          />
+          >
+            <template #prefix><Icon name="Lock" :size="16" color="var(--color-muted)" /></template>
+          </a-input-password>
         </a-form-item>
+        <div class="login-options">
+          <a-checkbox v-model:checked="rememberMe">记住我</a-checkbox>
+        </div>
         <a-form-item>
           <a-button
             type="primary"
@@ -50,11 +57,13 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import Icon from '@/components/Icon.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const loading = ref(false)
+const rememberMe = ref(false)
 const form = reactive({
   username: '',
   password: ''
@@ -85,10 +94,18 @@ async function handleLogin() {
 
 .auth-card {
   width: 100%;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-level-2);
+}
+
+:root[data-theme="dark"] .auth-card {
+  background: rgba(45, 42, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .auth-header {
@@ -105,5 +122,12 @@ async function handleLogin() {
 .auth-header p {
   color: var(--color-text-secondary);
   margin: 0;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
 }
 </style>
