@@ -11,11 +11,17 @@ export default defineConfig({
   forbidOnly: true,
   retries: 0,
   workers: 1,
-  reporter: [['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+  ],
   use: {
     baseURL: 'http://localhost:8080',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    actionTimeout: 10000,
+    navigationTimeout: 15000,
   },
   projects: [
     {
