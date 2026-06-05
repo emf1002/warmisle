@@ -1,5 +1,9 @@
 /* ==================== 亮色主题（晨屿） ==================== */
 [data-theme="light"] {
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
   /* 品牌色 */
   --color-brand: #E87461;
   --color-brand-light: rgba(232, 116, 97, 0.1);
@@ -66,6 +70,14 @@
   --chart-color-6: #F09888;
   --chart-color-7: #EDE9E4;
 
+  /* Semantic data colors */
+  --color-income: #4CAF50;
+  --color-income-bg: rgba(76, 175, 80, 0.1);
+  --color-expense: #F44336;
+  --color-expense-bg: rgba(244, 67, 54, 0.1);
+  --color-balance: #2196F3;
+  --color-balance-bg: rgba(33, 150, 243, 0.1);
+
   /* 认证页 */
   --auth-bg: var(--color-bg-layout);
   --auth-card-bg: rgba(255, 255, 255, 0.72);
@@ -75,6 +87,10 @@
 
 /* ==================== 暗色主题（夜屿） ==================== */
 [data-theme="dark"] {
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
   /* 品牌色 */
   --color-brand: #E5A84B;
   --color-brand-light: rgba(229, 168, 75, 0.12);
@@ -140,6 +156,14 @@
   --chart-color-5: #C5B3D9;
   --chart-color-6: #FF6B6B;
   --chart-color-7: rgba(255, 255, 255, 0.08);
+
+  /* Semantic data colors */
+  --color-income: #66BB6A;
+  --color-income-bg: rgba(102, 187, 106, 0.15);
+  --color-expense: #EF5350;
+  --color-expense-bg: rgba(239, 83, 80, 0.15);
+  --color-balance: #42A5F5;
+  --color-balance-bg: rgba(66, 165, 245, 0.15);
 
   /* 认证页 */
   --auth-bg: #0F1729;

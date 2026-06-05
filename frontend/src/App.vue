@@ -48,7 +48,7 @@ const themeConfig = computed(() => {
       colorInfo: isDark ? '#E5A84B' : '#E87461',
       borderRadius: isDark ? 10 : 12,
       fontSize: 14,
-      fontFamily: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif',
+      fontFamily: "'Plus Jakarta Sans', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, sans-serif",
       colorBgLayout: isDark ? '#0F1729' : '#FDF8F4',
       colorBgContainer: isDark ? '#1A2340' : '#FFFFFF',
       colorBgElevated: isDark ? '#1A2340' : '#FFFFFF',

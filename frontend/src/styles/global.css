@@ -8,7 +8,8 @@
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
-  --font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --z-base: 0;
   --z-sticky: 10;
   --z-dropdown: 20;
@@ -32,7 +33,7 @@
 
 body {
   margin: 0;
-  font-family: var(--font-family);
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text-primary);

@@ -78,3 +78,52 @@
   justify-content: center;
   margin-top: 24px;
 }
+
+/* Skeleton shimmer animation */
+.skeleton-block {
+  background: var(--bg-container);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--bg-elevated) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Chart card with left accent bar */
+.chart-card {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  padding: var(--space-lg);
+  position: relative;
+}
+.chart-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--color-brand);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Count-up number utility */
+.count-up {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
+}
