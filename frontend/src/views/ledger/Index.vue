@@ -21,15 +21,15 @@
     <div class="summary-bar">
       <div class="summary-item">
         <span class="summary-label">收入</span>
-        <span class="income-amount">+{{ formatYuan(summary.income) }}</span>
+        <span class="income-amount" data-testid="summary-income">+{{ formatYuan(summary.income) }}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">支出</span>
-        <span class="expense-amount">-{{ formatYuan(summary.expense) }}</span>
+        <span class="expense-amount" data-testid="summary-expense">-{{ formatYuan(summary.expense) }}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">结余</span>
-        <span :class="summary.balance >= 0 ? 'income-amount' : 'expense-amount'">
+        <span :class="summary.balance >= 0 ? 'income-amount' : 'expense-amount'" data-testid="summary-balance">
           {{ summary.balance >= 0 ? '+' : '-' }}{{ formatYuan(Math.abs(summary.balance)) }}
         </span>
       </div>
@@ -43,6 +43,7 @@
         allow-clear
         style="width: 140px"
         @change="onFilterChange"
+        data-testid="filter-category"
       >
         <template v-if="expenseCategories.length > 0">
           <a-select-option disabled :value="-1" class="category-group-label">支出</a-select-option>
@@ -63,6 +64,7 @@
         allow-clear
         style="width: 140px"
         @change="onFilterChange"
+        data-testid="filter-creator"
       >
         <a-select-option v-for="m in members" :key="m.id" :value="m.id">
           {{ m.avatar }} {{ m.name }}
@@ -84,11 +86,11 @@
 
     <!-- Record List -->
     <div v-else class="record-list" data-testid="record-list">
-      <div v-for="group in groups" :key="group.date" class="date-group">
+      <div v-for="group in groups" :key="group.date" class="date-group" data-testid="date-group">
         <!-- Date Header -->
         <div class="date-header">
           <span class="date-text">{{ formatDate(group.date) }}</span>
-          <span :class="group.daily_total >= 0 ? 'income-amount' : 'expense-amount'" class="date-total">
+          <span :class="group.daily_total >= 0 ? 'income-amount' : 'expense-amount'" class="date-total" data-testid="daily-total">
             {{ group.daily_total >= 0 ? '+' : '-' }}{{ formatYuan(Math.abs(group.daily_total)) }}
           </span>
         </div>
@@ -127,7 +129,7 @@
     </div>
 
     <!-- Infinite scroll sentinel -->
-    <div ref="sentinelRef" v-if="hasMore" class="load-sentinel">
+    <div ref="sentinelRef" v-if="hasMore" class="load-sentinel" data-testid="load-sentinel">
       <a-spin v-if="loadingMore" size="small" />
     </div>
 
