@@ -27,3 +27,45 @@ export async function initAdmin(): Promise<{ token: string }> {
   const initData = await initRes.json();
   return { token: initData.data.token };
 }
+
+export interface SeedLedgersOptions {
+  count?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface SeedLedgersResult {
+  code: number;
+  message: string;
+  data: {
+    count: number;
+    summary: { income: number; expense: number; balance: number };
+    expense_category_count: number;
+    income_category_count: number;
+  };
+}
+
+export async function seedLedgers(
+  token: string,
+  options?: SeedLedgersOptions
+): Promise<SeedLedgersResult> {
+  const res = await fetch(`${BASE_URL}/api/test/seed-ledgers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      count: options?.count ?? 35,
+      start_date: options?.startDate,
+      end_date: options?.endDate,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Seed ledgers failed: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
