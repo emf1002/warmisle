@@ -27,8 +27,8 @@
       <div class="topic-card">
         <div class="topic-header">
           <a-tag color="blue" size="small">话题</a-tag>
-          <a-tag v-if="topic.tag" size="small">{{ topic.tag.name }}</a-tag>
-          <a-tag v-if="topic.is_pinned" color="orange" size="small">📌 置顶</a-tag>
+          <a-tag v-if="topic.tag" size="small" data-testid="topic-tag">{{ topic.tag.name }}</a-tag>
+          <a-tag v-if="topic.is_pinned" color="orange" size="small" data-testid="pinned-tag">📌 置顶</a-tag>
         </div>
 
         <h1 class="topic-title">{{ topic.title }}</h1>
@@ -45,6 +45,7 @@
           <a-button
             type="text"
             :class="{ liked: topic.liked }"
+            data-testid="like-btn"
             @click="handleLike"
           >
             {{ topic.liked ? '❤️' : '🤍' }} {{ topic.like_count }}
@@ -56,10 +57,10 @@
             <template #overlay>
               <a-menu>
                 <a-menu-item @click="openEditDialog">编辑</a-menu-item>
-                <a-menu-item v-if="authStore.isAdmin" @click="handleTogglePin">
+                <a-menu-item v-if="authStore.isAdmin" data-testid="unpin-btn" @click="handleTogglePin">
                   {{ topic.is_pinned ? '取消置顶' : '置顶' }}
                 </a-menu-item>
-                <a-menu-item danger @click="confirmDelete">删除话题</a-menu-item>
+                <a-menu-item danger data-testid="delete-feed-btn" @click="confirmDelete">删除话题</a-menu-item>
               </a-menu>
             </template>
           </a-dropdown>
@@ -78,6 +79,7 @@
             :rows="3"
             :placeholder="replyTarget ? `回复 ${replyTarget.creator.name}：` : '写下你的评论...'"
             show-count
+            data-testid="comment-input"
           />
           <div class="comment-input-actions">
             <a-button v-if="replyTarget" size="small" @click="cancelReply">取消回复</a-button>
@@ -86,6 +88,7 @@
               size="small"
               :loading="commentSubmitting"
               :disabled="!commentText.trim()"
+              data-testid="comment-submit"
               @click="submitComment"
             >
               发布
@@ -98,11 +101,12 @@
           <a-empty description="暂无评论，来说点什么吧" />
         </div>
 
-        <div v-else class="comments-list">
+        <div v-else class="comments-list" data-testid="comment-list">
           <div
             v-for="comment in comments"
             :key="comment.id"
             class="comment-item"
+            :data-testid="'comment-' + comment.id"
           >
             <!-- Top-level comment -->
             <div class="comment-body">
@@ -114,7 +118,7 @@
                 </div>
                 <div class="comment-content">{{ comment.content }}</div>
                 <div class="comment-actions">
-                  <a-button type="link" size="small" @click="startReply(comment)">
+                  <a-button type="link" size="small" data-testid="reply-btn" @click="startReply(comment)">
                     回复
                   </a-button>
                   <a-button
@@ -122,6 +126,7 @@
                     type="link"
                     size="small"
                     danger
+                    data-testid="delete-comment-btn"
                     @click="confirmDeleteComment(comment)"
                   >
                     删除
@@ -135,6 +140,7 @@
                     :maxlength="500"
                     :rows="2"
                     :placeholder="`回复 ${comment.creator.name}：`"
+                    data-testid="reply-input"
                   />
                   <div class="reply-input-actions">
                     <a-button size="small" @click="cancelReply">取消</a-button>
@@ -142,6 +148,7 @@
                       type="primary"
                       size="small"
                       :disabled="!replyText.trim()"
+                      data-testid="reply-submit"
                       @click="submitReply(comment)"
                     >
                       回复

@@ -59,7 +59,7 @@ test.describe('记账本', () => {
     const ledger = new LedgerPage(page);
     await ledger.goto();
     await ledger.openCreate();
-    await ledger.screenshotComponent('[data-testid="ledger-modal"]', 'ledger-modal.png');
+    await ledger.screenshotComponent('.ant-modal:visible', 'ledger-modal.png');
   });
 
   // === 功能场景 ===
@@ -237,7 +237,7 @@ test.describe('记账本', () => {
     await ledger.pickCategory('餐饮');
     await ledger.fillAmount('0');
     await ledger.submit();
-    await expect(page.getByTestId('ledger-modal')).toBeVisible();
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
   });
 
   test('分类不存在时后端返回错误', async ({ authenticated }) => {
@@ -252,7 +252,7 @@ test.describe('记账本', () => {
     await ledger.fillAmount('10');
     await ledger.submit();
     // Modal should still be visible (submit blocked without category)
-    await expect(page.getByTestId('ledger-modal')).toBeVisible();
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
   });
 
   // === 响应式 ===

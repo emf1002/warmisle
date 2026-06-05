@@ -16,12 +16,12 @@ export class ForumPage extends BasePage {
 
   async openCreatePost() {
     await this.page.getByTestId('create-post-btn').click();
-    await expect(this.page.getByTestId('post-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async openCreateTopic() {
     await this.page.getByTestId('create-topic-btn').click();
-    await expect(this.page.getByTestId('topic-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async fillPostContent(content: string) {
@@ -64,7 +64,7 @@ export class ForumPage extends BasePage {
 
   async openCreateAnnouncement() {
     await this.page.getByTestId('create-announcement-btn').click();
-    await expect(this.page.getByTestId('topic-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async unpinAnnouncement(index: number) {
@@ -82,7 +82,7 @@ export class ForumPage extends BasePage {
 
   async openCreatePoll() {
     await this.page.getByTestId('create-poll-btn').click();
-    await expect(this.page.getByTestId('poll-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async fillPollTitle(title: string) {
@@ -135,7 +135,7 @@ export class ForumPage extends BasePage {
   async deleteComment(commentIndex: number) {
     const comments = this.page.getByTestId(/^comment-/);
     await comments.nth(commentIndex).getByTestId('delete-comment-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
     await this.page.waitForTimeout(300);
   }
 
@@ -148,7 +148,7 @@ export class ForumPage extends BasePage {
   async deletePost(feedIndex: number) {
     const items = this.page.getByTestId(/^feed-card-/);
     await items.nth(feedIndex).getByTestId('delete-feed-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
     await this.page.waitForTimeout(300);
   }
 
@@ -156,7 +156,7 @@ export class ForumPage extends BasePage {
 
   async openManageTags() {
     await this.page.getByTestId('manage-tags-btn').click();
-    await expect(this.page.getByTestId('tags-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async addTag(name: string) {
@@ -167,15 +167,15 @@ export class ForumPage extends BasePage {
   }
 
   async deleteTag(name: string) {
-    await this.page.getByTestId('tags-modal')
+    await this.page.locator('.ant-modal-wrap:visible')
       .locator(`[data-testid="tag-item"]`, { hasText: name })
       .getByTestId('delete-tag-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
     await this.page.waitForTimeout(300);
   }
 
   async expectTagDeleteDisabled(name: string) {
-    const btn = this.page.getByTestId('tags-modal')
+    const btn = this.page.locator('.ant-modal-wrap:visible')
       .locator(`[data-testid="tag-item"]`, { hasText: name })
       .getByTestId('delete-tag-btn');
     await expect(btn).toBeDisabled();

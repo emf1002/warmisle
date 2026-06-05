@@ -51,7 +51,7 @@ test.describe('个人中心', () => {
     const profile = new ProfilePage(page);
     await profile.goto();
     await profile.openEditProfile();
-    await profile.screenshotComponent('[data-testid="profile-modal"]', 'profile-edit-modal.png');
+    await profile.screenshotComponent('.ant-modal:visible', 'profile-edit-modal.png');
   });
 
   // === 功能场景 ===

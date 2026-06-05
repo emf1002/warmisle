@@ -16,7 +16,7 @@ export class WishPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.getByTestId('wish-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async fillTitle(title: string) {
@@ -90,14 +90,14 @@ export class WishPage extends BasePage {
   async abandonWish(index: number) {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('abandon-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   /** 删除愿望 */
   async deleteWish(index: number) {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   /** 评论愿望 */

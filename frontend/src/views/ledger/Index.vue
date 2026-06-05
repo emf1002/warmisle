@@ -79,7 +79,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="groups.length === 0" class="empty-state">
+    <div v-else-if="groups.length === 0" class="empty-state" data-testid="empty-state">
       <p>当前时间段还没有记录，记一笔吧</p>
       <a-button type="primary" @click="openCreate()">记一笔</a-button>
     </div>
@@ -112,7 +112,7 @@
             </span>
             <span class="item-creator-line">
               <span class="creator-avatar" :aria-label="`${item.creator.name}的头像`">{{ item.creator.avatar }}</span>
-              <span class="creator-name">{{ item.creator.name }}</span>
+              <span class="creator-name" data-testid="creator-name">{{ item.creator.name }}</span>
               <span class="creator-label">记录</span>
             </span>
           </div>
@@ -123,6 +123,15 @@
             <span class="item-amount" :class="item.category.type === 'income' ? 'income-amount' : 'expense-amount'">
               {{ item.category.type === 'income' ? '+' : '-' }}¥{{ (item.amount / 100).toFixed(2) }}
             </span>
+            <a-button
+              v-if="canEdit(item)"
+              type="link"
+              size="small"
+              @click.stop="onItemClick(item)"
+              data-testid="edit-btn"
+            >
+              编辑
+            </a-button>
           </div>
         </div>
       </div>
@@ -139,7 +148,6 @@
       :title="editingRecord ? '编辑记录' : '记一笔'"
       :confirm-loading="submitting"
       width="480px"
-      data-testid="ledger-modal"
     >
       <template #footer>
         <div style="display: flex; justify-content: space-between">
@@ -159,6 +167,7 @@
           </div>
         </div>
       </template>
+      <div data-testid="ledger-modal">
       <a-form :model="form" layout="vertical">
         <a-form-item label="分类" required>
           <a-tabs v-model:activeKey="categoryTab" size="small">
@@ -223,6 +232,7 @@
           />
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>

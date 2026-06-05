@@ -219,7 +219,7 @@ test.describe('待办管理', () => {
     await todo.openCreate();
     await todo.fillTitle('');
     await todo.submit();
-    await expect(page.getByTestId('todo-modal')).toBeVisible();
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
   });
 
   test('移动端底栏导航视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {

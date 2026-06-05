@@ -1,5 +1,5 @@
 <template>
-  <div class="emoji-picker">
+  <div class="emoji-picker" data-testid="avatar-grid">
     <div
       v-for="emoji in emojiList"
       :key="emoji"

@@ -84,8 +84,8 @@
       :confirm-loading="submitting"
       cancel-text="取消"
       ok-text="保存"
-      data-testid="profile-modal"
     >
+      <div data-testid="profile-modal">
       <a-form :model="form" layout="vertical">
         <a-form-item label="姓名">
           <a-input
@@ -96,9 +96,12 @@
           />
         </a-form-item>
         <a-form-item label="头像">
-          <EmojiPicker v-model="form.avatar" />
+          <div data-testid="avatar-picker">
+            <EmojiPicker v-model="form.avatar" />
+          </div>
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
 
     <!-- Change Password Dialog -->
@@ -109,8 +112,8 @@
       :confirm-loading="pwdSubmitting"
       cancel-text="取消"
       ok-text="保存"
-      data-testid="pwd-modal"
     >
+      <div data-testid="pwd-modal">
       <a-form :model="pwdForm" layout="vertical">
         <a-form-item label="当前密码" required>
           <a-input-password v-model:value="pwdForm.old_password" placeholder="请输入当前密码" data-testid="old-pwd-input" />
@@ -118,7 +121,11 @@
         <a-form-item label="新密码" required>
           <a-input-password v-model:value="pwdForm.new_password" placeholder="6-32位新密码" data-testid="new-pwd-input" />
         </a-form-item>
+        <a-form-item label="确认新密码" required>
+          <a-input-password v-model:value="confirmPassword" placeholder="请再次输入新密码" data-testid="confirm-pwd-input" />
+        </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -221,6 +228,7 @@ function goMembers() {
 
 const pwdDialogOpen = ref(false)
 const pwdSubmitting = ref(false)
+const confirmPassword = ref('')
 const pwdForm = reactive({
   old_password: '',
   new_password: '',
@@ -229,6 +237,7 @@ const pwdForm = reactive({
 function handleChangePassword() {
   pwdForm.old_password = ''
   pwdForm.new_password = ''
+  confirmPassword.value = ''
   pwdDialogOpen.value = true
 }
 

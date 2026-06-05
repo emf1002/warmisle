@@ -16,7 +16,7 @@ export class TodoPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.getByTestId('todo-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async fillTitle(title: string) {
@@ -54,7 +54,7 @@ export class TodoPage extends BasePage {
   async deleteTodo(index: number) {
     const items = this.page.getByTestId(/^todo-item-/);
     await items.nth(index).getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   async filterByStatus(status: string) {
@@ -95,7 +95,7 @@ export class TodoPage extends BasePage {
   async editTodo(index: number) {
     const items = this.page.getByTestId(/^todo-item-/);
     await items.nth(index).getByTestId('edit-btn').click();
-    await expect(this.page.getByTestId('todo-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   /** 断言第 n 条待办的优先级标签 */

@@ -26,7 +26,7 @@
       <div v-if="pinnedItems.length > 0" class="pinned-section">
         <div v-for="item in pinnedItems" :key="'pinned-' + item.id" class="feed-card topic-card">
           <div class="feed-header">
-            <span class="topic-pin-badge">📌 公告</span>
+            <span class="topic-pin-badge" data-testid="pinned-tag">📌 公告</span>
           </div>
           <h3 class="topic-title" @click="goToDetail(item)">{{ item.title }}</h3>
           <p class="feed-content topic-excerpt">{{ truncate(item.content, 150) }}</p>
@@ -50,11 +50,11 @@
               <span class="feed-action" @click.stop>⋯</span>
               <template #overlay>
                 <a-menu @click="(e: any) => onMenuClick(e, item)">
-                  <a-menu-item v-if="authStore.isAdmin" key="pin">
+                  <a-menu-item v-if="authStore.isAdmin" key="pin" data-testid="unpin-btn">
                     {{ item.is_pinned ? '取消置顶' : '置顶' }}
                   </a-menu-item>
                   <a-menu-item key="edit">编辑</a-menu-item>
-                  <a-menu-item key="delete" danger>删除</a-menu-item>
+                  <a-menu-item key="delete" danger data-testid="delete-feed-btn">删除</a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
@@ -90,7 +90,7 @@
                 <template #overlay>
                   <a-menu @click="(e: any) => onMenuClick(e, item)">
                     <a-menu-item key="edit">编辑</a-menu-item>
-                    <a-menu-item key="delete" danger>删除</a-menu-item>
+                    <a-menu-item key="delete" danger data-testid="delete-feed-btn">删除</a-menu-item>
                   </a-menu>
                 </template>
               </a-dropdown>
@@ -100,7 +100,7 @@
           <!-- Topic card -->
           <div v-else-if="item.type === 'topic'" class="feed-card topic-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div v-if="item.is_pinned" class="feed-header">
-              <span class="topic-pin-badge">📌 公告</span>
+              <span class="topic-pin-badge" data-testid="pinned-tag">📌 公告</span>
             </div>
             <h3 class="topic-title" @click="goToDetail(item)">{{ item.title }}</h3>
             <p class="feed-content topic-excerpt">{{ truncate(item.content, 150) }}</p>
@@ -124,11 +124,11 @@
                 <span class="feed-action" @click.stop>⋯</span>
                 <template #overlay>
                   <a-menu @click="(e: any) => onMenuClick(e, item)">
-                    <a-menu-item v-if="authStore.isAdmin" key="pin">
+                    <a-menu-item v-if="authStore.isAdmin" key="pin" data-testid="unpin-btn">
                       {{ item.is_pinned ? '取消置顶' : '置顶' }}
                     </a-menu-item>
                     <a-menu-item key="edit">编辑</a-menu-item>
-                    <a-menu-item key="delete" danger>删除</a-menu-item>
+                    <a-menu-item key="delete" danger data-testid="delete-feed-btn">删除</a-menu-item>
                   </a-menu>
                 </template>
               </a-dropdown>
@@ -158,8 +158,8 @@
       :confirm-loading="postSubmitting"
       @ok="handlePostSubmit"
       @cancel="postDialogOpen = false"
-      data-testid="post-modal"
     >
+      <div data-testid="post-modal">
       <a-textarea
         v-model:value="postForm.content"
         :maxlength="1000"
@@ -168,6 +168,7 @@
         show-count
         data-testid="post-content"
       />
+      </div>
     </a-modal>
 
     <!-- Mobile FAB -->
@@ -203,8 +204,8 @@
       width="520px"
       @ok="handleTopicSubmit"
       @cancel="topicDialogOpen = false"
-      data-testid="topic-modal"
     >
+      <div data-testid="topic-modal">
       <a-form layout="vertical">
         <a-form-item label="标题" required>
           <a-input
@@ -242,6 +243,7 @@
           </a-select>
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>

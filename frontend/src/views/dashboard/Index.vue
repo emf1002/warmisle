@@ -5,7 +5,7 @@
       <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月" data-testid="month-prev">
         ◀
       </a-button>
-      <span class="month-text">{{ selectedMonth.format('YYYY年M月') }}</span>
+      <span class="month-text" data-testid="current-month">{{ selectedMonth.format('YYYY年M月') }}</span>
       <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月" data-testid="month-next">
         ▶
       </a-button>
@@ -13,17 +13,17 @@
 
     <!-- 月度统计卡片 -->
     <div class="summary-grid" data-testid="summary-grid">
-      <a-card :bordered="false" class="stat-card">
+      <a-card :bordered="false" class="stat-card" data-testid="summary-income">
         <a-statistic title="收入" :value="summary.income / 100" :precision="2">
           <template #prefix><span class="income-prefix">+¥</span></template>
         </a-statistic>
       </a-card>
-      <a-card :bordered="false" class="stat-card">
+      <a-card :bordered="false" class="stat-card" data-testid="summary-expense">
         <a-statistic title="支出" :value="summary.expense / 100" :precision="2">
           <template #prefix><span class="expense-prefix">-¥</span></template>
         </a-statistic>
       </a-card>
-      <a-card :bordered="false" class="stat-card">
+      <a-card :bordered="false" class="stat-card" data-testid="summary-balance">
         <a-statistic title="结余" :value="Math.abs(summary.balance / 100)" :precision="2">
           <template #prefix>
             <span :class="summary.balance >= 0 ? 'income-prefix' : 'expense-prefix'">
@@ -40,7 +40,7 @@
         <div v-if="expenseChart.length === 0" class="empty-section">
           <EmptyState type="no-data" description="暂无数据" />
         </div>
-        <div v-else class="expense-chart">
+        <div v-else class="expense-chart" data-testid="expense-chart">
           <div v-for="item in expenseChart" :key="item.category_id" class="chart-row">
             <span class="chart-icon">{{ item.icon }}</span>
             <span class="chart-name">{{ item.category_name }}</span>
@@ -59,7 +59,7 @@
         </div>
         <a-list v-else :data-source="upcomingTodos" size="small" data-testid="upcoming-todos">
           <template #renderItem="{ item: todo }">
-            <a-list-item class="todo-item" @click="$router.push('/todo')">
+            <a-list-item class="todo-item" :data-testid="'todo-link-' + todo.id" @click="$router.push('/todo')">
               <div class="todo-item-content">
                 <span class="todo-title">{{ todo.title }}</span>
                 <span class="todo-meta">
@@ -85,7 +85,7 @@
         </div>
         <a-list v-else :data-source="wishTrends" size="small" data-testid="wish-trends">
           <template #renderItem="{ item: trend }">
-            <a-list-item class="clickable-item" @click="$router.push('/wish')">
+            <a-list-item class="clickable-item" :data-testid="'wish-link-' + trend.id" @click="$router.push('/wish')">
               <a-list-item-meta>
                 <template #title>{{ trend.title }}</template>
                 <template #description>
@@ -111,7 +111,7 @@
         </div>
         <a-list v-else :data-source="forumHot" size="small" data-testid="forum-hot">
           <template #renderItem="{ item: feed }">
-            <a-list-item class="clickable-item" @click="$router.push('/forum')">
+            <a-list-item class="clickable-item" :data-testid="'topic-link-' + feed.id" @click="$router.push('/forum')">
               <a-list-item-meta>
                 <template #title>
                   <a-tag v-if="feed.type === 'topic'" color="blue" size="small">话题</a-tag>

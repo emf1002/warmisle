@@ -211,6 +211,6 @@ test.describe('愿望清单', () => {
     await wish.openCreate();
     await wish.fillTitle('');
     await wish.submit();
-    await expect(page.getByTestId('wish-modal')).toBeVisible();
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
   });
 });

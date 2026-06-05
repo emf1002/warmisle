@@ -111,7 +111,7 @@
     </div>
 
     <!-- ==================== 移动端底部TabBar ==================== -->
-    <nav v-if="isMobile" class="tabbar" aria-label="底部导航">
+    <nav v-if="isMobile" class="tabbar" aria-label="底部导航" data-testid="mobile-tabbar">
       <div
         v-for="tab in bottomTabs"
         :key="tab.key"

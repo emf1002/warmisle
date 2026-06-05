@@ -23,6 +23,7 @@
         allow-clear
         style="width: 160px"
         @change="onFilterChange"
+        data-testid="assignee-filter"
       >
         <a-select-option v-for="m in members" :key="m.id" :value="m.id">
           {{ m.avatar }} {{ m.name }}
@@ -66,7 +67,7 @@
               <span class="todo-title" :class="{ 'title-done': todo.status === 'completed' }">
                 {{ todo.title }}
               </span>
-              <a-tag :color="priorityColor(todo.priority)" class="todo-priority">
+              <a-tag :color="priorityColor(todo.priority)" class="todo-priority" data-testid="priority-tag">
                 {{ priorityLabel(todo.priority) }}
               </a-tag>
             </div>
@@ -77,14 +78,14 @@
                 <span v-if="todo.assignee">
                   <span class="meta-arrow">→</span>
                   <span class="meta-avatar">{{ todo.assignee.avatar }}</span>
-                  <span class="meta-name">{{ todo.assignee.name }}</span>
+                  <span class="meta-name" data-testid="assignee-name">{{ todo.assignee.name }}</span>
                 </span>
                 <span v-else class="todo-unassigned">
                   未指派
                   <a-button type="link" size="small" @click.stop="handleClaim(todo)" data-testid="claim-btn">认领</a-button>
                 </span>
               </span>
-              <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo) }">
+              <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo) }" data-testid="due-date">
                 📅 {{ formatDate(todo.due_date) }}截止
               </span>
             </div>
@@ -113,7 +114,6 @@
       :confirm-loading="submitting"
       width="480px"
       @cancel="dialogOpen = false"
-      data-testid="todo-modal"
     >
       <template #footer>
         <div style="display: flex; justify-content: space-between">
@@ -126,6 +126,7 @@
           </div>
         </div>
       </template>
+      <div data-testid="todo-modal">
       <a-form :model="form" layout="vertical">
         <a-form-item label="标题" required>
           <a-input v-model:value="form.title" :maxlength="100" placeholder="请输入待办标题" data-testid="title-input" />
@@ -151,6 +152,7 @@
           <a-date-picker v-model:value="form.due_date" format="YYYY-MM-DD" style="width: 100%" data-testid="due-date-picker" />
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>

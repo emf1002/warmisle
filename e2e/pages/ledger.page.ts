@@ -17,7 +17,7 @@ export class LedgerPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.getByTestId('ledger-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   /** 在弹窗网格选择器中点击分类（按文本匹配） */
@@ -50,7 +50,7 @@ export class LedgerPage extends BasePage {
 
   async deleteRecord() {
     await this.page.getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   async clearFilters() {
@@ -108,7 +108,7 @@ export class LedgerPage extends BasePage {
     const items = this.page.getByTestId(/^ledger-item-/);
     await items.nth(index).click();
     await this.page.getByTestId('edit-btn').click();
-    await expect(this.page.getByTestId('ledger-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   /** 断言第 n 条记录显示指定的创建者名称 */

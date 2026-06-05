@@ -45,7 +45,7 @@
           <a-tag :color="priorityColor(wish.priority)" size="small">
             {{ priorityLabel(wish.priority) }}
           </a-tag>
-          <a-tag :color="statusColor(wish.status)" size="small">
+          <a-tag :color="statusColor(wish.status)" size="small" data-testid="status-tag">
             {{ statusLabel(wish.status) }}
           </a-tag>
         </div>
@@ -64,10 +64,10 @@
               @click="handleVote(wish)"
               data-testid="vote-btn"
             >
-              👍 {{ wish.vote_count }}
+              👍 <span data-testid="vote-count">{{ wish.vote_count }}</span>
             </a-button>
             <a-dropdown v-if="canEdit(wish)" :trigger="['click']">
-              <a-button type="text" size="small">···</a-button>
+              <a-button type="text" size="small" data-testid="status-action">···</a-button>
               <template #overlay>
                 <a-menu>
                   <a-menu-item @click="openEdit(wish)">编辑</a-menu-item>
@@ -91,12 +91,13 @@
                   </a-menu-item>
                   <a-menu-item
                     v-if="canAbandon(wish) && wish.status !== 'abandoned'"
+                    data-testid="abandon-btn"
                     @click="handleStatusChange(wish, 'abandoned')"
                   >
                     标记为放弃
                   </a-menu-item>
                   <a-menu-divider />
-                  <a-menu-item danger @click="confirmDelete(wish)">删除</a-menu-item>
+                  <a-menu-item danger data-testid="delete-btn" @click="confirmDelete(wish)">删除</a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
@@ -124,8 +125,8 @@
       width="480px"
       @ok="handleSubmit"
       @cancel="dialogOpen = false"
-      data-testid="wish-modal"
     >
+      <div data-testid="wish-modal">
       <a-form :model="form" layout="vertical">
         <a-form-item label="标题" required>
           <a-input v-model:value="form.title" :maxlength="100" placeholder="请输入愿望标题" data-testid="title-input" />
@@ -152,6 +153,7 @@
           <a-input-number v-model:value="form.amountYuan" :min="0" :precision="2" style="width: 100%" placeholder="可选" data-testid="amount-input" />
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>

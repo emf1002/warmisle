@@ -19,12 +19,12 @@
           <span class="member-username">{{ record.username }}</span>
         </template>
         <template v-if="column.key === 'role'">
-          <a-tag :color="record.role === 'admin' ? 'blue' : 'default'">
+          <a-tag :color="record.role === 'admin' ? 'blue' : 'default'" data-testid="role-tag">
             {{ record.role === 'admin' ? '管理员' : '成员' }}
           </a-tag>
         </template>
         <template v-if="column.key === 'status'">
-          <a-tag :color="record.status === 'disabled' ? 'red' : 'green'">
+          <a-tag :color="record.status === 'disabled' ? 'red' : 'green'" data-testid="status-tag">
             {{ record.status === 'disabled' ? '已禁用' : '正常' }}
           </a-tag>
         </template>
@@ -69,8 +69,8 @@
       cancel-text="取消"
       @ok="handleSubmit"
       :confirm-loading="submitting"
-      data-testid="member-modal"
     >
+      <div data-testid="member-modal">
       <a-form :model="form" layout="vertical">
         <a-form-item v-if="!editingMember" label="用户名" required>
           <a-input
@@ -106,6 +106,7 @@
           </a-select>
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>

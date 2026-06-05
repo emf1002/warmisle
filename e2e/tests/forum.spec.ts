@@ -240,7 +240,7 @@ test.describe('家庭论坛', () => {
     await forum.goto();
     await forum.openManageTags();
     await forum.addTag('新标签');
-    await expect(page.getByTestId('tags-modal')).toContainText('新标签');
+    await expect(page.locator('.ant-modal-wrap:visible')).toContainText('新标签');
   });
 
   test('有关联话题的标签不可删除', async ({ authenticated }) => {
@@ -265,7 +265,7 @@ test.describe('家庭论坛', () => {
     await forum.openCreatePost();
     await forum.fillPostContent('');
     await forum.submitModal();
-    await expect(page.getByTestId('post-modal')).toBeVisible();
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
   });
 
   // === 响应式 ===

@@ -17,6 +17,7 @@ test.describe('认证流程', () => {
   });
 
   test('初始化系统创建管理员', async ({ page }) => {
+    await resetDatabase();
     const initPage = new InitPage(page);
     await initPage.goto();
     await initPage.setup('测试管理员', 'admin', 'test123');

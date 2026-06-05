@@ -61,8 +61,8 @@
       cancel-text="取消"
       @ok="handleSubmit"
       :confirm-loading="submitting"
-      data-testid="category-modal"
     >
+      <div data-testid="category-modal">
       <a-form :model="form" layout="vertical">
         <a-form-item label="类型" required>
           <a-select v-model:value="form.type" data-testid="type-select">
@@ -92,6 +92,7 @@
           />
         </a-form-item>
       </a-form>
+      </div>
     </a-modal>
   </div>
 </template>

@@ -16,12 +16,12 @@ export class ProfilePage extends BasePage {
 
   async openEditProfile() {
     await this.page.getByTestId('edit-profile-btn').click();
-    await expect(this.page.getByTestId('profile-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async openChangePassword() {
     await this.page.getByTestId('change-pwd-btn').click();
-    await expect(this.page.getByTestId('pwd-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async fillName(name: string) {
@@ -37,16 +37,16 @@ export class ProfilePage extends BasePage {
   }
 
   async submitProfile() {
-    await this.page.getByTestId('profile-modal').locator('.ant-modal-footer .ant-btn-primary').click();
+    await this.page.locator('.ant-modal:visible .ant-modal-footer .ant-btn-primary').click();
   }
 
   async submitPassword() {
-    await this.page.getByTestId('pwd-modal').locator('.ant-modal-footer .ant-btn-primary').click();
+    await this.page.locator('.ant-modal:visible .ant-modal-footer .ant-btn-primary').click();
   }
 
   async logout() {
     await this.page.getByTestId('logout-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   async expectProfileName(name: string) {

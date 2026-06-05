@@ -16,7 +16,7 @@ export class MembersPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.getByTestId('member-modal')).toBeVisible();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
   async fillUsername(username: string) {
@@ -53,7 +53,7 @@ export class MembersPage extends BasePage {
   async disableMember(index: number) {
     const rows = this.page.getByTestId('member-table').locator('tbody tr');
     await rows.nth(index).getByTestId('disable-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   async enableMember(index: number) {
@@ -64,7 +64,7 @@ export class MembersPage extends BasePage {
   async deleteMember(index: number) {
     const rows = this.page.getByTestId('member-table').locator('tbody tr');
     await rows.nth(index).getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
   }
 
   async expectMemberStatus(index: number, status: string) {
@@ -83,11 +83,11 @@ export class MembersPage extends BasePage {
   }
 
   async fillEditName(name: string) {
-    await this.page.getByTestId('member-modal').getByTestId('name-input').fill(name);
+    await this.page.locator('.ant-modal-wrap:visible').getByTestId('name-input').fill(name);
   }
 
   async submitEdit() {
-    await this.page.getByTestId('member-modal').locator('.ant-modal-footer .ant-btn-primary').click();
-    await expect(this.page.getByTestId('member-modal')).not.toBeVisible();
+    await this.page.locator('.ant-modal:visible .ant-modal-footer .ant-btn-primary').click();
+    await expect(this.page.locator('.ant-modal-wrap:visible')).not.toBeVisible();
   }
 }
