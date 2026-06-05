@@ -14,6 +14,7 @@ func Register(r *gin.Engine) {
 	// 测试重置端点（仅测试模式可用）
 	if os.Getenv("HC_TEST_MODE") == "true" {
 		api.POST("/test/reset", handler.TestReset)
+		api.POST("/test/seed-ledgers", handler.TestSeedLedgers)
 	}
 
 	auth := handler.NewAuthHandler()
