@@ -1,5 +1,5 @@
 import path from 'path';
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 const rootDir = path.resolve(__dirname, '..');
 const binaryPath = path.join(rootDir, 'dist', 'warmisle.exe');
@@ -23,6 +23,13 @@ export default defineConfig({
       use: {
         viewport: { width: 1280, height: 720 },
       },
+    },
+    {
+      name: 'mobile',
+      use: {
+        ...devices['iPhone 13'],
+      },
+      grep: /@mobile/,
     },
   ],
   webServer: {

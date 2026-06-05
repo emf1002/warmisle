@@ -15,6 +15,7 @@ func Register(r *gin.Engine) {
 	if os.Getenv("HC_TEST_MODE") == "true" {
 		api.POST("/test/reset", handler.TestReset)
 		api.POST("/test/seed-ledgers", handler.TestSeedLedgers)
+		api.POST("/test/create-member", handler.TestCreateMember)
 	}
 
 	auth := handler.NewAuthHandler()

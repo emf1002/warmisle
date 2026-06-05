@@ -69,3 +69,33 @@ export async function seedLedgers(
 
   return res.json();
 }
+
+export interface CreateMemberResult {
+  code: number;
+  message: string;
+  data: {
+    token: string;
+    member_id: number;
+  };
+}
+
+export async function createMember(
+  options: { username?: string; password?: string; name?: string } = {}
+): Promise<CreateMemberResult> {
+  const res = await fetch(`${BASE_URL}/api/test/create-member`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: options.username ?? 'member1',
+      password: options.password ?? 'test123',
+      name: options.name ?? '成员一',
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Create member failed: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
