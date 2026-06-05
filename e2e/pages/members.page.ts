@@ -66,4 +66,28 @@ export class MembersPage extends BasePage {
     await rows.nth(index).getByTestId('delete-btn').click();
     await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
   }
+
+  async expectMemberStatus(index: number, status: string) {
+    const rows = this.page.getByTestId('member-table').locator('tbody tr');
+    await expect(rows.nth(index).getByTestId('status-tag')).toContainText(status);
+  }
+
+  async expectMemberRole(index: number, role: string) {
+    const rows = this.page.getByTestId('member-table').locator('tbody tr');
+    await expect(rows.nth(index).getByTestId('role-tag')).toContainText(role);
+  }
+
+  async expectDeleteDisabled(index: number) {
+    const rows = this.page.getByTestId('member-table').locator('tbody tr');
+    await expect(rows.nth(index).getByTestId('delete-btn')).toBeDisabled();
+  }
+
+  async fillEditName(name: string) {
+    await this.page.getByTestId('member-modal').getByTestId('name-input').fill(name);
+  }
+
+  async submitEdit() {
+    await this.page.getByTestId('member-modal').locator('.ant-modal-footer .ant-btn-primary').click();
+    await expect(this.page.getByTestId('member-modal')).not.toBeVisible();
+  }
 }

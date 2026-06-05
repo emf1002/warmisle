@@ -46,4 +46,86 @@ test.describe('分类管理', () => {
     await categories.goto();
     await categories.screenshot('categories-page.png');
   });
+
+  // === 功能场景 ===
+
+  test('编辑分类', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const categories = new CategoriesPage(page);
+    await categories.goto();
+    await categories.editCategory(0);
+    await categories.fillEditName('改名后的餐饮');
+    await categories.submitEdit();
+    await expect(page.getByTestId('expense-categories')).toContainText('改名后的餐饮');
+  });
+
+  test('修改分类 type', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const categories = new CategoriesPage(page);
+    await categories.goto();
+    await categories.openCreate();
+    await categories.selectType('支出');
+    await categories.fillName('可转换分类');
+    await categories.submit();
+    await categories.expectExpenseCategoryCount(16);
+    await categories.editCategory(15);
+    await categories.changeCategoryType('收入');
+    await categories.submitEdit();
+    await categories.expectExpenseCategoryCount(15);
+    await categories.expectIncomeCategoryCount(6);
+  });
+
+  test('添加收入分类', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const categories = new CategoriesPage(page);
+    await categories.goto();
+    await categories.openCreate();
+    await categories.selectType('收入');
+    await categories.fillName('新收入分类');
+    await categories.submit();
+    await categories.expectIncomeCategoryCount(6);
+    await expect(page.getByTestId('income-categories')).toContainText('新收入分类');
+  });
+
+  // === 错误路径 ===
+
+  test('有关联记录的分类不可删除', async ({ authenticated }) => {
+    const { page } = authenticated;
+    await page.goto('/#/ledger');
+    await page.getByTestId('add-btn').click();
+    await page.locator('.category-pick-item', { hasText: '餐饮' }).click();
+    await page.getByTestId('amount-input').click();
+    await page.getByTestId('amount-input').locator('input').fill('10');
+    await page.getByTestId('submit-btn').click();
+    const categories = new CategoriesPage(page);
+    await categories.goto();
+    await categories.deleteCategory(0);
+    await categories.expectExpenseCategoryCount(15);
+  });
+
+  test('同类型重复名称被拒绝', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const categories = new CategoriesPage(page);
+    await categories.goto();
+    await categories.openCreate();
+    await categories.selectType('支出');
+    await categories.fillName('测试分类');
+    await categories.submit();
+    await categories.expectExpenseCategoryCount(16);
+    await categories.openCreate();
+    await categories.selectType('支出');
+    await categories.fillName('测试分类');
+    await categories.submit();
+    await categories.expectExpenseCategoryCount(16);
+  });
+
+  // === 响应式 ===
+
+  test('移动端分类列表', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page } = authenticated;
+    const categories = new CategoriesPage(page);
+    await categories.goto();
+    await categories.expectExpenseCategoryCount(15);
+    await categories.expectIncomeCategoryCount(5);
+  });
 });

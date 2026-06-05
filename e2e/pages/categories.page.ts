@@ -54,4 +54,23 @@ export class CategoriesPage extends BasePage {
     await cards.nth(index).getByTestId('delete-btn').click();
     await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
   }
+
+  async changeCategoryType(type: string) {
+    await this.page.getByTestId('category-modal').getByTestId('type-select').click();
+    await this.page.locator('.ant-select-item-option', { hasText: type }).click();
+  }
+
+  async fillEditName(name: string) {
+    await this.page.getByTestId('category-modal').getByTestId('name-input').fill(name);
+  }
+
+  async submitEdit() {
+    await this.page.getByTestId('category-modal').locator('.ant-modal-footer .ant-btn-primary').click();
+    await expect(this.page.getByTestId('category-modal')).not.toBeVisible();
+  }
+
+  async expectDeleteDisabled(index: number) {
+    const cards = this.page.getByTestId(/^category-card-/);
+    await expect(cards.nth(index).getByTestId('delete-btn')).toBeDisabled();
+  }
 }

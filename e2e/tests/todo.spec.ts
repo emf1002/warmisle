@@ -222,6 +222,14 @@ test.describe('待办管理', () => {
     await expect(page.getByTestId('todo-modal')).toBeVisible();
   });
 
+  test('移动端底栏导航视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page } = authenticated;
+    const todo = new TodoPage(page);
+    await todo.goto();
+    await expect(page.getByTestId('mobile-tabbar')).toBeVisible();
+    await todo.screenshot('todo-mobile.png');
+  });
+
   test('过期待办高亮', async ({ authenticated }) => {
     const { page } = authenticated;
     const todo = new TodoPage(page);

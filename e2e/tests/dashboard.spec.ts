@@ -104,6 +104,13 @@ test.describe('仪表盘', () => {
     await dashboard.expectForumHotVisible();
   });
 
+  test('移动端仪表盘视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page } = authenticated;
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.screenshot('dashboard-mobile.png');
+  });
+
   test('移动端仪表盘', { tag: '@mobile' }, async ({ authenticated }) => {
     const { page } = authenticated;
     const dashboard = new DashboardPage(page);

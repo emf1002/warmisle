@@ -257,6 +257,14 @@ test.describe('记账本', () => {
 
   // === 响应式 ===
 
+  test('移动端记账列表视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page, seedLedgers } = authenticated;
+    await seedLedgers({ count: 10 });
+    const ledger = new LedgerPage(page);
+    await ledger.goto();
+    await ledger.screenshot('ledger-list-mobile.png');
+  });
+
   test('移动端记账列表', { tag: '@mobile' }, async ({ authenticated }) => {
     const { page } = authenticated;
     const ledger = new LedgerPage(page);

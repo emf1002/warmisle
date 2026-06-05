@@ -52,4 +52,29 @@ export class ProfilePage extends BasePage {
   async expectProfileName(name: string) {
     await expect(this.page.locator('.profile-header')).toContainText(name);
   }
+
+  async selectAvatar(avatar: string) {
+    await this.page.getByTestId('avatar-picker').click();
+    await this.page.getByTestId('avatar-grid').locator(`text=${avatar}`).click();
+  }
+
+  async fillConfirmPassword(password: string) {
+    await this.page.getByTestId('confirm-pwd-input').fill(password);
+  }
+
+  async expectOldPasswordError() {
+    await expect(this.page.locator('.ant-form-item-explain')).toContainText('原密码错误');
+  }
+
+  async expectPasswordMismatchError() {
+    await expect(this.page.locator('.ant-form-item-explain')).toContainText('两次输入的密码不一致');
+  }
+
+  async expectSamePasswordError() {
+    await expect(this.page.locator('.ant-form-item-explain')).toContainText('新密码不能与旧密码相同');
+  }
+
+  async expectNameTooLongError() {
+    await expect(this.page.locator('.ant-form-item-explain')).toContainText('请输入1-20字符');
+  }
 }

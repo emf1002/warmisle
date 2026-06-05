@@ -53,4 +53,73 @@ test.describe('个人中心', () => {
     await profile.openEditProfile();
     await profile.screenshotComponent('[data-testid="profile-modal"]', 'profile-edit-modal.png');
   });
+
+  // === 功能场景 ===
+
+  test('选择头像', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.openEditProfile();
+    await profile.selectAvatar('🐶');
+    await profile.submitProfile();
+    await expect(page.locator('.profile-header')).toContainText('🐶');
+  });
+
+  // === 错误路径 ===
+
+  test('旧密码错误', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.openChangePassword();
+    await profile.fillOldPassword('wrongpassword');
+    await profile.fillNewPassword('newpass123');
+    await profile.fillConfirmPassword('newpass123');
+    await profile.submitPassword();
+    await profile.expectOldPasswordError();
+  });
+
+  test('新密码不一致', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.openChangePassword();
+    await profile.fillOldPassword('test123');
+    await profile.fillNewPassword('newpass123');
+    await profile.fillConfirmPassword('different456');
+    await profile.submitPassword();
+    await profile.expectPasswordMismatchError();
+  });
+
+  test('新密码与旧密码相同', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.openChangePassword();
+    await profile.fillOldPassword('test123');
+    await profile.fillNewPassword('test123');
+    await profile.fillConfirmPassword('test123');
+    await profile.submitPassword();
+    await profile.expectSamePasswordError();
+  });
+
+  test('姓名超长被拒绝', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.openEditProfile();
+    await profile.fillName('这是一个超过二十个字符的很长很长很长的姓名');
+    await profile.submitProfile();
+    await profile.expectNameTooLongError();
+  });
+
+  // === 响应式 ===
+
+  test('移动端个人中心', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.expectProfileName('管理员');
+  });
 });

@@ -59,4 +59,125 @@ export class ForumPage extends BasePage {
     const items = this.page.getByTestId(/^feed-card-/);
     await items.nth(index).getByTestId('comment-btn').click();
   }
+
+  // === 公告 ===
+
+  async openCreateAnnouncement() {
+    await this.page.getByTestId('create-announcement-btn').click();
+    await expect(this.page.getByTestId('topic-modal')).toBeVisible();
+  }
+
+  async unpinAnnouncement(index: number) {
+    const items = this.page.getByTestId(/^feed-card-/);
+    await items.nth(index).getByTestId('unpin-btn').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  async expectAnnouncementPinned(index: number) {
+    const items = this.page.getByTestId(/^feed-card-/);
+    await expect(items.nth(index).getByTestId('pinned-tag')).toBeVisible();
+  }
+
+  // === 投票 ===
+
+  async openCreatePoll() {
+    await this.page.getByTestId('create-poll-btn').click();
+    await expect(this.page.getByTestId('poll-modal')).toBeVisible();
+  }
+
+  async fillPollTitle(title: string) {
+    await this.page.getByTestId('poll-title').fill(title);
+  }
+
+  async addPollOption(option: string) {
+    await this.page.getByTestId('add-option-btn').click();
+    const inputs = this.page.getByTestId(/^option-input-/);
+    await inputs.last().fill(option);
+  }
+
+  async setPollMultiSelect(enabled: boolean) {
+    const checkbox = this.page.getByTestId('poll-multi-select');
+    const isChecked = await checkbox.isChecked();
+    if (enabled !== isChecked) {
+      await checkbox.click();
+    }
+  }
+
+  async votePoll(feedIndex: number, optionIndex: number) {
+    const items = this.page.getByTestId(/^feed-card-/);
+    const options = items.nth(feedIndex).getByTestId(/^poll-option-/);
+    await options.nth(optionIndex).click();
+    await items.nth(feedIndex).getByTestId('poll-submit').click();
+  }
+
+  // === 评论 ===
+
+  async commentOnPost(feedIndex: number, text: string) {
+    await this.goToDetail(feedIndex);
+    await this.page.getByTestId('comment-input').fill(text);
+    await this.page.getByTestId('comment-submit').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  async replyToComment(commentIndex: number, text: string) {
+    const comments = this.page.getByTestId(/^comment-/);
+    await comments.nth(commentIndex).getByTestId('reply-btn').click();
+    await this.page.getByTestId('reply-input').fill(text);
+    await this.page.getByTestId('reply-submit').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  async expectNoReplyButton(commentIndex: number) {
+    const comments = this.page.getByTestId(/^comment-/);
+    await expect(comments.nth(commentIndex).getByTestId('reply-btn')).not.toBeVisible();
+  }
+
+  async deleteComment(commentIndex: number) {
+    const comments = this.page.getByTestId(/^comment-/);
+    await comments.nth(commentIndex).getByTestId('delete-comment-btn').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  async expectCommentCount(count: number) {
+    await expect(this.page.getByTestId(/^comment-/)).toHaveCount(count);
+  }
+
+  // === 内容管理 ===
+
+  async deletePost(feedIndex: number) {
+    const items = this.page.getByTestId(/^feed-card-/);
+    await items.nth(feedIndex).getByTestId('delete-feed-btn').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  // === 标签管理 ===
+
+  async openManageTags() {
+    await this.page.getByTestId('manage-tags-btn').click();
+    await expect(this.page.getByTestId('tags-modal')).toBeVisible();
+  }
+
+  async addTag(name: string) {
+    await this.page.getByTestId('add-tag-btn').click();
+    await this.page.getByTestId('tag-name-input').fill(name);
+    await this.page.getByTestId('tag-submit-btn').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  async deleteTag(name: string) {
+    await this.page.getByTestId('tags-modal')
+      .locator(`[data-testid="tag-item"]`, { hasText: name })
+      .getByTestId('delete-tag-btn').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.page.waitForTimeout(300);
+  }
+
+  async expectTagDeleteDisabled(name: string) {
+    const btn = this.page.getByTestId('tags-modal')
+      .locator(`[data-testid="tag-item"]`, { hasText: name })
+      .getByTestId('delete-tag-btn');
+    await expect(btn).toBeDisabled();
+  }
 }

@@ -59,4 +59,53 @@ export class WishPage extends BasePage {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('vote-btn').click();
   }
+
+  /** 取消投票（再次点击投票按钮） */
+  async unvoteWish(index: number) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await items.nth(index).getByTestId('vote-btn').click();
+  }
+
+  /** 断言投票人数 */
+  async expectVoteCount(index: number, count: number) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await expect(items.nth(index).getByTestId('vote-count')).toContainText(String(count));
+  }
+
+  /** 变更愿望状态（管理员操作） */
+  async changeWishStatus(index: number, status: string) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await items.nth(index).getByTestId('status-action').click();
+    await this.page.locator('.ant-dropdown', { hasText: status }).click();
+    await this.page.waitForTimeout(300);
+  }
+
+  /** 断言愿望状态 */
+  async expectStatus(index: number, status: string) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await expect(items.nth(index).getByTestId('status-tag')).toContainText(status);
+  }
+
+  /** 创建者放弃愿望 */
+  async abandonWish(index: number) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await items.nth(index).getByTestId('abandon-btn').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+  }
+
+  /** 删除愿望 */
+  async deleteWish(index: number) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await items.nth(index).getByTestId('delete-btn').click();
+    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+  }
+
+  /** 评论愿望 */
+  async commentOnWish(index: number, text: string) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await items.nth(index).getByTestId('comment-btn').click();
+    await this.page.getByTestId('comment-input').fill(text);
+    await this.page.getByTestId('comment-submit').click();
+    await this.page.waitForTimeout(300);
+  }
 }
