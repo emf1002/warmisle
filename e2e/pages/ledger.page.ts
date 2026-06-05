@@ -102,4 +102,40 @@ export class LedgerPage extends BasePage {
   async expectDailyTotal(index: number, text: string) {
     await expect(this.page.getByTestId('daily-total').nth(index)).toContainText(text);
   }
+
+  /** 编辑第 n 条记录：点击记录 → 点击编辑按钮 */
+  async editRecord(index: number) {
+    const items = this.page.getByTestId(/^ledger-item-/);
+    await items.nth(index).click();
+    await this.page.getByTestId('edit-btn').click();
+    await expect(this.page.getByTestId('ledger-modal')).toBeVisible();
+  }
+
+  /** 断言第 n 条记录显示指定的创建者名称 */
+  async expectRecordCreator(index: number, name: string) {
+    const items = this.page.getByTestId(/^ledger-item-/);
+    await expect(items.nth(index).getByTestId('creator-name')).toContainText(name);
+  }
+
+  /** 切换到上个月 */
+  async goPrevMonth() {
+    await this.page.getByTestId('month-prev').click();
+    await this.page.waitForLoadState('networkidle');
+  }
+
+  /** 切换到下个月 */
+  async goNextMonth() {
+    await this.page.getByTestId('month-next').click();
+    await this.page.waitForLoadState('networkidle');
+  }
+
+  /** 断言当前月份显示（如"2026年6月"） */
+  async expectMonthText(text: string) {
+    await expect(this.page.getByTestId('current-month')).toContainText(text);
+  }
+
+  /** 断言金额输入校验错误 */
+  async expectAmountError() {
+    await expect(this.page.locator('.ant-form-item-explain')).toContainText('请输入正数金额');
+  }
 }
