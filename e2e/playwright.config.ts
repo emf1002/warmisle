@@ -6,6 +6,7 @@ const binaryPath = path.join(rootDir, 'dist', 'warmisle.exe');
 
 export default defineConfig({
   testDir: './tests',
+  snapshotDir: './__snapshots__',
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
