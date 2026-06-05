@@ -620,7 +620,7 @@ watch(sentinelRef, (el, oldEl) => {
   display: flex;
   background: var(--color-bg-container);
   border-radius: var(--radius-md);
-  padding: 16px 24px;
+  padding: var(--space-md) var(--space-lg);
   margin-bottom: 16px;
   box-shadow: var(--shadow-level-1);
 }
@@ -645,7 +645,7 @@ watch(sentinelRef, (el, oldEl) => {
 
 /* Skeleton loading */
 .skeleton-state {
-  padding: 16px;
+  padding: var(--space-md);
 }
 
 /* Amount Colors */
@@ -674,7 +674,7 @@ watch(sentinelRef, (el, oldEl) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
+  padding: 10px var(--space-md);
   background: var(--color-bg-layout);
   border-radius: var(--radius-md);
   margin-bottom: 8px;
@@ -697,7 +697,7 @@ watch(sentinelRef, (el, oldEl) => {
 .ledger-item {
   background: var(--color-bg-container);
   border-radius: var(--radius-md);
-  padding: 12px 16px;
+  padding: var(--space-sm) var(--space-md);
   margin-bottom: 8px;
   border: 1px solid var(--color-border-secondary);
   box-shadow: var(--shadow-level-1);
@@ -819,7 +819,7 @@ watch(sentinelRef, (el, oldEl) => {
 .load-sentinel {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
+  padding: var(--space-md) 0;
 }
 
 /* Mobile */

@@ -3,7 +3,7 @@
     <div class="page-header">
       <h2>分类管理</h2>
       <a-button v-if="authStore.isAdmin" type="primary" @click="openCreate" data-testid="add-btn">
-        添加分类
+        <Icon name="Plus" :size="16" /> 添加分类
       </a-button>
     </div>
 
@@ -23,8 +23,8 @@
           <span class="category-icon">{{ cat.icon }}</span>
           <span class="category-name">{{ cat.name }}</span>
           <span v-if="authStore.isAdmin" class="category-actions">
-            <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn">编辑</a-button>
-            <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn">删除</a-button>
+            <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn"><Icon name="Pencil" :size="14" /> 编辑</a-button>
+            <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn"><Icon name="Trash2" :size="14" /> 删除</a-button>
           </span>
         </div>
       </div>
@@ -46,8 +46,8 @@
           <span class="category-icon">{{ cat.icon }}</span>
           <span class="category-name">{{ cat.name }}</span>
           <span v-if="authStore.isAdmin" class="category-actions">
-            <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn">编辑</a-button>
-            <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn">删除</a-button>
+            <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn"><Icon name="Pencil" :size="14" /> 编辑</a-button>
+            <a-button type="link" size="small" danger @click="confirmDelete(cat)" data-testid="delete-btn"><Icon name="Trash2" :size="14" /> 删除</a-button>
           </span>
         </div>
       </div>
@@ -108,6 +108,7 @@ import {
 } from '@/api/category'
 import { useAuthStore } from '@/stores/auth'
 import EmojiPicker from '@/components/EmojiPicker.vue'
+import Icon from '@/components/Icon.vue'
 
 const authStore = useAuthStore()
 
@@ -218,7 +219,7 @@ function confirmDelete(record: any) {
 
 <style scoped>
 .category-page {
-  padding: 24px;
+  padding: var(--space-lg);
 }
 
 .category-section {
@@ -252,7 +253,7 @@ function confirmDelete(record: any) {
 .category-card {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-bg-container);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--radius-md);
