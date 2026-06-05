@@ -65,4 +65,66 @@ export class TodoPage extends BasePage {
   async clearFilters() {
     await this.page.getByTestId('clear-filters').click();
   }
+
+  /** 填写截止日期（格式 YYYY-MM-DD） */
+  async fillDueDate(date: string) {
+    await this.page.getByTestId('due-date-picker').click();
+    await this.page.getByTestId('due-date-picker').locator('input').fill(date);
+    await this.page.keyboard.press('Escape');
+  }
+
+  /** 选择指派成员 */
+  async selectAssignee(name: string) {
+    await this.page.getByTestId('assignee-select').click();
+    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+  }
+
+  /** 认领第 n 条未指派的待办 */
+  async claimTodo(index: number) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await items.nth(index).getByTestId('claim-btn').click();
+  }
+
+  /** 按指派成员筛选 */
+  async filterByAssignee(name: string) {
+    await this.page.getByTestId('assignee-filter').click();
+    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+  }
+
+  /** 编辑第 n 条待办 */
+  async editTodo(index: number) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await items.nth(index).getByTestId('edit-btn').click();
+    await expect(this.page.getByTestId('todo-modal')).toBeVisible();
+  }
+
+  /** 断言第 n 条待办的优先级标签 */
+  async expectTodoPriority(index: number, priority: string) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await expect(items.nth(index).getByTestId('priority-tag')).toContainText(priority);
+  }
+
+  /** 断言第 n 条待办的截止日期显示 */
+  async expectTodoDueDate(index: number, dateText: string) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await expect(items.nth(index).getByTestId('due-date')).toContainText(dateText);
+  }
+
+  /** 断言第 n 条待办的指派人 */
+  async expectTodoAssignee(index: number, name: string) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await expect(items.nth(index).getByTestId('assignee-name')).toContainText(name);
+  }
+
+  /** 断言第 n 条待办的截止日期为红色（过期） */
+  async expectOverdueHighlight(index: number) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await expect(items.nth(index).getByTestId('due-date')).toHaveClass(/overdue|red|error/);
+  }
+
+  /** 断言第 n 条待办已完成 */
+  async expectTodoCompleted(index: number) {
+    const items = this.page.getByTestId(/^todo-item-/);
+    await expect(items.nth(index).getByTestId('todo-checkbox')).toBeChecked();
+  }
 }
