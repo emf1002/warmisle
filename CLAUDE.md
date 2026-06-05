@@ -120,6 +120,32 @@ warmisle/
 - 日期格式：今天/"昨天"/"M月D日 周X"
 - 头像使用预置 emoji 列表（约 30 个），不支持自定义图片上传
 
+## E2E 测试
+
+E2E 测试（Playwright）运行非常耗时，遵循以下原则：
+
+1. **优先读取测试报告**：所有测试产物统一在 `e2e/reports/` 下：
+   - `results.json` — 聚合结果（JSON）
+   - `html/` — HTML 报告
+   - `output/` — 失败截图与 trace
+   - `snapshots/` — 视觉基线（**不清空**，跨运行保留）
+   - `e2e/global-setup.ts` 在每次跑测试前自动清空除 `snapshots/` 外的子目录
+   - 所有路径用绝对路径（基于 `playwright.config.ts` 位置），从任何目录执行都落在 `e2e/reports/`
+   - 测试数据库固定在 `e2e/e2e-data/test.db`（`HC_DB_PATH` 绝对路径）
+   - 测试 JWT 密钥固定在 `e2e/data/secret.key`（`webServer.cwd = e2e/`）
+   - 整个 `e2e/reports/` 已在 `.gitignore` 中
+
+   需要获取详细测试信息时，先读取已有报告，而非重新运行测试。
+2. **避免重复运行**：仅在代码变更影响测试逻辑时才重新运行。调试阶段优先运行单个测试文件（`npx playwright test <file>`），不要运行全量测试。
+3. **运行命令**：
+   - Windows 快捷：`e2e\test.bat`（缺失二进制时自动 `make build`，参数透传给 playwright）
+   - 直接执行：
+     ```bash
+     cd e2e && npx playwright test              # 全量测试（慎用）
+     cd e2e && npx playwright test tests/todo.spec.ts  # 单模块测试
+     cd e2e && npx playwright test --grep "@mobile"     # 仅移动端测试
+     ```
+
 ## 实施顺序
 
 按 RICE 优先级：认证与权限 → 成员管理 → 分类管理 → 记账本 → 待办管理 → 仪表盘 → 愿望清单 → 家庭论坛 → 个人中心 → 布局与响应式。
