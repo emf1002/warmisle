@@ -15,7 +15,7 @@ test.describe('记账本', () => {
     const ledger = new LedgerPage(page);
     await ledger.goto();
     await ledger.openCreate();
-    await ledger.selectCategory('餐饮');
+    await ledger.pickCategory('餐饮');
     await ledger.fillAmount('35.5');
     await ledger.fillNote('午饭');
     await ledger.submit();
@@ -27,7 +27,7 @@ test.describe('记账本', () => {
     const ledger = new LedgerPage(page);
     await ledger.goto();
     await ledger.openCreate();
-    await ledger.selectCategory('工资');
+    await ledger.pickCategory('工资');
     await ledger.fillAmount('10000');
     await ledger.submit();
     await ledger.expectRecordCount(1);
@@ -38,7 +38,7 @@ test.describe('记账本', () => {
     const ledger = new LedgerPage(page);
     await ledger.goto();
     await ledger.openCreate();
-    await ledger.selectCategory('餐饮');
+    await ledger.pickCategory('餐饮');
     await ledger.fillAmount('10');
     await ledger.submit();
     await ledger.expectRecordCount(1);

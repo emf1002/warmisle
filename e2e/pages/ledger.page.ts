@@ -20,9 +20,9 @@ export class LedgerPage extends BasePage {
     await expect(this.page.getByTestId('ledger-modal')).toBeVisible();
   }
 
-  async selectCategory(name: string) {
-    await this.page.getByTestId('category-select').click();
-    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+  /** 在弹窗网格选择器中点击分类（按文本匹配） */
+  async pickCategory(name: string) {
+    await this.page.locator('.category-pick-item', { hasText: name }).click();
   }
 
   async fillAmount(amount: string) {
@@ -50,7 +50,6 @@ export class LedgerPage extends BasePage {
 
   async deleteRecord() {
     await this.page.getByTestId('delete-btn').click();
-    // 确认删除弹窗
     await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
   }
 
@@ -58,11 +57,50 @@ export class LedgerPage extends BasePage {
     await this.page.getByTestId('clear-filters').click();
   }
 
-  async goNextMonth() {
-    await this.page.locator('[data-testid="ledger-page"] .month-row button').last().click();
+  /** 通过滤选栏选择分类 */
+  async filterByCategory(name: string) {
+    await this.page.getByTestId('filter-category').click();
+    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
   }
 
-  async goPrevMonth() {
-    await this.page.locator('[data-testid="ledger-page"] .month-row button').first().click();
+  /** 通过滤选栏选择创建者 */
+  async filterByCreator(name: string) {
+    await this.page.getByTestId('filter-creator').click();
+    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+  }
+
+  /** 滚动到 sentinel 触发无限加载 */
+  async scrollToLoadMore() {
+    const sentinel = this.page.getByTestId('load-sentinel');
+    await sentinel.scrollIntoViewIfNeeded();
+  }
+
+  /** 断言汇总栏文本 */
+  async expectSummary(values: { income?: string; expense?: string; balance?: string }) {
+    if (values.income !== undefined) {
+      await expect(this.page.getByTestId('summary-income')).toContainText(values.income);
+    }
+    if (values.expense !== undefined) {
+      await expect(this.page.getByTestId('summary-expense')).toContainText(values.expense);
+    }
+    if (values.balance !== undefined) {
+      await expect(this.page.getByTestId('summary-balance')).toContainText(values.balance);
+    }
+  }
+
+  /** 断言日期分组数量 */
+  async expectDateGroupCount(count: number) {
+    await expect(this.page.getByTestId('date-group')).toHaveCount(count);
+  }
+
+  /** 断言所有记录总数 */
+  async expectTotalItemCount(count: number) {
+    const items = this.page.getByTestId(/^ledger-item-/);
+    await expect(items).toHaveCount(count);
+  }
+
+  /** 断言第 n 个日期组的每日小计包含指定文本 */
+  async expectDailyTotal(index: number, text: string) {
+    await expect(this.page.getByTestId('daily-total').nth(index)).toContainText(text);
   }
 }
