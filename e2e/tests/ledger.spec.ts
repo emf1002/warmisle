@@ -33,6 +33,18 @@ test.describe('记账本', () => {
     await ledger.expectRecordCount(1);
   });
 
+  test('金额单位正确：输入元显示元', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const ledger = new LedgerPage(page);
+    await ledger.goto();
+    await ledger.openCreate();
+    await ledger.pickCategory('餐饮');
+    await ledger.fillAmount('1');
+    await ledger.submit();
+    await ledger.expectRecordCount(1);
+    await ledger.expectRecordAmount(0, '-¥1.00');
+  });
+
   test('删除记录', async ({ authenticated }) => {
     const { page } = authenticated;
     const ledger = new LedgerPage(page);

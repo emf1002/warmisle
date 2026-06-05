@@ -120,6 +120,12 @@ export class LedgerPage extends BasePage {
     await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
+  /** 断言第 n 条记录显示指定的金额文本（如 "+¥35.50" 或 "-¥35.50"） */
+  async expectRecordAmount(index: number, amountText: string) {
+    const items = this.page.getByTestId(/^ledger-item-/);
+    await expect(items.nth(index).locator('.item-amount')).toContainText(amountText);
+  }
+
   /** 断言第 n 条记录显示指定的创建者名称 */
   async expectRecordCreator(index: number, name: string) {
     const items = this.page.getByTestId(/^ledger-item-/);

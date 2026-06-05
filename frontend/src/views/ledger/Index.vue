@@ -21,7 +21,7 @@
         @change="onDateRangeChange"
         data-testid="date-range-picker"
       />
-      <a-button type="primary" @click="openCreate()" data-testid="add-btn">记一笔</a-button>
+      <a-button type="primary" @click="openCreate()" data-testid="add-btn"><span class="btn-text-full">记一笔</span><span class="btn-text-short">记</span></a-button>
     </div>
 
     <!-- Summary Bar -->
@@ -493,7 +493,7 @@ async function handleSubmit() {
   submitting.value = true
   try {
     const payload: any = {
-      amount: form.amount!,
+      amount: Math.round(form.amount! * 100),
       note: form.note,
       category_id: form.category_id,
     }
@@ -823,7 +823,12 @@ watch(sentinelRef, (el, oldEl) => {
 }
 
 /* Mobile */
+.btn-text-short { display: none; }
+
 @media (max-width: 767px) {
+  .btn-text-full { display: none; }
+  .btn-text-short { display: inline; }
+
   .ledger-page {
     padding: var(--space-md);
     padding-bottom: 80px;
