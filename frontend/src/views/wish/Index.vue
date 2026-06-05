@@ -96,6 +96,7 @@
                   >
                     标记为放弃
                   </a-menu-item>
+                  <a-menu-item @click="openComment(wish)">评论</a-menu-item>
                   <a-menu-divider />
                   <a-menu-item danger data-testid="delete-btn" @click="confirmDelete(wish)">删除</a-menu-item>
                 </a-menu>
@@ -155,17 +156,67 @@
       </a-form>
       </div>
     </a-modal>
+
+    <a-modal
+      v-model:open="commentModalOpen"
+      title="评论"
+      :footer="null"
+      width="480px"
+      @cancel="commentModalOpen = false"
+    >
+      <div v-if="commentWish">
+        <div class="comment-input-row">
+          <a-textarea
+            v-model:value="commentText"
+            :maxlength="500"
+            :rows="2"
+            placeholder="写下你的评论..."
+            data-testid="comment-input"
+          />
+          <a-button
+            type="primary"
+            size="small"
+            :loading="commentLoading"
+            :disabled="!commentText.trim()"
+            data-testid="comment-submit"
+            @click="submitComment"
+          >
+            发布
+          </a-button>
+        </div>
+        <div data-testid="comment-list" class="comment-list">
+          <a-empty v-if="comments.length === 0" description="暂无评论" />
+          <div v-for="c in comments" :key="c.id" class="comment-item">
+            <div class="comment-header">
+              <span class="comment-author">{{ c.creator?.avatar }} {{ c.creator?.name }}</span>
+              <span class="comment-time">{{ timeAgo(c.created_at) }}</span>
+              <a-button
+                v-if="canDeleteComment(c)"
+                type="text"
+                size="small"
+                danger
+                @click="deleteCommentItem(c.id)"
+              >
+                删除
+              </a-button>
+            </div>
+            <div class="comment-content">{{ c.content }}</div>
+          </div>
+        </div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { priorityColor, priorityLabel } from '@/utils/format'
+import { priorityColor, priorityLabel, timeAgo } from '@/utils/format'
 import {
   getWishList, createWish, updateWish, deleteWish, promoteWish,
   updateWishStatus, voteWish, unvoteWish,
 } from '@/api/wish'
+import { getComments, createComment, deleteComment } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -198,6 +249,13 @@ const activeType = ref('personal')
 const filters = reactive({
   status: undefined as string | undefined,
 })
+
+// Comment state
+const commentModalOpen = ref(false)
+const commentWish = ref<WishItem | null>(null)
+const comments = ref<any[]>([])
+const commentText = ref('')
+const commentLoading = ref(false)
 
 const typeOptions = [
   { label: '个人愿望', value: 'personal' },
@@ -312,6 +370,7 @@ async function handleSubmit() {
       description: form.description.trim(),
       category: form.category,
       priority: form.priority,
+      type: activeType.value,
     }
     if (form.amountYuan != null) {
       payload.amount = Math.round(form.amountYuan * 100)
@@ -366,7 +425,7 @@ async function handleVote(wish: WishItem) {
     message.success('✅ 投票成功')
     fetchWishes()
   } catch (e: any) {
-    const msg = e?.response?.data?.message || ''
+    const msg = e?.response?.data?.message || e?.message || ''
     if (msg.includes('已投票')) {
       Modal.confirm({
         title: '❓ 取消投票',
@@ -403,6 +462,53 @@ function confirmDelete(wish: WishItem) {
       }
     },
   })
+}
+
+async function openComment(wish: WishItem) {
+  commentWish.value = wish
+  commentText.value = ''
+  commentModalOpen.value = true
+  await fetchComments(wish.id)
+}
+
+async function fetchComments(wishId: number) {
+  try {
+    const res: any = await getComments({ target_type: 'wish', target_id: wishId })
+    comments.value = res.data || []
+  } catch {
+    comments.value = []
+  }
+}
+
+async function submitComment() {
+  if (!commentWish.value || !commentText.value.trim()) return
+  commentLoading.value = true
+  try {
+    await createComment({
+      target_type: 'wish',
+      target_id: commentWish.value.id,
+      content: commentText.value.trim(),
+    })
+    commentText.value = ''
+    await fetchComments(commentWish.value.id)
+  } catch {
+    // error handled by interceptor
+  } finally {
+    commentLoading.value = false
+  }
+}
+
+async function deleteCommentItem(id: number) {
+  try {
+    await deleteComment(id)
+    if (commentWish.value) await fetchComments(commentWish.value.id)
+  } catch {
+    // error handled by interceptor
+  }
+}
+
+function canDeleteComment(comment: any): boolean {
+  return authStore.isAdmin || comment.creator_id === authStore.currentUserId
 }
 
 onMounted(() => {
@@ -497,5 +603,53 @@ onMounted(() => {
   .wish-page { padding: 16px; }
   .wish-grid { grid-template-columns: 1fr; }
   .wish-title { font-size: 15px; }
+}
+
+.comment-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.comment-input-row .ant-input-textarea {
+  flex: 1;
+}
+
+.comment-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.comment-author {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-right: auto;
+}
+
+.comment-content {
+  font-size: 13px;
+  word-break: break-word;
 }
 </style>

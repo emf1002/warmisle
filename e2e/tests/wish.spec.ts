@@ -98,8 +98,8 @@ test.describe('愿望清单', () => {
     await wish.openCreate();
     await wish.fillTitle('新手机');
     await wish.submit();
-    await wish.expectStatus(0, '待讨论');
-    await wish.changeWishStatus(0, '已同意');
+    await wish.expectStatus(0, '待定');
+    await wish.changeWishStatus(0, '标记为同意');
     await wish.expectStatus(0, '已同意');
   });
 
@@ -126,7 +126,7 @@ test.describe('愿望清单', () => {
     await wish.openCreate();
     await wish.fillTitle('愿望B');
     await wish.submit();
-    await wish.changeWishStatus(0, '已同意');
+    await wish.changeWishStatus(0, '标记为同意');
     await wish.expectWishCount(2);
     await wish.filterByStatus('已同意');
     await page.waitForTimeout(500);

@@ -1,9 +1,16 @@
 const BASE_URL = 'http://localhost:8080';
 
-export async function resetDatabase(): Promise<void> {
+export async function resetDatabase(page?: import('@playwright/test').Page): Promise<void> {
   const res = await fetch(`${BASE_URL}/api/test/reset`, { method: 'POST' });
   if (!res.ok) {
     throw new Error(`Database reset failed: ${res.status}`);
+  }
+  // Clear stale JWT token so router guard detects "no token" state.
+  // Must navigate to app origin first (localStorage inaccessible on about:blank).
+  // Use /login (guest page) to avoid router-guard redirects on protected routes.
+  if (page) {
+    await page.goto(`${BASE_URL}/#/login`);
+    await page.evaluate(() => localStorage.clear());
   }
 }
 

@@ -94,8 +94,8 @@ test.describe('分类管理', () => {
     await page.goto('/#/ledger');
     await page.getByTestId('add-btn').click();
     await page.locator('.category-pick-item', { hasText: '餐饮' }).click();
-    await page.getByTestId('amount-input').click();
-    await page.getByTestId('amount-input').locator('input').fill('10');
+    await page.locator('.ant-modal:visible').getByRole('spinbutton').click();
+    await page.locator('.ant-modal:visible').getByRole('spinbutton').fill('10');
     await page.getByTestId('submit-btn').click();
     const categories = new CategoriesPage(page);
     await categories.goto();
@@ -115,7 +115,11 @@ test.describe('分类管理', () => {
     await categories.openCreate();
     await categories.selectType('支出');
     await categories.fillName('测试分类');
-    await categories.submit();
+    // Submit without waiting for modal close (duplicate will be rejected)
+    await page.locator('.ant-modal-footer .ant-btn-primary').click();
+    await page.waitForTimeout(500);
+    // Modal should still be visible (submit rejected)
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
     await categories.expectExpenseCategoryCount(16);
   });
 

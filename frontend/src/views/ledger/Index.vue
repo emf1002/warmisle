@@ -5,6 +5,13 @@
       <h2>记账本</h2>
     </div>
 
+    <!-- Month Navigation -->
+    <div class="month-switcher">
+      <a-button type="text" @click="goPrevMonth" class="month-arrow" data-testid="month-prev">◀</a-button>
+      <span class="month-text" data-testid="current-month">{{ selectedMonth.format('YYYY年M月') }}</span>
+      <a-button type="text" @click="goNextMonth" class="month-arrow" data-testid="month-next">▶</a-button>
+    </div>
+
     <!-- Date Range Picker -->
     <div class="month-row">
       <a-range-picker
@@ -305,6 +312,7 @@ const submitting = ref(false)
 const dialogOpen = ref(false)
 const editingRecord = ref<LedgerItem | null>(null)
 
+const selectedMonth = ref(dayjs())
 const dateRange = ref<[Dayjs, Dayjs]>([dayjs().startOf('month'), dayjs().endOf('month')])
 const groups = ref<LedgerGroup[]>([])
 const summary = ref<LedgerSummary>({ income: 0, expense: 0, balance: 0 })
@@ -371,6 +379,18 @@ function onDateRangeChange(dates: [Dayjs, Dayjs] | null) {
     dateRange.value = dates
     fetchLedgers()
   }
+}
+
+function goPrevMonth() {
+  selectedMonth.value = selectedMonth.value.subtract(1, 'month')
+  dateRange.value = [selectedMonth.value.startOf('month'), selectedMonth.value.endOf('month')]
+  fetchLedgers()
+}
+
+function goNextMonth() {
+  selectedMonth.value = selectedMonth.value.add(1, 'month')
+  dateRange.value = [selectedMonth.value.startOf('month'), selectedMonth.value.endOf('month')]
+  fetchLedgers()
 }
 
 async function fetchLedgers(append = false) {
@@ -566,6 +586,27 @@ watch(sentinelRef, (el, oldEl) => {
 }
 
 /* Month Row */
+/* Month Switcher */
+.month-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.month-arrow {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.month-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .month-row {
   display: flex;
   justify-content: space-between;

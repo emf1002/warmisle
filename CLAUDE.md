@@ -128,8 +128,8 @@ E2E 测试（Playwright）运行非常耗时，遵循以下原则：
    - `results.json` — 聚合结果（JSON）
    - `html/` — HTML 报告
    - `output/` — 失败截图与 trace
-   - `snapshots/` — 视觉基线（**不清空**，跨运行保留）
-   - `e2e/global-setup.ts` 在每次跑测试前自动清空除 `snapshots/` 外的子目录
+   - `snapshots/` — 视觉基线（跨运行保留）
+   - `e2e/global-setup.ts` 不再自动清空历史报告，跨运行保留
    - 所有路径用绝对路径（基于 `playwright.config.ts` 位置），从任何目录执行都落在 `e2e/reports/`
    - 测试数据库固定在 `e2e/e2e-data/test.db`（`HC_DB_PATH` 绝对路径）
    - 测试 JWT 密钥固定在 `e2e/data/secret.key`（`webServer.cwd = e2e/`）

@@ -20,14 +20,22 @@ export class LedgerPage extends BasePage {
     await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 
-  /** 在弹窗网格选择器中点击分类（按文本匹配） */
+  /** 在弹窗网格选择器中点击分类（按文本匹配，自动切换 tab） */
   async pickCategory(name: string) {
+    // Try expense tab first
+    let item = this.page.locator('.category-pick-item', { hasText: name });
+    if (await item.count() === 0) {
+      // Switch to income tab
+      await this.page.locator('.ant-modal:visible').locator('.ant-tabs-tab', { hasText: '收入' }).click();
+      await this.page.waitForTimeout(200);
+    }
     await this.page.locator('.category-pick-item', { hasText: name }).click();
   }
 
   async fillAmount(amount: string) {
-    await this.page.getByTestId('amount-input').click();
-    await this.page.getByTestId('amount-input').locator('input').fill(amount);
+    const input = this.page.locator('.ant-modal:visible').getByRole('spinbutton');
+    await input.click();
+    await input.fill(amount);
   }
 
   async fillNote(note: string) {
@@ -36,6 +44,8 @@ export class LedgerPage extends BasePage {
 
   async submit() {
     await this.page.getByTestId('submit-btn').click();
+    // Wait for modal to close and data to refresh
+    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
   }
 
   async expectRecordCount(count: number) {
@@ -103,11 +113,10 @@ export class LedgerPage extends BasePage {
     await expect(this.page.getByTestId('daily-total').nth(index)).toContainText(text);
   }
 
-  /** 编辑第 n 条记录：点击记录 → 点击编辑按钮 */
+  /** 编辑第 n 条记录：点击记录直接打开编辑弹窗 */
   async editRecord(index: number) {
     const items = this.page.getByTestId(/^ledger-item-/);
     await items.nth(index).click();
-    await this.page.getByTestId('edit-btn').click();
     await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
   }
 

@@ -55,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     path: '/members',
     name: 'Members',
     component: () => import('@/views/member/Index.vue'),
-    meta: { requiresAuth: true, layout: 'main' }
+    meta: { requiresAuth: true, requiresAdmin: true, layout: 'main' }
   },
   {
     path: '/categories',
@@ -125,6 +125,22 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   // Protected routes: must have token (already checked above)
+
+  // Admin-only routes
+  if (to.meta.requiresAdmin) {
+    try {
+      const { useAuthStore } = await import('@/stores/auth')
+      const authStore = useAuthStore()
+      if (!authStore.isAdmin) {
+        next('/')
+        return
+      }
+    } catch {
+      next('/')
+      return
+    }
+  }
+
   next()
 })
 

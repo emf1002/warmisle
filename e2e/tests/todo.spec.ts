@@ -224,6 +224,7 @@ test.describe('待办管理', () => {
 
   test('移动端底栏导航视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
     const { page } = authenticated;
+    await page.setViewportSize({ width: 390, height: 844 });
     const todo = new TodoPage(page);
     await todo.goto();
     await expect(page.getByTestId('mobile-tabbar')).toBeVisible();

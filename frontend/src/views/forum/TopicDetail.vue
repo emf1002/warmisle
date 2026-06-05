@@ -162,6 +162,7 @@
                     v-for="child in comment.children"
                     :key="child.id"
                     class="reply-item"
+                    :data-testid="'comment-' + child.id"
                   >
                     <span class="reply-avatar">{{ child.creator.avatar }}</span>
                     <div class="reply-main">
@@ -176,6 +177,7 @@
                           type="link"
                           size="small"
                           danger
+                          data-testid="delete-comment-btn"
                           @click="confirmDeleteComment(child)"
                         >
                           删除

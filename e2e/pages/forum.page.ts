@@ -43,6 +43,8 @@ export class ForumPage extends BasePage {
 
   async submitModal() {
     await this.page.locator('.ant-modal-footer .ant-btn-primary').click();
+    // Wait for modal close animation to finish
+    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
   }
 
   async expectFeedCount(count: number) {
@@ -58,6 +60,8 @@ export class ForumPage extends BasePage {
   async goToDetail(index: number) {
     const items = this.page.getByTestId(/^feed-card-/);
     await items.nth(index).getByTestId('comment-btn').click();
+    await this.page.waitForURL(/\/#\/forum\/topic\//);
+    await this.page.waitForLoadState('networkidle');
   }
 
   // === 公告 ===
@@ -69,7 +73,9 @@ export class ForumPage extends BasePage {
 
   async unpinAnnouncement(index: number) {
     const items = this.page.getByTestId(/^feed-card-/);
-    await items.nth(index).getByTestId('unpin-btn').click();
+    // Open the dropdown menu first by clicking the ⋯ trigger
+    await items.nth(index).locator('.ant-dropdown-trigger').click();
+    await this.page.locator('.ant-dropdown:visible').getByTestId('unpin-btn').click();
     await this.page.waitForTimeout(300);
   }
 
@@ -120,7 +126,7 @@ export class ForumPage extends BasePage {
   }
 
   async replyToComment(commentIndex: number, text: string) {
-    const comments = this.page.getByTestId(/^comment-/);
+    const comments = this.page.locator('.comment-item, .reply-item');
     await comments.nth(commentIndex).getByTestId('reply-btn').click();
     await this.page.getByTestId('reply-input').fill(text);
     await this.page.getByTestId('reply-submit').click();
@@ -128,26 +134,29 @@ export class ForumPage extends BasePage {
   }
 
   async expectNoReplyButton(commentIndex: number) {
-    const comments = this.page.getByTestId(/^comment-/);
+    const comments = this.page.locator('.comment-item, .reply-item');
     await expect(comments.nth(commentIndex).getByTestId('reply-btn')).not.toBeVisible();
   }
 
   async deleteComment(commentIndex: number) {
-    const comments = this.page.getByTestId(/^comment-/);
-    await comments.nth(commentIndex).getByTestId('delete-comment-btn').click();
+    const comments = this.page.locator('.comment-item, .reply-item');
+    // Use .first() because a parent comment may contain a nested reply's delete button
+    await comments.nth(commentIndex).getByTestId('delete-comment-btn').first().click();
     await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
     await this.page.waitForTimeout(300);
   }
 
   async expectCommentCount(count: number) {
-    await expect(this.page.getByTestId(/^comment-/)).toHaveCount(count);
+    await expect(this.page.locator('.comment-item, .reply-item')).toHaveCount(count);
   }
 
   // === 内容管理 ===
 
   async deletePost(feedIndex: number) {
     const items = this.page.getByTestId(/^feed-card-/);
-    await items.nth(feedIndex).getByTestId('delete-feed-btn').click();
+    // Open dropdown menu first
+    await items.nth(feedIndex).locator('.ant-dropdown-trigger').click();
+    await this.page.locator('.ant-dropdown:visible').getByTestId('delete-feed-btn').click();
     await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
     await this.page.waitForTimeout(300);
   }

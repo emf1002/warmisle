@@ -5,6 +5,9 @@
       <div class="header-actions">
         <a-button @click="openCreatePost" data-testid="create-post-btn">发动态</a-button>
         <a-button type="primary" @click="openCreateTopic" data-testid="create-topic-btn">发话题</a-button>
+        <a-button v-if="authStore.isAdmin" @click="openCreateAnnouncement" data-testid="create-announcement-btn">发布公告</a-button>
+        <a-button @click="openCreatePoll" data-testid="create-poll-btn">发起投票</a-button>
+        <a-button v-if="authStore.isAdmin" @click="openManageTags" data-testid="manage-tags-btn">管理标签</a-button>
       </div>
     </div>
 
@@ -13,7 +16,7 @@
       <span style="margin-left: 8px">加载中...</span>
     </div>
 
-    <template v-else-if="feedItems.length === 0 && pinnedItems.length === 0">
+    <template v-else-if="displayItems.length === 0 && pinnedItems.length === 0">
       <EmptyState type="no-data" description="暂无动态">
         <template #action>
           <a-button type="primary" @click="openCreatePost">发第一条动态</a-button>
@@ -24,7 +27,7 @@
     <template v-else>
       <!-- Pinned topics -->
       <div v-if="pinnedItems.length > 0" class="pinned-section">
-        <div v-for="item in pinnedItems" :key="'pinned-' + item.id" class="feed-card topic-card">
+        <div v-for="item in pinnedItems" :key="'pinned-' + item.id" class="feed-card topic-card" :data-testid="'feed-card-' + item.id">
           <div class="feed-header">
             <span class="topic-pin-badge" data-testid="pinned-tag">📌 公告</span>
           </div>
@@ -64,7 +67,7 @@
 
       <!-- Feed items -->
       <div class="feed-list" data-testid="feed-list">
-        <div v-for="(item, index) in feedItems" :key="item.type + '-' + item.id">
+        <div v-for="(item, index) in displayItems" :key="item.type + '-' + item.id">
           <!-- Post card -->
           <div v-if="item.type === 'post'" class="feed-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div class="feed-header">
@@ -134,6 +137,67 @@
               </a-dropdown>
             </div>
           </div>
+
+          <!-- Poll card -->
+          <div v-else-if="item.type === 'vote'" class="feed-card poll-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
+            <div class="feed-header">
+              <span class="feed-author">
+                <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
+                <span class="feed-name">{{ item.creator?.name }}</span>
+              </span>
+              <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
+            </div>
+            <h3 class="poll-title">{{ item.title }}</h3>
+            <div v-if="item.is_multi !== undefined" class="poll-type-hint">
+              {{ item.is_multi ? '多选' : '单选' }}
+            </div>
+            <template v-if="!item.voted">
+              <div class="poll-options">
+                <div
+                  v-for="(opt, optIndex) in item.options"
+                  :key="opt.id"
+                  class="poll-option-item"
+                  :class="{ selected: selectedPollOptions[item.id]?.includes(opt.id) }"
+                  :data-testid="'poll-option-' + optIndex"
+                  @click="selectPollOption(item, opt.id)"
+                >
+                  <span v-if="item.is_multi" class="poll-option-check">
+                    <a-checkbox :checked="selectedPollOptions[item.id]?.includes(opt.id)" @click.stop="selectPollOption(item, opt.id)" />
+                  </span>
+                  <span v-else class="poll-option-radio">
+                    <a-radio :checked="selectedPollOptions[item.id]?.includes(opt.id)" @click.stop="selectPollOption(item, opt.id)" />
+                  </span>
+                  <span class="poll-option-text">{{ opt.text }}</span>
+                </div>
+              </div>
+              <a-button
+                type="primary"
+                size="small"
+                :disabled="!selectedPollOptions[item.id]?.length"
+                @click="submitPollVote(item)"
+                data-testid="poll-submit"
+                class="poll-submit-btn"
+              >
+                提交投票
+              </a-button>
+            </template>
+            <template v-else>
+              <div class="poll-results" data-testid="poll-result">
+                <div v-for="opt in item.options" :key="opt.id" class="poll-result-item">
+                  <div class="poll-result-header">
+                    <span class="poll-result-text">{{ opt.text }}</span>
+                    <span class="poll-result-count">{{ opt.vote_count || 0 }}票</span>
+                  </div>
+                  <a-progress
+                    :percent="getPollPercent(item, opt)"
+                    :show-info="false"
+                    :stroke-color="item.user_voted_options?.includes(opt.id) ? 'var(--color-brand)' : 'var(--color-border)'"
+                    size="small"
+                  />
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
 
@@ -191,13 +255,21 @@
           <span class="sheet-option-icon">📝</span>
           <span class="sheet-option-label">发话题</span>
         </div>
+        <div v-if="authStore.isAdmin" class="sheet-option" @click="openCreateAnnouncement(); showCreateSheet = false">
+          <span class="sheet-option-icon">📢</span>
+          <span class="sheet-option-label">发布公告</span>
+        </div>
+        <div class="sheet-option" @click="openCreatePoll(); showCreateSheet = false">
+          <span class="sheet-option-icon">📊</span>
+          <span class="sheet-option-label">发起投票</span>
+        </div>
       </div>
     </a-drawer>
 
     <!-- Create/Edit Topic Dialog -->
     <a-modal
       v-model:open="topicDialogOpen"
-      :title="editingTopicItem ? '编辑话题' : '发话题'"
+      :title="editingTopicItem ? '编辑话题' : (isAnnouncement ? '发布公告' : '发话题')"
       ok-text="发布"
       cancel-text="取消"
       :confirm-loading="topicSubmitting"
@@ -245,11 +317,111 @@
       </a-form>
       </div>
     </a-modal>
+
+    <!-- Create Poll Dialog -->
+    <a-modal
+      v-model:open="pollDialogOpen"
+      title="发起投票"
+      ok-text="创建"
+      cancel-text="取消"
+      :confirm-loading="pollSubmitting"
+      width="520px"
+      @ok="handlePollSubmit"
+      @cancel="pollDialogOpen = false"
+    >
+      <div data-testid="poll-modal">
+      <a-form layout="vertical">
+        <a-form-item label="投票标题" required>
+          <a-input
+            v-model:value="pollForm.title"
+            :maxlength="100"
+            placeholder="请输入投票标题"
+            data-testid="poll-title"
+          />
+        </a-form-item>
+        <a-form-item label="选项">
+          <div class="poll-form-options">
+            <div v-for="(_opt, idx) in pollForm.options" :key="idx" class="poll-form-option-row">
+              <a-input
+                v-model:value="pollForm.options[idx]"
+                :placeholder="'选项 ' + (idx + 1)"
+                :data-testid="'option-input-' + (idx + 1)"
+              />
+              <a-button
+                v-if="pollForm.options.length > 2"
+                type="text"
+                danger
+                size="small"
+                @click="pollForm.options.splice(idx, 1)"
+              >
+                删除
+              </a-button>
+            </div>
+          </div>
+          <a-button
+            v-if="pollForm.options.length < 10"
+            type="dashed"
+            block
+            style="margin-top: 8px"
+            @click="pollForm.options.push('')"
+            data-testid="add-option-btn"
+          >
+            + 添加选项
+          </a-button>
+        </a-form-item>
+        <a-form-item>
+          <a-checkbox v-model:checked="pollForm.is_multi" data-testid="poll-multi-select">
+            允许多选
+          </a-checkbox>
+        </a-form-item>
+      </a-form>
+      </div>
+    </a-modal>
+
+    <!-- Manage Tags Dialog -->
+    <a-modal
+      v-model:open="tagDialogOpen"
+      title="管理标签"
+      :footer="null"
+      width="480px"
+    >
+      <div class="tag-manage-list">
+        <div v-for="tag in tags" :key="tag.id" data-testid="tag-item" class="tag-manage-item">
+          <span class="tag-manage-name">{{ tag.name }}</span>
+          <a-button
+            size="small"
+            danger
+            :disabled="usedTagIds.has(tag.id)"
+            data-testid="delete-tag-btn"
+            @click="handleDeleteTag(tag)"
+          >
+            删除
+          </a-button>
+        </div>
+        <div v-if="tags.length === 0" class="tag-empty-hint">暂无标签</div>
+      </div>
+      <div class="tag-add-section">
+        <a-button v-if="!showAddTagForm" type="dashed" block @click="showAddTagForm = true" data-testid="add-tag-btn">
+          + 添加标签
+        </a-button>
+        <div v-else class="tag-add-form">
+          <a-input
+            v-model:value="newTagName"
+            placeholder="输入标签名称"
+            data-testid="tag-name-input"
+            @keyup.enter="handleCreateTag"
+          />
+          <a-button type="primary" :disabled="!newTagName.trim()" data-testid="tag-submit-btn" @click="handleCreateTag">
+            添加
+          </a-button>
+        </div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
 import { truncate, timeAgo } from '@/utils/format'
@@ -263,6 +435,11 @@ import {
   deleteTopic,
   togglePin as togglePinApi,
   getTags,
+  createTag,
+  deleteTag,
+  createVote,
+  vote as submitVoteApi,
+  getVote,
 } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -292,6 +469,27 @@ interface FeedItem {
   comment_count?: number
   created_at: string
 }
+
+interface PollOption {
+  id: number
+  text: string
+  vote_count?: number
+}
+
+interface PollItem {
+  type: 'vote'
+  id: number
+  title: string
+  options: PollOption[]
+  is_multi?: boolean
+  creator: MemberInfo
+  created_at: string
+  voted?: boolean
+  user_voted_options?: number[]
+  total_votes?: number
+}
+
+type DisplayItem = FeedItem | PollItem
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -325,6 +523,40 @@ const topicForm = reactive({
   title: '',
   content: '',
   tag_id: undefined as number | undefined,
+})
+const isAnnouncement = ref(false)
+
+// Tag management dialog
+const tagDialogOpen = ref(false)
+const showAddTagForm = ref(false)
+const newTagName = ref('')
+
+// Poll dialog
+const pollDialogOpen = ref(false)
+const pollSubmitting = ref(false)
+const pollItems = ref<PollItem[]>([])
+const selectedPollOptions = ref<Record<number, number[]>>({})
+const pollForm = reactive({
+  title: '',
+  options: ['', ''] as string[],
+  is_multi: false,
+})
+
+const displayItems = computed<DisplayItem[]>(() => {
+  const items: DisplayItem[] = [...feedItems.value, ...pollItems.value]
+  items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  return items
+})
+
+const usedTagIds = computed(() => {
+  const ids = new Set<number>()
+  const allItems = [...pinnedItems.value, ...feedItems.value]
+  for (const item of allItems) {
+    if (item.tag) {
+      ids.add(item.tag.id)
+    }
+  }
+  return ids
 })
 
 function goToDetail(item: FeedItem) {
@@ -455,6 +687,18 @@ function openCreateTopic() {
   topicForm.title = ''
   topicForm.content = ''
   topicForm.tag_id = undefined
+  isAnnouncement.value = false
+  topicDialogOpen.value = true
+}
+
+function openCreateAnnouncement() {
+  editingTopicItem.value = null
+  topicForm.title = ''
+  topicForm.content = ''
+  isAnnouncement.value = true
+  // Auto-select the "公告" tag if it exists
+  const announcementTag = tags.value.find(t => t.name === '公告')
+  topicForm.tag_id = announcementTag ? announcementTag.id : undefined
   topicDialogOpen.value = true
 }
 
@@ -484,9 +728,17 @@ async function handleTopicSubmit() {
       await updateTopic(editingTopicItem.value.id, payload)
       message.success('✅ 更新成功')
     } else {
-      await createTopic(payload)
+      const res: any = await createTopic(payload)
+      // Auto-pin if creating an announcement
+      if (isAnnouncement.value) {
+        const newTopicId = res?.data?.id
+        if (newTopicId) {
+          await togglePinApi(newTopicId)
+        }
+      }
       message.success('✅ 发布成功')
     }
+    isAnnouncement.value = false
     topicDialogOpen.value = false
     fetchFeed()
   } catch {
@@ -523,6 +775,159 @@ async function handleTogglePin(item: FeedItem) {
   } catch {
     // error handled by interceptor
   }
+}
+
+// --- Tag management ---
+
+function openManageTags() {
+  showAddTagForm.value = false
+  newTagName.value = ''
+  tagDialogOpen.value = true
+}
+
+async function handleCreateTag() {
+  const name = newTagName.value.trim()
+  if (!name) return
+  try {
+    await createTag({ name })
+    message.success('✅ 标签已创建')
+    newTagName.value = ''
+    showAddTagForm.value = false
+    fetchTags()
+  } catch {
+    // error handled by interceptor
+  }
+}
+
+function handleDeleteTag(tag: TagInfo) {
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除标签「${tag.name}」吗？`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      try {
+        await deleteTag(tag.id)
+        message.success('✅ 标签已删除')
+        fetchTags()
+      } catch (e: any) {
+        throw e // prevent modal from closing on error
+      }
+    },
+  })
+}
+
+// --- Poll actions ---
+
+function openCreatePoll() {
+  pollForm.title = ''
+  pollForm.options = ['', '']
+  pollForm.is_multi = false
+  pollDialogOpen.value = true
+}
+
+async function handlePollSubmit() {
+  if (!pollForm.title.trim()) {
+    message.error('投票标题不能为空')
+    return
+  }
+  const validOptions = pollForm.options.map(o => o.trim()).filter(Boolean)
+  if (validOptions.length < 2) {
+    message.error('至少需要2个选项')
+    return
+  }
+  pollSubmitting.value = true
+  try {
+    const res: any = await createVote({
+      title: pollForm.title.trim(),
+      options: validOptions,
+      is_multi: pollForm.is_multi,
+    })
+    const voteData = res.data
+    pollItems.value.unshift({
+      type: 'vote',
+      id: voteData.id,
+      title: voteData.title,
+      options: voteData.options || validOptions.map((text, i) => ({ id: i + 1, text, vote_count: 0 })),
+      is_multi: voteData.is_multi ?? pollForm.is_multi,
+      creator: voteData.creator || { id: authStore.currentUserId, name: authStore.memberInfo?.name || '我', avatar: authStore.memberInfo?.avatar || '👤' },
+      created_at: voteData.created_at || new Date().toISOString(),
+      voted: false,
+    })
+    pollDialogOpen.value = false
+    message.success('投票已创建')
+  } catch {
+    // error handled by interceptor
+  } finally {
+    pollSubmitting.value = false
+  }
+}
+
+function selectPollOption(poll: PollItem, optionId: number) {
+  if (poll.voted) return
+  if (!selectedPollOptions.value[poll.id]) {
+    selectedPollOptions.value[poll.id] = []
+  }
+  const opts = selectedPollOptions.value[poll.id]
+  const idx = opts.indexOf(optionId)
+  if (poll.is_multi) {
+    if (idx >= 0) {
+      opts.splice(idx, 1)
+    } else {
+      opts.push(optionId)
+    }
+  } else {
+    selectedPollOptions.value[poll.id] = [optionId]
+  }
+}
+
+async function submitPollVote(poll: PollItem) {
+  const selected = selectedPollOptions.value[poll.id]
+  if (!selected || selected.length === 0) return
+  try {
+    for (const optionId of selected) {
+      await submitVoteApi(poll.id, { option_id: optionId })
+    }
+    // Fetch updated vote data
+    const res: any = await getVote(poll.id)
+    const voteData = res.data
+    const idx = pollItems.value.findIndex(p => p.id === poll.id)
+    if (idx >= 0) {
+      pollItems.value[idx] = {
+        ...pollItems.value[idx],
+        voted: true,
+        options: voteData.options || pollItems.value[idx].options,
+        user_voted_options: selected,
+        total_votes: voteData.total_votes,
+      }
+    }
+    message.success('投票成功')
+  } catch {
+    // If backend rejects duplicate vote, still show results
+    try {
+      const res: any = await getVote(poll.id)
+      const voteData = res.data
+      const idx = pollItems.value.findIndex(p => p.id === poll.id)
+      if (idx >= 0) {
+        pollItems.value[idx] = {
+          ...pollItems.value[idx],
+          voted: true,
+          options: voteData.options || pollItems.value[idx].options,
+          user_voted_options: selected,
+          total_votes: voteData.total_votes,
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function getPollPercent(poll: PollItem, opt: PollOption): number {
+  const total = poll.options.reduce((sum, o) => sum + (o.vote_count || 0), 0)
+  if (total === 0) return 0
+  return Math.round(((opt.vote_count || 0) / total) * 100)
 }
 
 onMounted(() => {
@@ -761,6 +1166,152 @@ onMounted(() => {
   font-weight: 500;
 }
 
+/* ==================== Poll Card ==================== */
+.poll-card {
+  border-left: 3px solid var(--color-brand);
+}
+
+.poll-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.poll-type-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+.poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.poll-option-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.poll-option-item:hover {
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
+}
+
+.poll-option-item.selected {
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
+}
+
+.poll-option-text {
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.poll-submit-btn {
+  margin-top: 4px;
+}
+
+.poll-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poll-result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.poll-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.poll-result-text {
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.poll-result-count {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ==================== Poll Form ==================== */
+.poll-form-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poll-form-option-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.poll-form-option-row .ant-input {
+  flex: 1;
+}
+
+/* ==================== Tag Management ==================== */
+.tag-manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tag-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md);
+}
+
+.tag-manage-name {
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.tag-empty-hint {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: 16px 0;
+}
+
+.tag-add-section {
+  border-top: 1px solid var(--color-border-secondary);
+  padding-top: 12px;
+}
+
+.tag-add-form {
+  display: flex;
+  gap: 8px;
+}
+
+.tag-add-form .ant-input {
+  flex: 1;
+}
+
 /* ==================== Mobile ==================== */
 @media (max-width: 767px) {
   .forum-page {
@@ -785,4 +1336,3 @@ onMounted(() => {
   }
 }
 </style>
-import { computed } from "vue"

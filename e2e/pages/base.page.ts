@@ -4,7 +4,14 @@ export class BasePage {
   constructor(protected page: Page) {}
 
   async navigate(path: string) {
-    await this.page.goto(`/#${path}`);
+    const target = `/#${path}`;
+    // If already on the same URL, goto() is a no-op for hash routing.
+    // Force a reload so the component re-fetches fresh data.
+    if (this.page.url().endsWith(target)) {
+      await this.page.reload();
+    } else {
+      await this.page.goto(target);
+    }
     await this.page.waitForLoadState('networkidle');
   }
 

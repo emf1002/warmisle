@@ -86,12 +86,11 @@
       ok-text="保存"
     >
       <div data-testid="profile-modal">
-      <a-form :model="form" layout="vertical">
-        <a-form-item label="姓名">
+      <a-form ref="profileFormRef" :model="form" :rules="profileRules" layout="vertical">
+        <a-form-item label="姓名" name="name">
           <a-input
             v-model:value="form.name"
             placeholder="1-20位显示名称"
-            :maxlength="20"
             data-testid="name-input"
           />
         </a-form-item>
@@ -114,15 +113,15 @@
       ok-text="保存"
     >
       <div data-testid="pwd-modal">
-      <a-form :model="pwdForm" layout="vertical">
-        <a-form-item label="当前密码" required>
+      <a-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" layout="vertical">
+        <a-form-item label="当前密码" name="old_password" required :help="oldPasswordError" :validate-status="oldPasswordError ? 'error' : ''">
           <a-input-password v-model:value="pwdForm.old_password" placeholder="请输入当前密码" data-testid="old-pwd-input" />
         </a-form-item>
-        <a-form-item label="新密码" required>
+        <a-form-item label="新密码" name="new_password" required>
           <a-input-password v-model:value="pwdForm.new_password" placeholder="6-32位新密码" data-testid="new-pwd-input" />
         </a-form-item>
-        <a-form-item label="确认新密码" required>
-          <a-input-password v-model:value="confirmPassword" placeholder="请再次输入新密码" data-testid="confirm-pwd-input" />
+        <a-form-item label="确认新密码" name="confirm_password" required>
+          <a-input-password v-model:value="pwdForm.confirm_password" placeholder="请再次输入新密码" data-testid="confirm-pwd-input" />
         </a-form-item>
       </a-form>
       </div>
@@ -134,6 +133,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
+import type { FormInstance } from 'ant-design-vue'
 import { getProfile, updateProfile, changePassword } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
 import EmojiPicker from '@/components/EmojiPicker.vue'
@@ -151,11 +151,19 @@ const profile = ref<any>({
 
 const dialogOpen = ref(false)
 const submitting = ref(false)
+const profileFormRef = ref<FormInstance>()
 
 const form = reactive({
   name: '',
   avatar: '👨',
 })
+
+const profileRules = {
+  name: [
+    { required: true, message: '姓名不能为空', trigger: 'blur' },
+    { max: 20, message: '请输入1-20字符', trigger: 'blur' },
+  ],
+}
 
 onMounted(() => {
   fetchProfile()
@@ -179,8 +187,9 @@ function openEdit() {
 }
 
 async function handleSubmit() {
-  if (!form.name || form.name.trim().length === 0) {
-    message.error('❌ 姓名不能为空')
+  try {
+    await profileFormRef.value?.validate()
+  } catch {
     return
   }
   submitting.value = true
@@ -228,26 +237,55 @@ function goMembers() {
 
 const pwdDialogOpen = ref(false)
 const pwdSubmitting = ref(false)
-const confirmPassword = ref('')
+const pwdFormRef = ref<FormInstance>()
+const oldPasswordError = ref('')
 const pwdForm = reactive({
   old_password: '',
   new_password: '',
+  confirm_password: '',
 })
+
+const pwdRules = {
+  old_password: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
+  new_password: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 32, message: '新密码长度需在6-32位之间', trigger: 'blur' },
+    {
+      validator: (_rule: any, value: string) => {
+        if (value && value === pwdForm.old_password) {
+          return Promise.reject('新密码不能与旧密码相同')
+        }
+        return Promise.resolve()
+      },
+      trigger: 'blur',
+    },
+  ],
+  confirm_password: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    {
+      validator: (_rule: any, value: string) => {
+        if (value && value !== pwdForm.new_password) {
+          return Promise.reject('两次输入的密码不一致')
+        }
+        return Promise.resolve()
+      },
+      trigger: 'blur',
+    },
+  ],
+}
 
 function handleChangePassword() {
   pwdForm.old_password = ''
   pwdForm.new_password = ''
-  confirmPassword.value = ''
+  pwdForm.confirm_password = ''
+  oldPasswordError.value = ''
   pwdDialogOpen.value = true
 }
 
 async function handlePwdSubmit() {
-  if (!pwdForm.old_password) {
-    message.error('❌ 请输入当前密码')
-    return
-  }
-  if (!pwdForm.new_password || pwdForm.new_password.length < 6) {
-    message.error('❌ 新密码长度需在6-32位之间')
+  try {
+    await pwdFormRef.value?.validate()
+  } catch {
     return
   }
   pwdSubmitting.value = true
@@ -260,7 +298,7 @@ async function handlePwdSubmit() {
     pwdDialogOpen.value = false
   } catch (e: any) {
     if (e?.response?.data?.message) {
-      message.error('❌ ' + e.response.data.message)
+      oldPasswordError.value = '原密码错误'
     }
   } finally {
     pwdSubmitting.value = false

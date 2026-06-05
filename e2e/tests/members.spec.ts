@@ -1,6 +1,8 @@
 // e2e/tests/members.spec.ts
 import { test, expect } from '../fixtures/auth.fixture';
 import { MembersPage } from '../pages/members.page';
+import { LedgerPage } from '../pages/ledger.page';
+import { createMember } from '../fixtures/db.fixture';
 
 test.describe('成员管理', () => {
   test('页面加载显示管理员', async ({ authenticated }) => {
@@ -108,21 +110,21 @@ test.describe('成员管理', () => {
   // === 错误路径 ===
 
   test('有活动记录成员不可删除', async ({ authenticated }) => {
-    const { page } = authenticated;
+    const { page, token } = authenticated;
+    // Create a member via API and get their token
+    const memberToken = (await createMember({ username: 'activeuser', password: 'test123', name: '活跃用户' })).data.token;
+    // Create a ledger record as this member so they have activity
+    const categoriesRes = await fetch('http://localhost:8080/api/categories', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const categories = await categoriesRes.json();
+    const expenseCat = categories.data.find((c: any) => c.type === 'expense');
+    await fetch('http://localhost:8080/api/ledgers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${memberToken}` },
+      body: JSON.stringify({ amount: 10, category_id: expenseCat.id }),
+    });
     const members = new MembersPage(page);
-    await members.goto();
-    await members.openCreate();
-    await members.fillUsername('activeuser');
-    await members.fillPassword('test123');
-    await members.fillName('活跃用户');
-    await members.submit();
-    // Create a ledger record as admin (which counts as activity for the system)
-    await page.goto('/#/ledger');
-    await page.getByTestId('add-btn').click();
-    await page.locator('.category-pick-item', { hasText: '餐饮' }).click();
-    await page.getByTestId('amount-input').click();
-    await page.getByTestId('amount-input').locator('input').fill('10');
-    await page.getByTestId('submit-btn').click();
     await members.goto();
     await members.deleteMember(1);
     await members.expectMemberCount(2);

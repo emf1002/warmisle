@@ -59,7 +59,6 @@ test.describe('家庭论坛', () => {
     await forum.openCreateAnnouncement();
     await forum.fillTopicTitle('重要通知');
     await forum.fillTopicContent('本周六家庭聚会');
-    await forum.selectTopicTag('公告');
     await forum.submitModal();
     await forum.expectFeedCount(1);
     await forum.expectAnnouncementPinned(0);
@@ -72,7 +71,6 @@ test.describe('家庭论坛', () => {
     await forum.openCreateAnnouncement();
     await forum.fillTopicTitle('通知');
     await forum.fillTopicContent('内容');
-    await forum.selectTopicTag('公告');
     await forum.submitModal();
     await forum.unpinAnnouncement(0);
     await expect(page.getByTestId('pinned-tag')).not.toBeVisible();
@@ -122,8 +120,10 @@ test.describe('家庭论坛', () => {
     await forum.addPollOption('否');
     await forum.submitModal();
     await forum.votePoll(0, 0);
-    await forum.votePoll(0, 1);
+    // After voting, the UI switches to results view — cannot vote again
     await expect(page.getByTestId('poll-result')).toBeVisible();
+    // Verify voting UI is gone (no poll-submit button visible)
+    await expect(page.getByTestId('poll-submit')).not.toBeVisible();
   });
 
   test('创建多选投票', async ({ authenticated }) => {
@@ -146,8 +146,9 @@ test.describe('家庭论坛', () => {
     const { page } = authenticated;
     const forum = new ForumPage(page);
     await forum.goto();
-    await forum.openCreatePost();
-    await forum.fillPostContent('测试评论');
+    await forum.openCreateTopic();
+    await forum.fillTopicTitle('测试评论话题');
+    await forum.fillTopicContent('话题内容');
     await forum.submitModal();
     await forum.commentOnPost(0, '好棒！');
     await expect(page.getByTestId('comment-list')).toContainText('好棒！');
@@ -157,8 +158,9 @@ test.describe('家庭论坛', () => {
     const { page } = authenticated;
     const forum = new ForumPage(page);
     await forum.goto();
-    await forum.openCreatePost();
-    await forum.fillPostContent('测试回复');
+    await forum.openCreateTopic();
+    await forum.fillTopicTitle('测试回复话题');
+    await forum.fillTopicContent('话题内容');
     await forum.submitModal();
     await forum.commentOnPost(0, '一级评论');
     await forum.replyToComment(0, '二级回复');
@@ -169,8 +171,9 @@ test.describe('家庭论坛', () => {
     const { page } = authenticated;
     const forum = new ForumPage(page);
     await forum.goto();
-    await forum.openCreatePost();
-    await forum.fillPostContent('测试嵌套');
+    await forum.openCreateTopic();
+    await forum.fillTopicTitle('测试嵌套话题');
+    await forum.fillTopicContent('话题内容');
     await forum.submitModal();
     await forum.commentOnPost(0, '一级');
     await forum.replyToComment(0, '二级');
@@ -181,8 +184,9 @@ test.describe('家庭论坛', () => {
     const { page } = authenticated;
     const forum = new ForumPage(page);
     await forum.goto();
-    await forum.openCreatePost();
-    await forum.fillPostContent('测试级联删除');
+    await forum.openCreateTopic();
+    await forum.fillTopicTitle('测试级联删除话题');
+    await forum.fillTopicContent('话题内容');
     await forum.submitModal();
     await forum.commentOnPost(0, '一级');
     await forum.replyToComment(0, '二级');

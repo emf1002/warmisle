@@ -20,6 +20,7 @@ var (
 
 var validWishCategories = map[string]bool{"item": true, "travel": true, "experience": true, "other": true}
 var validWishStatuses = map[string]bool{"pending": true, "agreed": true, "achieved": true, "abandoned": true}
+var validWishTypes = map[string]bool{"personal": true, "family": true}
 
 type WishService struct {
 	repo       *repository.WishRepo
@@ -45,7 +46,7 @@ func (s *WishService) List(filter repository.WishFilter) (*repository.WishListRe
 	return s.repo.List(filter)
 }
 
-func (s *WishService) Create(title, description, category, priority string, amount *int64, creatorID uint) (*repository.WishWithAssoc, error) {
+func (s *WishService) Create(title, description, category, priority, wishType string, amount *int64, creatorID uint) (*repository.WishWithAssoc, error) {
 	if title == "" {
 		return nil, ErrWishTitleRequired
 	}
@@ -64,13 +65,20 @@ func (s *WishService) Create(title, description, category, priority string, amou
 		return nil, ErrWishInvalidCategory
 	}
 
+	if wishType == "" {
+		wishType = "personal"
+	}
+	if !validWishTypes[wishType] {
+		wishType = "personal"
+	}
+
 	wish := &model.Wish{
 		Title:       title,
 		Description: description,
 		Category:    category,
 		Priority:    priority,
 		Amount:      amount,
-		Type:        "personal",
+		Type:        wishType,
 		Status:      "pending",
 		CreatorID:   creatorID,
 	}

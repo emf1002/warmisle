@@ -63,18 +63,18 @@ export class ProfilePage extends BasePage {
   }
 
   async expectOldPasswordError() {
-    await expect(this.page.locator('.ant-form-item-explain')).toContainText('原密码错误');
+    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("当前密码") .ant-form-item-explain')).toContainText('原密码错误');
   }
 
   async expectPasswordMismatchError() {
-    await expect(this.page.locator('.ant-form-item-explain')).toContainText('两次输入的密码不一致');
+    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("确认新密码") .ant-form-item-explain')).toContainText('两次输入的密码不一致');
   }
 
   async expectSamePasswordError() {
-    await expect(this.page.locator('.ant-form-item-explain')).toContainText('新密码不能与旧密码相同');
+    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("新密码") .ant-form-item-explain')).toContainText('新密码不能与旧密码相同');
   }
 
   async expectNameTooLongError() {
-    await expect(this.page.locator('.ant-form-item-explain')).toContainText('请输入1-20字符');
+    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("姓名") .ant-form-item-explain')).toContainText('请输入1-20字符');
   }
 }

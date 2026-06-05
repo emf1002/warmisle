@@ -60,6 +60,7 @@ type createWishRequest struct {
 	Description string `json:"description"`
 	Category    string `json:"category"`
 	Priority    string `json:"priority"`
+	Type        string `json:"type"`
 	Amount      *int64 `json:"amount"`
 }
 
@@ -71,7 +72,7 @@ func (h *WishHandler) Create(c *gin.Context) {
 		return
 	}
 
-	result, err := h.svc.Create(req.Title, req.Description, req.Category, req.Priority, req.Amount, getMemberID(c))
+	result, err := h.svc.Create(req.Title, req.Description, req.Category, req.Priority, req.Type, req.Amount, getMemberID(c))
 	if err != nil {
 		handleServiceError(c, err,
 			serviceError{service.ErrWishTitleRequired, 400, 40001, "标题不能为空"},

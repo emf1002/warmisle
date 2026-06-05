@@ -16,6 +16,7 @@ export class InitPage extends BasePage {
   }
 
   async setup(name: string, username: string, password: string) {
+    await this.nameInput.waitFor({ state: 'visible' });
     await this.nameInput.fill(name);
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);

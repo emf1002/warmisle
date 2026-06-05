@@ -34,6 +34,8 @@ export class TodoPage extends BasePage {
 
   async submit() {
     await this.page.getByTestId('submit-btn').click();
+    // Wait for modal to close and data to refresh
+    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
   }
 
   async toggleTodo(index: number) {
@@ -68,9 +70,10 @@ export class TodoPage extends BasePage {
 
   /** 填写截止日期（格式 YYYY-MM-DD） */
   async fillDueDate(date: string) {
-    await this.page.getByTestId('due-date-picker').click();
-    await this.page.getByTestId('due-date-picker').locator('input').fill(date);
-    await this.page.keyboard.press('Escape');
+    const input = this.page.getByPlaceholder('请选择日期');
+    await input.click();
+    await input.fill(date);
+    await this.page.keyboard.press('Enter');
   }
 
   /** 选择指派成员 */
@@ -88,7 +91,7 @@ export class TodoPage extends BasePage {
   /** 按指派成员筛选 */
   async filterByAssignee(name: string) {
     await this.page.getByTestId('assignee-filter').click();
-    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+    await this.page.locator('.ant-select-dropdown:visible .ant-select-item-option', { hasText: name }).click();
   }
 
   /** 编辑第 n 条待办 */
