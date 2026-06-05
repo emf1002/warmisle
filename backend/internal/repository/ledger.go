@@ -1,11 +1,40 @@
 package repository
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"time"
 
 	"warmisle/internal/model"
 	"warmisle/internal/pkg"
+
+	"gorm.io/gorm"
 )
+
+// CursorData encodes pagination position as (occurred_at, id) tuple.
+type CursorData struct {
+	OccurredAt string `json:"occurred_at"` // "2006-01-02 15:04:05"
+	ID         uint   `json:"id"`
+}
+
+// EncodeCursor base64-encodes a CursorData.
+func EncodeCursor(c CursorData) string {
+	b, _ := json.Marshal(c)
+	return base64.StdEncoding.EncodeToString(b)
+}
+
+// DecodeCursor decodes a base64 cursor string.
+func DecodeCursor(s string) (*CursorData, error) {
+	b, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+	var c CursorData
+	if err := json.Unmarshal(b, &c); err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
 
 type LedgerRepo struct{}
 
@@ -14,8 +43,8 @@ type LedgerFilter struct {
 	EndDate    string // "2026-06-01" (exclusive upper bound)
 	CategoryID *uint
 	CreatorID  *uint
-	Page       int
-	PageSize   int
+	Limit      int         // page size, default 20
+	Cursor     *CursorData // nil = first page
 }
 
 type LedgerGroup struct {
@@ -31,11 +60,10 @@ type LedgerWithAssoc struct {
 }
 
 type ListResult struct {
-	Summary  LedgerSummary `json:"summary"`
-	Groups   []LedgerGroup `json:"groups"`
-	Total    int64         `json:"total"`
-	Page     int           `json:"page"`
-	PageSize int           `json:"page_size"`
+	Summary    LedgerSummary `json:"summary"`
+	Groups     []LedgerGroup `json:"groups"`
+	NextCursor *string       `json:"next_cursor"`
+	HasMore    bool          `json:"has_more"`
 }
 
 type LedgerSummary struct {
@@ -44,22 +72,34 @@ type LedgerSummary struct {
 	Balance int64 `json:"balance"`
 }
 
-func (r *LedgerRepo) List(filter LedgerFilter) (*ListResult, error) {
-	// Calculate summary for the month
+// applyOptionalFilters appends category_id / creator_id conditions when set.
+func (r *LedgerRepo) applyOptionalFilters(query *gorm.DB, filter LedgerFilter) *gorm.DB {
+	if filter.CategoryID != nil {
+		query = query.Where("ledgers.category_id = ?", *filter.CategoryID)
+	}
+	if filter.CreatorID != nil {
+		query = query.Where("ledgers.creator_id = ?", *filter.CreatorID)
+	}
+	return query
+}
+
+// computeSummary returns income/expense totals with the same filters as the list query.
+func (r *LedgerRepo) computeSummary(filter LedgerFilter) (LedgerSummary, error) {
 	var summary LedgerSummary
 	type summaryRow struct {
 		Type   string
 		Amount int64
 	}
 	var rows []summaryRow
-	err := pkg.DB.Table("ledgers").
+
+	query := pkg.DB.Table("ledgers").
 		Select("categories.type, COALESCE(SUM(ledgers.amount), 0) as amount").
 		Joins("JOIN categories ON ledgers.category_id = categories.id AND categories.deleted_at IS NULL").
-		Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", filter.StartDate, filter.EndDate).
-		Group("categories.type").
-		Scan(&rows).Error
-	if err != nil {
-		return nil, err
+		Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", filter.StartDate, filter.EndDate)
+	query = r.applyOptionalFilters(query, filter)
+
+	if err := query.Group("categories.type").Scan(&rows).Error; err != nil {
+		return summary, err
 	}
 	for _, row := range rows {
 		if row.Type == "income" {
@@ -69,46 +109,123 @@ func (r *LedgerRepo) List(filter LedgerFilter) (*ListResult, error) {
 		}
 	}
 	summary.Balance = summary.Income - summary.Expense
+	return summary, nil
+}
 
-	// Build query
-	query := pkg.DB.Model(&model.Ledger{}).
-		Preload("Category").
-		Preload("Creator").
-		Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", filter.StartDate, filter.EndDate)
-
-	if filter.CategoryID != nil {
-		query = query.Where("ledgers.category_id = ?", *filter.CategoryID)
-	}
-	if filter.CreatorID != nil {
-		query = query.Where("ledgers.creator_id = ?", *filter.CreatorID)
-	}
-
-	// Count total
+// calcDailyTotal sums income (+) and expense (-) for a set of items.
+func (r *LedgerRepo) calcDailyTotal(items []LedgerWithAssoc) int64 {
 	var total int64
-	if err := query.Count(&total).Error; err != nil {
-		return nil, err
+	for _, item := range items {
+		if item.Category.Type == "income" {
+			total += item.Amount
+		} else {
+			total -= item.Amount
+		}
 	}
+	return total
+}
 
-	// Fetch with pagination
-	var ledgers []model.Ledger
-	err = query.
-		Offset((filter.Page - 1) * filter.PageSize).
-		Limit(filter.PageSize).
-		Order("ledgers.occurred_at DESC, ledgers.id DESC").
-		Find(&ledgers).Error
+func (r *LedgerRepo) List(filter LedgerFilter) (*ListResult, error) {
+	// 1. Compute summary (now applies category/creator filters)
+	summary, err := r.computeSummary(filter)
 	if err != nil {
 		return nil, err
 	}
 
-	// Group by date
-	groups := r.groupByDate(ledgers)
+	// 2. Determine limit
+	limit := filter.Limit
+	if limit <= 0 {
+		limit = 20
+	}
+
+	// 3. Build base query
+	query := pkg.DB.Model(&model.Ledger{}).
+		Preload("Category").
+		Preload("Creator").
+		Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", filter.StartDate, filter.EndDate)
+	query = r.applyOptionalFilters(query, filter)
+
+	// 4. Apply cursor condition
+	if filter.Cursor != nil {
+		query = query.Where(
+			"(ledgers.occurred_at < ? OR (ledgers.occurred_at = ? AND ledgers.id < ?))",
+			filter.Cursor.OccurredAt, filter.Cursor.OccurredAt, filter.Cursor.ID,
+		)
+	}
+
+	// 5. Fetch limit + 1 records
+	var records []model.Ledger
+	if err := query.
+		Order("ledgers.occurred_at DESC, ledgers.id DESC").
+		Limit(limit + 1).
+		Find(&records).Error; err != nil {
+		return nil, err
+	}
+
+	// 6. Determine hasMore and keep the (limit+1)th record for date check
+	hasMore := len(records) > limit
+	var extraRecord *model.Ledger
+	if hasMore {
+		extraRecord = &records[limit]
+		records = records[:limit]
+	}
+
+	// 7. Group by date
+	groups := r.groupByDate(records)
+
+	// 8. If last date group was cut off, fetch remaining records (补全)
+	if hasMore && len(groups) > 0 && extraRecord != nil {
+		lastGroup := &groups[len(groups)-1]
+		extraDate := time.Time(extraRecord.OccurredAt).Format("2006-01-02")
+		if extraDate == lastGroup.Date {
+			minId := lastGroup.Items[len(lastGroup.Items)-1].ID
+			nextDay := time.Time(extraRecord.OccurredAt).AddDate(0, 0, 1).Format("2006-01-02")
+
+		补全Q := pkg.DB.Model(&model.Ledger{}).
+				Preload("Category").
+				Preload("Creator").
+				Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", lastGroup.Date, nextDay).
+				Where("ledgers.id < ?", minId)
+			补全Q = r.applyOptionalFilters(补全Q, filter)
+
+			var extraRecords []model.Ledger
+			if err := 补全Q.
+				Order("ledgers.occurred_at DESC, ledgers.id DESC").
+				Find(&extraRecords).Error; err != nil {
+				return nil, err
+			}
+
+			for _, er := range extraRecords {
+				lastGroup.Items = append(lastGroup.Items, LedgerWithAssoc{
+					Ledger:   er,
+					Category: er.Category,
+					Creator:  er.Creator,
+				})
+			}
+			lastGroup.DailyTotal = r.calcDailyTotal(lastGroup.Items)
+		}
+	}
+
+	// 9. Compute nextCursor
+	var nextCursor *string
+	if hasMore {
+		var lastItem LedgerWithAssoc
+		if len(groups) > 0 {
+			lastGroup := groups[len(groups)-1]
+			lastItem = lastGroup.Items[len(lastGroup.Items)-1]
+		}
+		cursor := EncodeCursor(CursorData{
+			OccurredAt: time.Time(lastItem.OccurredAt).Format("2006-01-02 15:04:05"),
+			ID:         lastItem.ID,
+		})
+		nextCursor = &cursor
+	}
 
 	return &ListResult{
-		Summary:  summary,
-		Groups:   groups,
-		Total:    total,
-		Page:     filter.Page,
-		PageSize: filter.PageSize,
+		Summary:    summary,
+		Groups:     groups,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
 	}, nil
 }
 

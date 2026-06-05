@@ -25,6 +25,7 @@ e2e-data/
 # IDE
 .idea/
 .vscode/
+.codegraph/
 
 # OS
 .DS_Store

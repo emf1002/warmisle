@@ -85,10 +85,79 @@ func TestHandler_Ledger_List_ByMonth(t *testing.T) {
 	startDate := now.Format("2006-01") + "-01"
 	firstOfNext := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	endDate := firstOfNext.Format("2006-01-02")
-	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?start_date=%s&end_date=%s", startDate, endDate), nil, memberToken)
+	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?start_date=%s&end_date=%s&limit=20", startDate, endDate), nil, memberToken)
 	resp := testutil.AssertSuccessResponse(t, w)
 	data := testutil.ParseDataMap(resp)
 	assert.NotNil(t, data["summary"])
+	assert.NotNil(t, data["groups"])
+	assert.NotNil(t, data["has_more"])
+}
+
+func TestHandler_Ledger_List_CursorPagination(t *testing.T) {
+	setupMemberTest()
+	defer testutil.TeardownTestDB()
+
+	r := setupTestRouter()
+	_, member, _, memberToken := testutil.SeedAdminAndMember(t)
+	cat := testutil.SeedTestCategory("expense", "餐饮", "🍱", 1)
+
+	// Create 12 records on different dates
+	for i := 1; i <= 12; i++ {
+		ledger := model.Ledger{
+			Amount:     int64(i * 100),
+			Note:       fmt.Sprintf("记录%d", i),
+			CategoryID: cat.ID,
+			CreatorID:  member.ID,
+			OccurredAt: model.FromTime(time.Date(2026, 5, i, 12, 0, 0, 0, time.UTC)),
+		}
+		pkg.DB.Create(&ledger)
+	}
+
+	startDate := "2026-05-01"
+	endDate := "2026-06-01"
+
+	// Page 1: limit=5
+	w1 := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?start_date=%s&end_date=%s&limit=5", startDate, endDate), nil, memberToken)
+	resp1 := testutil.AssertSuccessResponse(t, w1)
+	data1 := testutil.ParseDataMap(resp1)
+
+	groups1 := data1["groups"].([]interface{})
+	totalItems1 := 0
+	for _, g := range groups1 {
+		items := g.(map[string]interface{})["items"].([]interface{})
+		totalItems1 += len(items)
+	}
+	assert.Equal(t, 5, totalItems1)
+	assert.Equal(t, true, data1["has_more"])
+	assert.NotNil(t, data1["next_cursor"])
+
+	// Page 2: use cursor from page 1
+	cursor := data1["next_cursor"].(string)
+	w2 := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?start_date=%s&end_date=%s&limit=5&cursor=%s", startDate, endDate, cursor), nil, memberToken)
+	resp2 := testutil.AssertSuccessResponse(t, w2)
+	data2 := testutil.ParseDataMap(resp2)
+
+	groups2 := data2["groups"].([]interface{})
+	totalItems2 := 0
+	for _, g := range groups2 {
+		items := g.(map[string]interface{})["items"].([]interface{})
+		totalItems2 += len(items)
+	}
+	assert.Equal(t, 7, totalItems2)
+	assert.Equal(t, false, data2["has_more"])
+}
+
+func TestHandler_Ledger_List_InvalidCursor(t *testing.T) {
+	setupMemberTest()
+	defer testutil.TeardownTestDB()
+
+	r := setupTestRouter()
+	_, _, _, memberToken := testutil.SeedAdminAndMember(t)
+
+	startDate := "2026-05-01"
+	endDate := "2026-06-01"
+	w := testutil.MakeRequest(r, "GET", fmt.Sprintf("/api/ledgers?start_date=%s&end_date=%s&cursor=not-a-valid-cursor", startDate, endDate), nil, memberToken)
+	testutil.AssertErrorResponse(t, w, 400, 40001)
 }
 
 func TestHandler_Ledger_Update_ByCreator(t *testing.T) {

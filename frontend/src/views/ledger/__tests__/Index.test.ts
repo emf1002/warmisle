@@ -53,6 +53,30 @@ vi.mock('@/api/member', () => ({
 // Shared auth store mock (parses JWT from localStorage)
 import '@/test/auth-mock'
 
+// Mock Pinia stores used by the component
+vi.mock('@/stores/categories', () => ({
+  useCategoriesStore: () => ({
+    categories: [
+      { id: 1, type: 'expense', name: '餐饮', icon: '\uD83C\uDF71', sort_order: 1, preset: true },
+      { id: 2, type: 'income', name: '工资', icon: '\uD83D\uDCB0', sort_order: 1, preset: true },
+    ],
+    loaded: true,
+    fetchCategories: vi.fn().mockResolvedValue([]),
+    reset: vi.fn(),
+  }),
+}))
+
+vi.mock('@/stores/members', () => ({
+  useMembersStore: () => ({
+    members: [
+      { id: 1, username: 'admin', name: '管理员', avatar: '\uD83D\uDC68', role: 'admin', status: 'active' },
+    ],
+    loaded: true,
+    fetchMembers: vi.fn().mockResolvedValue([]),
+    reset: vi.fn(),
+  }),
+}))
+
 vi.mock('ant-design-vue', async (importOriginal) => {
   const actual = await importOriginal<any>()
   return {
@@ -78,6 +102,7 @@ const stubs: Record<string, any> = {
   'a-list': { template: '<div><slot /></div>' },
   'a-list-item': { template: '<div><slot /></div>' },
   'a-spin': { template: '<div>loading</div>' },
+  'a-skeleton': { template: '<div>skeleton</div>' },
   'a-modal': { template: '<div v-bind="$attrs"><slot /></div>' },
   'a-form': { template: '<form><slot /></form>' },
   'a-form-item': { template: '<div><slot /></div>' },
@@ -134,7 +159,7 @@ const mockLedgersData = {
         creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
       }],
     }],
-    total: 1, page: 1, page_size: 20,
+    has_more: false, next_cursor: null,
   },
 }
 
@@ -213,7 +238,7 @@ describe('Ledger view', () => {
             creator: { id: 1, name: '管理员', avatar: '\uD83D\uDC68' },
           }],
         }],
-        total: 2,
+        has_more: false, next_cursor: null,
       },
     }
 
@@ -254,7 +279,7 @@ describe('Ledger view', () => {
         ...mockLedgersData.data,
         summary: { income: 10000, expense: 0, balance: 10000 },
         groups: [],
-        total: 0,
+        has_more: false, next_cursor: null,
       },
     }
     mockGetLedgers.mockResolvedValueOnce(mockLedgersData)

@@ -14,7 +14,7 @@ describe('Ledger API', () => {
   })
 
   describe('getLedgers', () => {
-    it('should return snake_case keys: summary, groups, total, page, page_size', async () => {
+    it('should return snake_case keys: summary, groups, has_more, next_cursor', async () => {
       mockRequest.get.mockResolvedValue({
         data: {
           summary: { income: 10000, expense: 5000, balance: 5000 },
@@ -37,22 +37,21 @@ describe('Ledger API', () => {
               ],
             },
           ],
-          total: 1,
-          page: 1,
-          page_size: 20,
+          has_more: false,
+          next_cursor: null,
         },
       })
 
-      const res = await getLedgers({ start_date: '2026-05-01', end_date: '2026-05-31', page: 1, page_size: 20 })
+      const res = await getLedgers({ start_date: '2026-05-01', end_date: '2026-05-31', limit: 20 })
 
       expect(mockRequest.get).toHaveBeenCalledWith('/ledgers', {
-        params: { start_date: '2026-05-01', end_date: '2026-05-31', page: 1, page_size: 20 },
+        params: { start_date: '2026-05-01', end_date: '2026-05-31', limit: 20 },
+        signal: undefined,
       })
 
       // Top-level response keys
-      expect(res.data.total).toBe(1)
-      expect(res.data.page).toBe(1)
-      expect(res.data.page_size).toBe(20)
+      expect(res.data.has_more).toBe(false)
+      expect(res.data.next_cursor).toBeNull()
 
       // Summary keys
       expect(res.data.summary.income).toBe(10000)

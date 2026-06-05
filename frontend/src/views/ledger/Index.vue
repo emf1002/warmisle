@@ -71,10 +71,9 @@
       <a-button size="small" @click="clearFilters" data-testid="clear-filters">清除筛选</a-button>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="loading-state">
-      <a-spin />
-      <span style="margin-left: 8px">加载中...</span>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="skeleton-state">
+      <a-skeleton active :paragraph="{ rows: 6 }" :title="false" />
     </div>
 
     <!-- Empty State -->
@@ -127,9 +126,9 @@
       </div>
     </div>
 
-    <!-- Load More -->
-    <div v-if="hasMore" class="load-more">
-      <a-button @click="loadMore" :loading="loadingMore">加载更多</a-button>
+    <!-- Infinite scroll sentinel -->
+    <div ref="sentinelRef" v-if="hasMore" class="load-sentinel">
+      <a-spin v-if="loadingMore" size="small" />
     </div>
 
     <!-- Create/Edit Dialog -->
@@ -227,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
@@ -238,8 +237,8 @@ import {
   updateLedger,
   deleteLedger,
 } from '@/api/ledger'
-import { getCategories } from '@/api/category'
-import { getMembers } from '@/api/member'
+import { useCategoriesStore } from '@/stores/categories'
+import { useMembersStore } from '@/stores/members'
 import { useAuthStore } from '@/stores/auth'
 
 // Types
@@ -286,6 +285,8 @@ interface Filters {
 
 // State
 const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
+const membersStore = useMembersStore()
 const loading = ref(false)
 const loadingMore = ref(false)
 const submitting = ref(false)
@@ -293,13 +294,13 @@ const dialogOpen = ref(false)
 const editingRecord = ref<LedgerItem | null>(null)
 
 const dateRange = ref<[Dayjs, Dayjs]>([dayjs().startOf('month'), dayjs().endOf('month')])
-const members = ref<Member[]>([])
-const categories = ref<Category[]>([])
 const groups = ref<LedgerGroup[]>([])
 const summary = ref<LedgerSummary>({ income: 0, expense: 0, balance: 0 })
-const total = ref(0)
-const page = ref(1)
-const pageSize = 20
+const nextCursor = ref<string | null>(null)
+const hasMore = ref(false)
+const sentinelRef = ref<HTMLElement | null>(null)
+let abortController: AbortController | null = null
+let observer: IntersectionObserver | null = null
 
 const rangePresets = [
   { label: '本月', value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
@@ -324,7 +325,8 @@ const form = reactive({
 const categoryTab = ref<'expense' | 'income'>('expense')
 
 // Computed
-const hasMore = computed(() => groups.value.length > 0 && page.value * pageSize < total.value)
+const members = computed(() => membersStore.members)
+const categories = computed(() => categoriesStore.categories)
 
 const expenseCategories = computed(() =>
   categories.value.filter((c) => c.type === 'expense')
@@ -335,6 +337,14 @@ const incomeCategories = computed(() =>
 )
 
 // Helpers
+function debounce<F extends (...args: any[]) => any>(fn: F, delay: number): F {
+  let timer: ReturnType<typeof setTimeout>
+  return ((...args: any[]) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
+  }) as any
+}
+
 function formatYuan(cents: number): string {
   return `\u00A5${(cents / 100).toFixed(2)}`
 }
@@ -351,10 +361,15 @@ function onDateRangeChange(dates: [Dayjs, Dayjs] | null) {
   }
 }
 
-async function fetchLedgers(isLoadMore = false) {
-  if (!isLoadMore) {
+async function fetchLedgers(append = false) {
+  // Cancel any in-flight request
+  if (abortController) abortController.abort()
+  abortController = new AbortController()
+
+  if (!append) {
     loading.value = true
-    page.value = 1
+    nextCursor.value = null
+    hasMore.value = false
   } else {
     loadingMore.value = true
   }
@@ -363,26 +378,28 @@ async function fetchLedgers(isLoadMore = false) {
     const params: Record<string, unknown> = {
       start_date: dateRange.value[0].format('YYYY-MM-DD'),
       end_date: dateRange.value[1].add(1, 'day').format('YYYY-MM-DD'),
-      page: page.value,
-      page_size: pageSize,
+      limit: 20,
     }
     if (filters.category_id) params.category_id = filters.category_id
     if (filters.creator_id) params.creator_id = filters.creator_id
+    if (append && nextCursor.value) params.cursor = nextCursor.value
 
-    const res: any = await getLedgers(params as any)
+    const res: any = await getLedgers(params as any, abortController.signal)
     const data = res.data
-    if (isLoadMore) {
+    if (append) {
       groups.value = [...groups.value, ...(data.groups || [])]
     } else {
       groups.value = data.groups || []
     }
     summary.value = data.summary || { income: 0, expense: 0, balance: 0 }
-    total.value = data.total || 0
-  } catch {
-    if (!isLoadMore) {
+    nextCursor.value = data.next_cursor ?? null
+    hasMore.value = data.has_more ?? false
+  } catch (e: any) {
+    if (e?.code !== 'ERR_CANCELED' && !append) {
       groups.value = []
       summary.value = { income: 0, expense: 0, balance: 0 }
-      total.value = 0
+      nextCursor.value = null
+      hasMore.value = false
     }
   } finally {
     loading.value = false
@@ -390,19 +407,18 @@ async function fetchLedgers(isLoadMore = false) {
   }
 }
 
-async function loadMore() {
-  page.value++
-  await fetchLedgers(true)
-}
+const debouncedFetchLedgers = debounce(() => fetchLedgers(false), 300)
 
 function onFilterChange() {
-  fetchLedgers()
+  debouncedFetchLedgers()
 }
 
 function clearFilters() {
   filters.category_id = undefined
   filters.creator_id = undefined
-  fetchLedgers()
+  nextCursor.value = null
+  hasMore.value = false
+  fetchLedgers(false)
 }
 
 function openCreate() {
@@ -499,16 +515,34 @@ function confirmDelete() {
 // Lifecycle
 onMounted(async () => {
   try {
-    const [catRes, memRes]: any[] = await Promise.all([
-      getCategories(),
-      getMembers(),
+    await Promise.all([
+      categoriesStore.fetchCategories(),
+      membersStore.fetchMembers(),
     ])
-    categories.value = catRes.data || []
-    members.value = memRes.data || []
   } catch {
     // error handled by interceptor
   }
-  fetchLedgers()
+  await fetchLedgers(false)
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+  if (abortController) abortController.abort()
+})
+
+// Watch sentinelRef to (re-)attach IntersectionObserver whenever it appears/disappears
+watch(sentinelRef, (el, oldEl) => {
+  if (oldEl && observer) observer.unobserve(oldEl)
+  if (!el) return
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting && hasMore.value && !loadingMore.value) {
+        fetchLedgers(true)
+      }
+    },
+    { rootMargin: '200px' }
+  )
+  observer.observe(el)
 })
 </script>
 
@@ -554,6 +588,11 @@ onMounted(async () => {
 .category-group-label {
   font-weight: 600;
   color: var(--color-text-secondary);
+}
+
+/* Skeleton loading */
+.skeleton-state {
+  padding: 16px;
 }
 
 /* Amount Colors */
@@ -723,9 +762,10 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
-/* Load More */
-.load-more {
-  text-align: center;
+/* Infinite scroll sentinel */
+.load-sentinel {
+  display: flex;
+  justify-content: center;
   padding: 16px 0;
 }
 

@@ -26,8 +26,8 @@ func (h *LedgerHandler) List(c *gin.Context) {
 		EndDate    string `form:"end_date"`
 		CategoryID *uint  `form:"category_id"`
 		CreatorID  *uint  `form:"creator_id"`
-		Page       int    `form:"page"`
-		PageSize   int    `form:"page_size"`
+		Limit      int    `form:"limit"`
+		Cursor     string `form:"cursor"`
 	}
 
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -39,16 +39,12 @@ func (h *LedgerHandler) List(c *gin.Context) {
 		req.StartDate = time.Now().Format("2006-01") + "-01"
 	}
 	if req.EndDate == "" {
-		// First day of next month
 		now := time.Now()
 		firstOfNext := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 		req.EndDate = firstOfNext.Format("2006-01-02")
 	}
-	if req.Page <= 0 {
-		req.Page = 1
-	}
-	if req.PageSize <= 0 {
-		req.PageSize = 20
+	if req.Limit <= 0 {
+		req.Limit = 20
 	}
 
 	filter := repository.LedgerFilter{
@@ -56,8 +52,16 @@ func (h *LedgerHandler) List(c *gin.Context) {
 		EndDate:    req.EndDate,
 		CategoryID: req.CategoryID,
 		CreatorID:  req.CreatorID,
-		Page:       req.Page,
-		PageSize:   req.PageSize,
+		Limit:      req.Limit,
+	}
+
+	if req.Cursor != "" {
+		cursor, err := repository.DecodeCursor(req.Cursor)
+		if err != nil {
+			pkg.Error(c, 400, 40001, "游标格式错误")
+			return
+		}
+		filter.Cursor = cursor
 	}
 
 	result, err := h.svc.List(filter)

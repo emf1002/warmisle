@@ -25,6 +25,7 @@ request.interceptors.response.use(
     return data
   },
   error => {
+    if (error.code === 'ERR_CANCELED') return Promise.reject(error)
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       router.push('/login')

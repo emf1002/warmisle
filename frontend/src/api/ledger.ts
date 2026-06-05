@@ -5,10 +5,10 @@ export function getLedgers(params: {
   end_date?: string
   category_id?: number
   creator_id?: number
-  page?: number
-  page_size?: number
-}) {
-  return request.get('/ledgers', { params })
+  limit?: number
+  cursor?: string
+}, signal?: AbortSignal) {
+  return request.get('/ledgers', { params, signal })
 }
 
 export function getLedgerById(id: number) {
