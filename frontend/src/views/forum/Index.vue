@@ -40,7 +40,7 @@
       <div v-if="pinnedItems.length > 0" class="pinned-section">
         <div v-for="item in pinnedItems" :key="'pinned-' + item.id" class="feed-card topic-card" :data-testid="'feed-card-' + item.id">
           <div class="feed-header">
-            <span class="topic-pin-badge" data-testid="pinned-tag">📌 公告</span>
+            <span class="topic-pin-badge" data-testid="pinned-tag"><Icon name="Pin" :size="12" /> 公告</span>
           </div>
           <h3 class="topic-title" @click="goToDetail(item)">{{ item.title }}</h3>
           <p class="feed-content topic-excerpt">{{ truncate(item.content, 150) }}</p>
@@ -54,11 +54,11 @@
           </div>
           <div class="feed-actions">
             <span class="feed-action" @click.stop="handleLike(item)" data-testid="like-btn">
-              <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
+              <Icon :name="item.is_liked ? 'Heart' : 'Heart'" :size="14" :class="{ 'text-brand': item.is_liked }" />
               <span>{{ item.like_count || 0 }}</span>
             </span>
             <span class="feed-action" @click.stop="goToDetail(item)" data-testid="comment-btn">
-              💬 {{ item.comment_count || 0 }}
+              <Icon name="MessageCircle" :size="14" /> {{ item.comment_count || 0 }}
             </span>
             <a-dropdown v-if="canManage(item)" trigger="click">
               <span class="feed-action" @click.stop>⋯</span>
@@ -93,11 +93,11 @@
             </div>
             <div class="feed-actions">
               <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)" data-testid="like-btn">
-                <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
+                <Icon :name="item.is_liked ? 'Heart' : 'Heart'" :size="14" :class="{ 'text-brand': item.is_liked }" />
                 <span>{{ item.like_count || 0 }}</span>
               </span>
               <span class="feed-action" @click.stop="goToDetail(item)" data-testid="comment-btn">
-                💬 {{ item.comment_count || 0 }}
+                <Icon name="MessageCircle" :size="14" /> {{ item.comment_count || 0 }}
               </span>
               <a-dropdown v-if="canManage(item)" trigger="click">
                 <span class="feed-action" @click.stop>⋯</span>
@@ -114,7 +114,7 @@
           <!-- Topic card -->
           <div v-else-if="item.type === 'topic'" class="feed-card topic-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div v-if="item.is_pinned" class="feed-header">
-              <span class="topic-pin-badge" data-testid="pinned-tag">📌 公告</span>
+              <span class="topic-pin-badge" data-testid="pinned-tag"><Icon name="Pin" :size="12" /> 公告</span>
             </div>
             <h3 class="topic-title" @click="goToDetail(item)">{{ item.title }}</h3>
             <p class="feed-content topic-excerpt">{{ truncate(item.content, 150) }}</p>
@@ -128,11 +128,11 @@
             </div>
             <div class="feed-actions">
               <span class="feed-action" :class="{ 'like-bounce': likingItems[`${item.type}_${item.id}`] }" @click.stop="handleLike(item)" data-testid="like-btn">
-                <span>{{ item.is_liked ? '❤️' : '🤍' }}</span>
+                <Icon :name="item.is_liked ? 'Heart' : 'Heart'" :size="14" :class="{ 'text-brand': item.is_liked }" />
                 <span>{{ item.like_count || 0 }}</span>
               </span>
               <span class="feed-action" @click.stop="goToDetail(item)" data-testid="comment-btn">
-                💬 {{ item.comment_count || 0 }}
+                <Icon name="MessageCircle" :size="14" /> {{ item.comment_count || 0 }}
               </span>
               <a-dropdown v-if="canManage(item)" trigger="click">
                 <span class="feed-action" @click.stop>⋯</span>
@@ -454,6 +454,7 @@ import {
 } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
+import Icon from '@/components/Icon.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface MemberInfo {
@@ -953,6 +954,10 @@ onMounted(() => {
   padding: var(--space-lg);
   max-width: 700px;
   margin: 0 auto;
+}
+
+.text-brand {
+  color: var(--color-brand);
 }
 
 .header-actions {

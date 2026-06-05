@@ -10,7 +10,7 @@
     <!-- Expense categories -->
     <div class="category-section" data-testid="expense-categories">
       <h3 class="section-title">
-        <span class="section-icon">📤</span> 支出分类
+        <Icon name="TrendingDown" :size="16" /> 支出分类
       </h3>
       <div v-if="expenseCategories.length === 0" class="empty-hint">暂无支出分类</div>
       <div class="category-grid">
@@ -33,7 +33,7 @@
     <!-- Income categories -->
     <div class="category-section" data-testid="income-categories">
       <h3 class="section-title">
-        <span class="section-icon">📥</span> 收入分类
+        <Icon name="TrendingUp" :size="16" /> 收入分类
       </h3>
       <div v-if="incomeCategories.length === 0" class="empty-hint">暂无收入分类</div>
       <div class="category-grid">

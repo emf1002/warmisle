@@ -90,12 +90,12 @@
             <template #overlay>
               <a-menu @click="onUserMenuClick">
                 <a-menu-item key="Profile">
-                  <span>👤</span>
+                  <Icon name="UserCircle" :size="14" />
                   <span style="margin-left: 8px">个人中心</span>
                 </a-menu-item>
                 <a-menu-divider />
                 <a-menu-item key="Logout">
-                  <span>🚪</span>
+                  <Icon name="LogOut" :size="14" />
                   <span style="margin-left: 8px">退出登录</span>
                 </a-menu-item>
               </a-menu>
@@ -549,7 +549,7 @@ function onBottomTabClick(key: string) {
   margin-bottom: 2px;
 }
 
-.tabbar-item.router-link-active .tabbar-icon {
+.tabbar-item-active .tabbar-icon {
   background: var(--color-brand-bg);
   color: var(--color-brand);
 }
