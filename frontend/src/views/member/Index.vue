@@ -7,7 +7,16 @@
       </a-button>
     </div>
 
-    <a-table :columns="columns" :data-source="members" row-key="id" :pagination="false" data-testid="member-table">
+    <div v-if="loading" class="skeleton-member">
+      <div v-for="i in 5" :key="i" class="skeleton-member-row">
+        <SkeletonCard width="32px" height="32px" borderRadius="50%" />
+        <SkeletonCard width="100px" height="16px" />
+        <SkeletonCard width="60px" height="24px" borderRadius="6px" />
+        <SkeletonCard width="50px" height="24px" borderRadius="6px" />
+      </div>
+    </div>
+
+    <a-table v-else :columns="columns" :data-source="members" row-key="id" :pagination="false" data-testid="member-table">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'name'">
           <span class="member-name">
@@ -125,10 +134,12 @@ import {
 } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
 import EmojiPicker from '@/components/EmojiPicker.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 
 const authStore = useAuthStore()
 
 const members = ref<any[]>([])
+const loading = ref(true)
 const dialogOpen = ref(false)
 const editingMember = ref<any>(null)
 const submitting = ref(false)
@@ -159,11 +170,14 @@ onMounted(() => {
 })
 
 async function fetchMembers() {
+  loading.value = true
   try {
     const res: any = await getMembers()
     members.value = res.data || []
   } catch {
     // error handled by interceptor
+  } finally {
+    loading.value = false
   }
 }
 
@@ -289,7 +303,13 @@ function confirmResetPwd(record: any) {
 
 <style scoped>
 .member-page {
-  padding: 24px;
+  padding: var(--space-lg);
+}
+
+@media (max-width: 767px) {
+  .member-page {
+    padding: var(--space-md);
+  }
 }
 
 .member-name {
@@ -301,6 +321,22 @@ function confirmResetPwd(record: any) {
 .member-avatar {
   font-size: 20px;
   line-height: 1;
+}
+
+/* ==================== Skeleton ==================== */
+.skeleton-member {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.skeleton-member-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
 }
 
 </style>

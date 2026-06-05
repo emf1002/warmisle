@@ -1,6 +1,17 @@
 <template>
   <div class="profile-page" data-testid="profile-page">
-    <a-card :bordered="false" class="profile-card">
+    <div v-if="loading" class="skeleton-profile">
+      <div class="skeleton-profile-header">
+        <SkeletonCard width="64px" height="64px" borderRadius="50%" />
+        <SkeletonCard width="120px" height="20px" />
+        <SkeletonCard width="80px" height="16px" />
+      </div>
+      <SkeletonCard width="100%" height="40px" />
+      <SkeletonCard width="100%" height="40px" />
+      <SkeletonCard width="100%" height="40px" />
+    </div>
+
+    <a-card v-else :bordered="false" class="profile-card">
       <!-- User Info Header -->
       <div class="profile-header">
         <div class="profile-avatar-large">{{ profile.avatar }}</div>
@@ -137,10 +148,12 @@ import type { FormInstance } from 'ant-design-vue'
 import { getProfile, updateProfile, changePassword } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
 import EmojiPicker from '@/components/EmojiPicker.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
+const loading = ref(true)
 const profile = ref<any>({
   id: 0,
   username: '',
@@ -170,6 +183,7 @@ onMounted(() => {
 })
 
 async function fetchProfile() {
+  loading.value = true
   try {
     const res: any = await getProfile()
     if (res.data) {
@@ -177,6 +191,8 @@ async function fetchProfile() {
     }
   } catch {
     // error handled by interceptor
+  } finally {
+    loading.value = false
   }
 }
 
@@ -308,7 +324,7 @@ async function handlePwdSubmit() {
 
 <style scoped>
 .profile-page {
-  padding: 24px;
+  padding: var(--space-lg);
   display: flex;
   justify-content: center;
 }
@@ -434,5 +450,30 @@ async function handlePwdSubmit() {
   :deep(.ant-card) {
     border-radius: 0;
   }
+
+  .skeleton-profile {
+    border-radius: 0;
+  }
+}
+
+/* ==================== Skeleton ==================== */
+.skeleton-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 600px;
+  box-sizing: border-box;
+}
+
+.skeleton-profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 </style>

@@ -22,9 +22,13 @@
       </a-select>
     </div>
 
-    <div v-if="loading" class="loading-state">
-      <a-spin />
-      <span style="margin-left: 8px">加载中...</span>
+    <div v-if="loading" class="skeleton-wish-grid">
+      <div v-for="i in 4" :key="i" class="skeleton-wish-card">
+        <SkeletonCard width="100%" height="20px" />
+        <SkeletonCard width="70%" height="16px" />
+        <SkeletonCard width="100%" height="12px" />
+        <SkeletonCard width="50%" height="12px" />
+      </div>
     </div>
 
     <div v-else-if="wishes.length === 0" class="empty-state">
@@ -218,6 +222,7 @@ import {
 } from '@/api/wish'
 import { getComments, createComment, deleteComment } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface WishItem {
@@ -518,7 +523,7 @@ onMounted(() => {
 
 <style scoped>
 .wish-page {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -600,7 +605,7 @@ onMounted(() => {
 }
 
 @media (max-width: 767px) {
-  .wish-page { padding: 16px; }
+  .wish-page { padding: var(--space-md); }
   .wish-grid { grid-template-columns: 1fr; }
   .wish-title { font-size: 15px; }
 }
@@ -651,5 +656,21 @@ onMounted(() => {
 .comment-content {
   font-size: 13px;
   word-break: break-word;
+}
+
+/* ==================== Skeleton ==================== */
+.skeleton-wish-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.skeleton-wish-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-lg);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
 }
 </style>

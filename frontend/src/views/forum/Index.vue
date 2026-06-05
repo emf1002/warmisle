@@ -11,9 +11,20 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-state">
-      <a-spin />
-      <span style="margin-left: 8px">加载中...</span>
+    <div v-if="loading" class="skeleton-forum">
+      <div v-for="i in 3" :key="i" class="skeleton-post-card">
+        <div class="skeleton-post-header">
+          <SkeletonCard width="36px" height="36px" borderRadius="50%" />
+          <SkeletonCard width="80px" height="14px" />
+          <SkeletonCard width="50px" height="12px" />
+        </div>
+        <SkeletonCard width="100%" height="16px" />
+        <SkeletonCard width="80%" height="16px" />
+        <div class="skeleton-post-footer">
+          <SkeletonCard width="40px" height="20px" borderRadius="6px" />
+          <SkeletonCard width="40px" height="20px" borderRadius="6px" />
+        </div>
+      </div>
     </div>
 
     <template v-else-if="displayItems.length === 0 && pinnedItems.length === 0">
@@ -442,6 +453,7 @@ import {
   getVote,
 } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface MemberInfo {
@@ -938,7 +950,7 @@ onMounted(() => {
 
 <style scoped>
 .forum-page {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 700px;
   margin: 0 auto;
 }
@@ -1312,10 +1324,37 @@ onMounted(() => {
   flex: 1;
 }
 
+/* ==================== Skeleton ==================== */
+.skeleton-forum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.skeleton-post-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+}
+
+.skeleton-post-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.skeleton-post-footer {
+  display: flex;
+  gap: var(--space-sm);
+}
+
 /* ==================== Mobile ==================== */
 @media (max-width: 767px) {
   .forum-page {
-    padding: 16px;
+    padding: var(--space-md);
   }
 
   .header-actions {
@@ -1328,6 +1367,10 @@ onMounted(() => {
   }
 
   .feed-card {
+    padding: 14px;
+  }
+
+  .skeleton-post-card {
     padding: 14px;
   }
 

@@ -32,9 +32,15 @@
       <a-button size="small" @click="clearFilters" data-testid="clear-filters">清除筛选</a-button>
     </div>
 
-    <div v-if="loading" class="loading-state">
-      <a-spin />
-      <span style="margin-left: 8px">加载中...</span>
+    <div v-if="loading" class="skeleton-list">
+      <div v-for="i in 5" :key="i" class="skeleton-todo-item">
+        <SkeletonCard width="20px" height="20px" borderRadius="4px" />
+        <div class="skeleton-todo-content">
+          <SkeletonCard width="60%" height="16px" />
+          <SkeletonCard width="40%" height="12px" />
+        </div>
+        <SkeletonCard width="60px" height="24px" borderRadius="6px" />
+      </div>
     </div>
 
     <div v-else-if="todos.length === 0" class="empty-state">
@@ -166,6 +172,7 @@ import { priorityColor, priorityLabel, formatDate } from '@/utils/format'
 import { getTodoList, createTodo, updateTodo, deleteTodo, toggleTodo, claimTodo } from '@/api/todo'
 import { getMembers } from '@/api/member'
 import EmptyState from '@/components/EmptyState.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface Member {
@@ -501,5 +508,28 @@ onMounted(async () => {
   .todo-page {
     padding: var(--space-md);
   }
+}
+
+/* ==================== Skeleton ==================== */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.skeleton-todo-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.skeleton-todo-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
 }
 </style>
