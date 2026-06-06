@@ -20,7 +20,7 @@
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'name'">
           <span class="member-name">
-            <span class="member-avatar">{{ record.avatar }}</span>
+            <UserAvatar :icon="record.avatar || 'User'" :member-id="record.id" :size="20" />
             {{ record.name }}
           </span>
         </template>
@@ -106,7 +106,7 @@
           />
         </a-form-item>
         <a-form-item label="头像">
-          <EmojiPicker v-model="form.avatar" />
+          <IconPicker v-model="form.avatar" />
         </a-form-item>
         <a-form-item label="角色">
           <a-select v-model:value="form.role" data-testid="role-select">
@@ -133,7 +133,8 @@ import {
   resetPassword,
 } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
-import EmojiPicker from '@/components/EmojiPicker.vue'
+import IconPicker from '@/components/IconPicker.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 
 const authStore = useAuthStore()
@@ -148,7 +149,7 @@ const form = reactive({
   username: '',
   password: '',
   name: '',
-  avatar: '👨',
+  avatar: 'User',
   role: 'member',
 })
 

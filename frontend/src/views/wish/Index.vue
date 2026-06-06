@@ -59,7 +59,7 @@
           ¥{{ (wish.amount / 100).toFixed(2) }}
         </div>
         <div class="wish-card-footer">
-          <span class="wish-creator">{{ wish.creator.avatar }} {{ wish.creator.name }}</span>
+          <span class="wish-creator"><UserAvatar :icon="wish.creator.avatar || 'User'" :member-id="wish.creator.id" :size="16" /> {{ wish.creator.name }}</span>
           <div class="wish-card-actions">
             <a-button
               v-if="activeType === 'family'"
@@ -192,7 +192,7 @@
           <a-empty v-if="comments.length === 0" description="暂无评论" />
           <div v-for="c in comments" :key="c.id" class="comment-item">
             <div class="comment-header">
-              <span class="comment-author">{{ c.creator?.avatar }} {{ c.creator?.name }}</span>
+              <span class="comment-author"><UserAvatar :icon="c.creator?.avatar || 'User'" :member-id="c.creator?.id" :size="18" /> {{ c.creator?.name }}</span>
               <span class="comment-time">{{ timeAgo(c.created_at) }}</span>
               <a-button
                 v-if="canDeleteComment(c)"
@@ -223,6 +223,7 @@ import {
 import { getComments, createComment, deleteComment } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface WishItem {

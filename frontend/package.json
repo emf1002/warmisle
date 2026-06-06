@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@fontsource-variable/noto-sans-sc": "^5.2.10",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.7.9",
     "lucide-vue-next": "^1.0.0",

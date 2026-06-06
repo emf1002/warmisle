@@ -55,7 +55,7 @@ export class ProfilePage extends BasePage {
 
   async selectAvatar(avatar: string) {
     await this.page.getByTestId('avatar-picker').click();
-    await this.page.getByTestId('avatar-grid').locator(`text=${avatar}`).click();
+    await this.page.getByTestId(`icon-item-${avatar}`).click();
   }
 
   async fillConfirmPassword(password: string) {

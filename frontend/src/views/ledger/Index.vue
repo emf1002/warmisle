@@ -55,13 +55,13 @@
         <template v-if="expenseCategories.length > 0">
           <a-select-option disabled :value="-1" class="category-group-label">支出</a-select-option>
           <a-select-option v-for="c in expenseCategories" :key="c.id" :value="c.id">
-            {{ c.icon }} {{ c.name }}
+            {{ c.name }}
           </a-select-option>
         </template>
         <template v-if="incomeCategories.length > 0">
           <a-select-option disabled :value="-2" class="category-group-label">收入</a-select-option>
           <a-select-option v-for="c in incomeCategories" :key="c.id" :value="c.id">
-            {{ c.icon }} {{ c.name }}
+            {{ c.name }}
           </a-select-option>
         </template>
       </a-select>
@@ -74,7 +74,7 @@
         data-testid="filter-creator"
       >
         <a-select-option v-for="m in members" :key="m.id" :value="m.id">
-          {{ m.avatar }} {{ m.name }}
+          {{ m.name }}
         </a-select-option>
       </a-select>
       <a-button size="small" @click="clearFilters" data-testid="clear-filters">清除筛选</a-button>
@@ -97,49 +97,31 @@
         <!-- Date Header -->
         <div class="date-header">
           <span class="date-text">{{ formatDate(group.date) }}</span>
-          <span :class="group.daily_total >= 0 ? 'income-amount' : 'expense-amount'" class="date-total" data-testid="daily-total">
-            {{ group.daily_total >= 0 ? '+' : '-' }}{{ formatYuan(Math.abs(group.daily_total)) }}
+          <span class="date-subtotals" data-testid="daily-total">
+            <span class="date-expense" v-if="dailyExpense(group) > 0">支 {{ formatYuan(dailyExpense(group)) }}</span>
+            <span class="date-income" v-if="dailyIncome(group) > 0">收 {{ formatYuan(dailyIncome(group)) }}</span>
           </span>
         </div>
 
         <!-- Items -->
         <div
-          v-for="(item, index) in group.items"
+          v-for="item in group.items"
           :key="item.id"
-          class="ledger-item card-stagger"
+          class="ledger-item"
           :class="{ clickable: canEdit(item) }"
-          :style="{ animationDelay: `${index * 50}ms` }"
           :data-testid="'ledger-item-' + item.id"
           @click="onItemClick(item)"
         >
-          <div class="item-top">
-            <span class="item-category">
-              <span class="item-cat-icon">{{ item.category.icon }}</span>
-              <span class="item-cat-name">{{ item.category.name }}</span>
-            </span>
-            <span class="item-creator-line">
-              <span class="creator-avatar" :aria-label="`${item.creator.name}的头像`">{{ item.creator.avatar }}</span>
-              <span class="creator-name" data-testid="creator-name">{{ item.creator.name }}</span>
-              <span class="creator-label">记录</span>
+          <CategoryIcon :icon="item.category.icon" :category-id="item.category.id" :size="40" />
+          <div class="item-info">
+            <span class="item-cat-name">{{ item.category.name }}</span>
+            <span class="item-meta" v-if="item.note || item.occurred_at">
+              {{ formatTime(item.occurred_at) }}<template v-if="item.note"> | {{ truncate(item.note, 20) }}</template>
             </span>
           </div>
-          <div v-if="item.note" class="item-body">
-            <span class="item-note">{{ truncate(item.note, 30) }}</span>
-          </div>
-          <div class="item-bottom">
-            <span class="item-amount" :class="item.category.type === 'income' ? 'income-amount' : 'expense-amount'">
-              {{ item.category.type === 'income' ? '+' : '-' }}¥{{ (item.amount / 100).toFixed(2) }}
-            </span>
-            <a-button
-              v-if="canEdit(item)"
-              type="link"
-              size="small"
-              @click.stop="onItemClick(item)"
-              data-testid="edit-btn"
-            >
-              编辑
-            </a-button>
-          </div>
+          <span class="item-amount" :class="item.category.type === 'income' ? 'income-amount' : 'expense-amount'">
+            {{ item.category.type === 'income' ? '+' : '-' }}{{ (item.amount / 100).toFixed(2) }}
+          </span>
         </div>
       </div>
     </div>
@@ -187,7 +169,7 @@
                   @click="form.category_id = cat.id"
                   :data-testid="'cat-expense-' + cat.id"
                 >
-                  <span class="category-pick-icon">{{ cat.icon }}</span>
+                  <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="24" />
                   <span class="category-pick-name">{{ cat.name }}</span>
                 </div>
               </div>
@@ -201,7 +183,7 @@
                   @click="form.category_id = cat.id"
                   :data-testid="'cat-income-' + cat.id"
                 >
-                  <span class="category-pick-icon">{{ cat.icon }}</span>
+                  <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="24" />
                   <span class="category-pick-name">{{ cat.name }}</span>
                 </div>
               </div>
@@ -259,6 +241,7 @@ import {
 import { useCategoriesStore } from '@/stores/categories'
 import { useMembersStore } from '@/stores/members'
 import { useAuthStore } from '@/stores/auth'
+import CategoryIcon from '@/components/CategoryIcon.vue'
 
 // Types
 interface Member {
@@ -371,6 +354,24 @@ function formatYuan(cents: number): string {
 
 function canEdit(item: LedgerItem): boolean {
   return item.creator_id === authStore.currentUserId || authStore.isAdmin
+}
+
+function dailyExpense(group: LedgerGroup): number {
+  return group.items
+    .filter((i) => i.category.type === 'expense')
+    .reduce((sum, i) => sum + i.amount, 0)
+}
+
+function dailyIncome(group: LedgerGroup): number {
+  return group.items
+    .filter((i) => i.category.type === 'income')
+    .reduce((sum, i) => sum + i.amount, 0)
+}
+
+function formatTime(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 // Methods
@@ -503,7 +504,7 @@ async function handleSubmit() {
 
     if (editingRecord.value) {
       if (payload.amount !== undefined) {
-        payload.amount = form.amount!
+        payload.amount = Math.round(form.amount! * 100)
       }
       await updateLedger(editingRecord.value.id, payload)
       message.success('✅ 更新成功')
@@ -667,106 +668,91 @@ watch(sentinelRef, (el, oldEl) => {
 
 /* Date Group */
 .date-group {
-  margin-bottom: 0;
+  background: var(--color-bg-container);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-level-1);
+  margin-bottom: 12px;
+  overflow: hidden;
 }
 
 .date-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px var(--space-md);
-  background: var(--color-bg-layout);
-  border-radius: var(--radius-md);
-  margin-bottom: 8px;
+  padding: 12px 16px 8px;
 }
 
 .date-text {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--color-text-primary);
 }
 
-.date-total {
-  font-size: 14px;
-  font-weight: 500;
+.date-subtotals {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
 }
 
-/* ==================== Ledger Item Card ==================== */
+.date-expense {
+  color: var(--color-text-secondary);
+}
+
+.date-income {
+  color: var(--color-text-secondary);
+}
+
+/* ==================== Ledger Item ==================== */
 .ledger-item {
-  background: var(--color-bg-container);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
-  margin-bottom: 8px;
-  border: 1px solid var(--color-border-secondary);
-  box-shadow: var(--shadow-level-1);
-  transition: box-shadow var(--duration-normal) ease;
-  min-height: 44px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border-secondary);
+  transition: background var(--duration-fast) ease;
+  min-height: 56px;
+}
+
+.ledger-item:last-child {
+  border-bottom: none;
 }
 
 .ledger-item.clickable {
   cursor: pointer;
 }
 
-.ledger-item.clickable:hover {
-  box-shadow: var(--shadow-level-2);
+.ledger-item.clickable:active {
+  background: var(--color-bg-layout);
 }
 
-/* Top row: category + creator */
-.item-top {
+.item-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.item-category {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.item-cat-icon {
-  font-size: 18px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .item-cat-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.3;
 }
 
-.item-creator-line {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.item-meta {
   font-size: 12px;
   color: var(--color-text-secondary);
-}
-
-.creator-avatar {
-  font-size: 14px;
-}
-
-/* Body: note */
-.item-note {
-  font-size: 14px;
-  color: var(--color-text-primary);
-  word-break: break-word;
-}
-
-/* Bottom: amount */
-.item-bottom {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
 }
 
 .item-amount {
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 17px;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   flex-shrink: 0;

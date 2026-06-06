@@ -47,7 +47,7 @@
           <div class="topic-footer">
             <span v-if="item.tag" class="topic-tag">#{{ item.tag.name }}</span>
             <span class="feed-author topic-author">
-              <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
+              <UserAvatar :icon="item.creator?.avatar || 'User'" :member-id="item.creator?.id" :size="32" />
               <span class="feed-name">{{ item.creator?.name }}</span>
               <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
             </span>
@@ -83,7 +83,7 @@
           <div v-if="item.type === 'post'" class="feed-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div class="feed-header">
               <span class="feed-author">
-                <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
+                <UserAvatar :icon="item.creator?.avatar || 'User'" :member-id="item.creator?.id" :size="32" />
                 <span class="feed-name">{{ item.creator?.name }}</span>
               </span>
               <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
@@ -121,7 +121,7 @@
             <div class="topic-footer">
               <span v-if="item.tag" class="topic-tag">#{{ item.tag.name }}</span>
               <span class="feed-author topic-author">
-                <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
+                <UserAvatar :icon="item.creator?.avatar || 'User'" :member-id="item.creator?.id" :size="32" />
                 <span class="feed-name">{{ item.creator?.name }}</span>
                 <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
               </span>
@@ -153,7 +153,7 @@
           <div v-else-if="item.type === 'vote'" class="feed-card poll-card card-stagger" :style="{ animationDelay: `${index * 50}ms` }" :data-testid="'feed-card-' + item.id">
             <div class="feed-header">
               <span class="feed-author">
-                <span class="feed-avatar" :aria-label="`${item.creator?.name || '用户'}的头像`">{{ item.creator?.avatar || '👤' }}</span>
+                <UserAvatar :icon="item.creator?.avatar || 'User'" :member-id="item.creator?.id" :size="32" />
                 <span class="feed-name">{{ item.creator?.name }}</span>
               </span>
               <span class="feed-time">{{ timeAgo(item.created_at) }}</span>
@@ -456,6 +456,7 @@ import {
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 import Icon from '@/components/Icon.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface MemberInfo {
@@ -892,7 +893,7 @@ async function handlePollSubmit() {
       options: (voteData.options || validOptions.map((text, i) => ({ id: i + 1, content: text, vote_count: 0 })))
         .map((o: any) => ({ id: o.id, text: o.text || o.content, vote_count: o.vote_count || 0 })),
       is_multi: voteData.is_multi ?? pollForm.is_multi,
-      creator: voteData.creator || { id: authStore.currentUserId, name: authStore.memberInfo?.name || '我', avatar: authStore.memberInfo?.avatar || '👤' },
+      creator: voteData.creator || { id: authStore.currentUserId, name: authStore.memberInfo?.name || '我', avatar: authStore.memberInfo?.avatar || 'User' },
       created_at: voteData.created_at || new Date().toISOString(),
       voted: false,
     })

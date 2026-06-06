@@ -80,11 +80,7 @@
           <ThemeToggle />
           <a-dropdown>
             <div class="user-trigger">
-              <a-avatar :size="isMobile ? 28 : 32" class="user-avatar">
-                <template #icon>
-                  <span>{{ currentMember?.avatar || '👤' }}</span>
-                </template>
-              </a-avatar>
+              <UserAvatar :icon="currentMember?.avatar || 'User'" :member-id="currentMember?.id" :size="isMobile ? 28 : 32" />
               <span v-if="!isMobile" class="user-name">{{ currentMember?.name || '用户' }}</span>
             </div>
             <template #overlay>
@@ -135,6 +131,7 @@ import { useThemeStore } from '@/stores/theme'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import LogoIcon from '@/components/LogoIcon.vue'
 import Icon from '@/components/Icon.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const router = useRouter()
 const route = useRoute()

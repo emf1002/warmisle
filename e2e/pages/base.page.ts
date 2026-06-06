@@ -8,9 +8,9 @@ export class BasePage {
     // If already on the same URL, goto() is a no-op for hash routing.
     // Force a reload so the component re-fetches fresh data.
     if (this.page.url().endsWith(target)) {
-      await this.page.reload();
+      await this.page.reload({ waitUntil: 'domcontentloaded' });
     } else {
-      await this.page.goto(target);
+      await this.page.goto(target, { waitUntil: 'domcontentloaded' });
     }
     await this.page.waitForLoadState('networkidle');
   }

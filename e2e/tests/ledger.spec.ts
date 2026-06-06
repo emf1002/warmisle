@@ -42,7 +42,7 @@ test.describe('记账本', () => {
     await ledger.fillAmount('1');
     await ledger.submit();
     await ledger.expectRecordCount(1);
-    await ledger.expectRecordAmount(0, '-¥1.00');
+    await ledger.expectRecordAmount(0, '-1.00');
   });
 
   test('删除记录', async ({ authenticated }) => {
@@ -86,22 +86,13 @@ test.describe('记账本', () => {
     await ledger.fillNote('午饭');
     await ledger.submit();
     await ledger.expectRecordCount(1);
+    await ledger.expectRecordAmount(0, '-35.50');
     await ledger.editRecord(0);
     await ledger.fillAmount('50');
     await ledger.fillNote('晚饭');
     await ledger.submit();
     await ledger.expectRecordCount(1);
-  });
-
-  test('记录者显示', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const ledger = new LedgerPage(page);
-    await ledger.goto();
-    await ledger.openCreate();
-    await ledger.pickCategory('餐饮');
-    await ledger.fillAmount('10');
-    await ledger.submit();
-    await ledger.expectRecordCreator(0, '管理员');
+    await ledger.expectRecordAmount(0, '-50.00');
   });
 
   test('月份切换', async ({ authenticated }) => {

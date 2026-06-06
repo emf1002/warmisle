@@ -36,7 +36,7 @@
         <div v-if="topic.content" class="topic-content">{{ topic.content }}</div>
 
         <div class="topic-meta">
-          <span class="topic-creator">{{ topic.creator.avatar }} {{ topic.creator.name }}</span>
+          <span class="topic-creator"><UserAvatar :icon="topic.creator.avatar || 'User'" :member-id="topic.creator.id" :size="18" /> {{ topic.creator.name }}</span>
           <span class="topic-time">{{ formatTime(topic.created_at) }}</span>
           <span v-if="topic.updated_at !== topic.created_at" class="topic-edited">（已编辑）</span>
         </div>
@@ -110,7 +110,7 @@
           >
             <!-- Top-level comment -->
             <div class="comment-body">
-              <span class="comment-avatar">{{ comment.creator.avatar }}</span>
+              <UserAvatar :icon="comment.creator.avatar || 'User'" :member-id="comment.creator.id" :size="36" />
               <div class="comment-main">
                 <div class="comment-header">
                   <span class="comment-author">{{ comment.creator.name }}</span>
@@ -164,7 +164,7 @@
                     class="reply-item"
                     :data-testid="'comment-' + child.id"
                   >
-                    <span class="reply-avatar">{{ child.creator.avatar }}</span>
+                    <UserAvatar :icon="child.creator.avatar || 'User'" :member-id="child.creator.id" :size="28" />
                     <div class="reply-main">
                       <div class="reply-header">
                         <span class="reply-author">{{ child.creator.name }}</span>
@@ -260,6 +260,7 @@ import {
   getTags,
 } from '@/api/forum'
 import { useAuthStore } from '@/stores/auth'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 interface MemberInfo {
   id: number

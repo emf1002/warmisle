@@ -14,7 +14,7 @@
     <a-card v-else :bordered="false" class="profile-card">
       <!-- User Info Header -->
       <div class="profile-header">
-        <div class="profile-avatar-large">{{ profile.avatar }}</div>
+        <UserAvatar :icon="profile.avatar || 'User'" :member-id="profile.id" :size="64" />
         <div class="profile-name">{{ profile.name }}</div>
         <a-tag :color="profile.role === 'admin' ? 'blue' : 'default'" class="profile-role-tag">
           {{ profile.role === 'admin' ? '管理员' : '成员' }}
@@ -107,7 +107,7 @@
         </a-form-item>
         <a-form-item label="头像">
           <div data-testid="avatar-picker">
-            <EmojiPicker v-model="form.avatar" />
+            <IconPicker v-model="form.avatar" />
           </div>
         </a-form-item>
       </a-form>
@@ -147,7 +147,8 @@ import { message, Modal } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
 import { getProfile, updateProfile, changePassword } from '@/api/member'
 import { useAuthStore } from '@/stores/auth'
-import EmojiPicker from '@/components/EmojiPicker.vue'
+import IconPicker from '@/components/IconPicker.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 
 const router = useRouter()
@@ -158,7 +159,7 @@ const profile = ref<any>({
   id: 0,
   username: '',
   name: '',
-  avatar: '👨',
+  avatar: 'User',
   role: 'member',
 })
 
@@ -168,7 +169,7 @@ const profileFormRef = ref<FormInstance>()
 
 const form = reactive({
   name: '',
-  avatar: '👨',
+  avatar: 'User',
 })
 
 const profileRules = {

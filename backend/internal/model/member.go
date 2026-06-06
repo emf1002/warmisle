@@ -11,7 +11,7 @@ type Member struct {
 	Username  string         `gorm:"uniqueIndex;size:20" json:"username"`
 	Password  string         `gorm:"size:255" json:"-"`
 	Name      string         `gorm:"size:20" json:"name"`
-	Avatar    string         `gorm:"size:10;default:👨" json:"avatar"`
+	Avatar    string         `gorm:"size:30;default:User" json:"avatar"`
 	Role      string         `gorm:"size:10;default:member" json:"role"`
 	Status    string         `gorm:"size:10;default:active" json:"status"`
 	LastLogin *time.Time     `json:"last_login"`

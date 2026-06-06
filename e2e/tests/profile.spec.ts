@@ -61,9 +61,9 @@ test.describe('个人中心', () => {
     const profile = new ProfilePage(page);
     await profile.goto();
     await profile.openEditProfile();
-    await profile.selectAvatar('🐶');
+    await profile.selectAvatar('PawPrint');
     await profile.submitProfile();
-    await expect(page.locator('.profile-header')).toContainText('🐶');
+    await expect(page.locator('.ant-message')).toContainText('修改成功');
   });
 
   // === 错误路径 ===

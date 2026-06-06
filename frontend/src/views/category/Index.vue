@@ -20,7 +20,7 @@
           class="category-card"
           :data-testid="'category-card-' + cat.id"
         >
-          <span class="category-icon">{{ cat.icon }}</span>
+          <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="24" />
           <span class="category-name">{{ cat.name }}</span>
           <span v-if="authStore.isAdmin" class="category-actions">
             <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn"><Icon name="Pencil" :size="14" /> 编辑</a-button>
@@ -43,7 +43,7 @@
           class="category-card"
           :data-testid="'category-card-' + cat.id"
         >
-          <span class="category-icon">{{ cat.icon }}</span>
+          <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="24" />
           <span class="category-name">{{ cat.name }}</span>
           <span v-if="authStore.isAdmin" class="category-actions">
             <a-button type="link" size="small" @click="openEdit(cat)" data-testid="edit-btn"><Icon name="Pencil" :size="14" /> 编辑</a-button>
@@ -79,7 +79,7 @@
           />
         </a-form-item>
         <a-form-item label="图标">
-          <EmojiPicker v-model="form.icon" />
+          <IconPicker v-model="form.icon" />
         </a-form-item>
         <a-form-item label="排序">
           <a-input-number
@@ -107,8 +107,9 @@ import {
   deleteCategory,
 } from '@/api/category'
 import { useAuthStore } from '@/stores/auth'
-import EmojiPicker from '@/components/EmojiPicker.vue'
+import IconPicker from '@/components/IconPicker.vue'
 import Icon from '@/components/Icon.vue'
+import CategoryIcon from '@/components/CategoryIcon.vue'
 
 const authStore = useAuthStore()
 
@@ -120,7 +121,7 @@ const submitting = ref(false)
 const form = reactive({
   type: 'expense',
   name: '',
-  icon: '📦',
+  icon: 'Package',
   sort_order: 0,
 })
 
@@ -149,7 +150,7 @@ function openCreate() {
   editingCategory.value = null
   form.type = 'expense'
   form.name = ''
-  form.icon = '📦'
+  form.icon = 'Package'
   form.sort_order = 0
   dialogOpen.value = true
 }

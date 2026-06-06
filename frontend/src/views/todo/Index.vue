@@ -26,7 +26,7 @@
         data-testid="assignee-filter"
       >
         <a-select-option v-for="m in members" :key="m.id" :value="m.id">
-          {{ m.avatar }} {{ m.name }}
+          {{ m.name }}
         </a-select-option>
       </a-select>
       <a-button size="small" @click="clearFilters" data-testid="clear-filters">清除筛选</a-button>
@@ -80,10 +80,10 @@
             <div v-if="todo.description" class="todo-desc">{{ todo.description }}</div>
             <div class="todo-meta">
               <span class="todo-assignee-line">
-                <span class="meta-avatar">{{ todo.creator.avatar }}</span>
+                <UserAvatar :icon="todo.creator.avatar || 'User'" :member-id="todo.creator.id" :size="14" />
                 <span v-if="todo.assignee">
                   <span class="meta-arrow">→</span>
-                  <span class="meta-avatar">{{ todo.assignee.avatar }}</span>
+                  <UserAvatar :icon="todo.assignee.avatar || 'User'" :member-id="todo.assignee.id" :size="14" />
                   <span class="meta-name" data-testid="assignee-name">{{ todo.assignee.name }}</span>
                 </span>
                 <span v-else class="todo-unassigned">
@@ -150,7 +150,7 @@
         <a-form-item label="负责人">
           <a-select v-model:value="form.assignee_id" placeholder="选择负责人" allow-clear data-testid="assignee-select">
             <a-select-option v-for="m in members" :key="m.id" :value="m.id">
-              {{ m.avatar }} {{ m.name }}
+              {{ m.name }}
             </a-select-option>
           </a-select>
         </a-form-item>
@@ -173,6 +173,7 @@ import { getTodoList, createTodo, updateTodo, deleteTodo, toggleTodo, claimTodo 
 import { getMembers } from '@/api/member'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 interface Member {
