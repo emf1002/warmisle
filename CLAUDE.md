@@ -126,29 +126,50 @@ warmisle/
 
 ## E2E 测试
 
-E2E 测试（Playwright）运行非常耗时，遵循以下原则：
+E2E 测试（Playwright）使用 `e2e/run-test.sh` 运行，**每次运行自动启动独立 server（隔离端口+DB），测试完成后自动清理**。不使用 `npx playwright test` 直接运行。
 
-1. **优先读取测试报告**：所有测试产物统一在 `e2e/reports/` 下：
-   - `results.json` — 聚合结果（JSON）
-   - `html/` — HTML 报告
-   - `output/` — 失败截图与 trace
-   - `snapshots/` — 视觉基线（跨运行保留）
-   - `e2e/global-setup.ts` 不再自动清空历史报告，跨运行保留
-   - 所有路径用绝对路径（基于 `playwright.config.ts` 位置），从任何目录执行都落在 `e2e/reports/`
-   - 测试数据库固定在 `e2e/e2e-data/test.db`（`HC_DB_PATH` 绝对路径）
-   - 测试 JWT 密钥固定在 `e2e/data/secret.key`（`webServer.cwd = e2e/`）
-   - 整个 `e2e/reports/` 已在 `.gitignore` 中
+### 运行命令
 
-   需要获取详细测试信息时，先读取已有报告，而非重新运行测试。
-2. **避免重复运行**：仅在代码变更影响测试逻辑时才重新运行。调试阶段优先运行单个测试文件（`npx playwright test <file>`），不要运行全量测试。
-3. **运行命令**：
-   - Windows 快捷：`e2e\test.bat`（缺失二进制时自动构建，参数透传给 playwright）
-   - 直接执行：
-     ```bash
-     cd e2e && npx playwright test              # 全量测试（慎用）
-     cd e2e && npx playwright test tests/todo.spec.ts  # 单模块测试
-     cd e2e && npx playwright test --grep "@mobile"     # 仅移动端测试
-     ```
+```bash
+# 单文件
+bash e2e/run-test.sh tests/auth.spec.ts
+
+# 多文件
+bash e2e/run-test.sh tests/ledger.spec.ts tests/todo.spec.ts
+
+# 指定端口（多终端并行时避免冲突）
+bash e2e/run-test.sh --port 8082 tests/forum.spec.ts
+
+# 全量测试
+bash e2e/run-test.sh --all
+```
+
+### 并行运行（多终端）
+
+端口自动检测，被占用时自增。多终端可同时运行不同测试文件，环境完全隔离：
+
+```bash
+# 终端 1 → 自动分配 :8081
+bash e2e/run-test.sh tests/auth.spec.ts tests/members.spec.ts
+
+# 终端 2 → 自动分配 :8082
+bash e2e/run-test.sh tests/ledger.spec.ts tests/categories.spec.ts
+
+# 终端 3 → 手动指定 :8090
+bash e2e/run-test.sh --port 8090 tests/forum.spec.ts
+```
+
+### 报告
+
+报告按端口隔离在 `e2e/reports/<port>/` 下（如 `e2e/reports/8081/`），并行运行互不覆盖。整个 `e2e/reports/` 已在 `.gitignore` 中。
+
+需要获取详细测试信息时，先读取已有报告，而非重新运行测试。
+
+### 环境隔离机制
+
+- 每次运行启动独立 server 进程，使用独立端口和独立 SQLite DB（`e2e/e2e-data/test-<port>.db`）
+- 测试完成后自动 kill server 并清理 DB 文件
+- 通过 `HC_TEST_PORT` 和 `HC_TEST_BASE_URL` 环境变量传递端口给 Playwright
 
 ## 实施顺序
 

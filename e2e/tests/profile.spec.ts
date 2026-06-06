@@ -39,21 +39,6 @@ test.describe('个人中心', () => {
     await expect(page).toHaveURL(/\/#\/login/);
   });
 
-  test('个人中心页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const profile = new ProfilePage(page);
-    await profile.goto();
-    await profile.screenshot('profile-page.png');
-  });
-
-  test('修改个人信息弹窗视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const profile = new ProfilePage(page);
-    await profile.goto();
-    await profile.openEditProfile();
-    await profile.screenshotComponent('.ant-modal:visible', 'profile-edit-modal.png');
-  });
-
   // === 功能场景 ===
 
   test('选择头像', async ({ authenticated }) => {

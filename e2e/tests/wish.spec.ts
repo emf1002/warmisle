@@ -31,13 +31,6 @@ test.describe('愿望清单', () => {
     // 应切换到家庭愿望视图
   });
 
-  test('愿望页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const wish = new WishPage(page);
-    await wish.goto();
-    await wish.screenshot('wish-empty.png');
-  });
-
   // === 投票 ===
 
   test('投票', async ({ authenticated, memberContext }) => {

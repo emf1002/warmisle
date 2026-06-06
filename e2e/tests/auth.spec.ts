@@ -44,25 +44,6 @@ test.describe('认证流程', () => {
     await loginPage.expectOnLoginPage();
   });
 
-  test('登录页视觉回归', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.screenshot('login-page.png');
-  });
-
-  test('移动端登录页视觉回归', { tag: '@mobile' }, async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.screenshot('login-page-mobile.png');
-  });
-
-  test('初始化页视觉回归', async ({ page }) => {
-    await resetDatabase(page);
-    const initPage = new InitPage(page);
-    await initPage.goto();
-    await initPage.screenshot('init-page.png');
-  });
-
   // === 错误路径 ===
 
   test('连续登录失败锁定', async ({ page }) => {

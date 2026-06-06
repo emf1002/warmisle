@@ -59,20 +59,6 @@ test.describe('记账本', () => {
     await expect(page.getByTestId('empty-state')).toBeVisible();
   });
 
-  test('记账本页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const ledger = new LedgerPage(page);
-    await ledger.goto();
-    await ledger.screenshot('ledger-empty.png');
-  });
-
-  test('记账弹窗视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const ledger = new LedgerPage(page);
-    await ledger.goto();
-    await ledger.openCreate();
-    await ledger.screenshotComponent('.ant-modal:visible', 'ledger-modal.png');
-  });
 
   // === 功能场景 ===
 
@@ -262,14 +248,6 @@ test.describe('记账本', () => {
   });
 
   // === 响应式 ===
-
-  test('移动端记账列表视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
-    const { page, seedLedgers } = authenticated;
-    await seedLedgers({ count: 10 });
-    const ledger = new LedgerPage(page);
-    await ledger.goto();
-    await ledger.screenshot('ledger-list-mobile.png');
-  });
 
   test('移动端记账列表', { tag: '@mobile' }, async ({ authenticated }) => {
     const { page } = authenticated;

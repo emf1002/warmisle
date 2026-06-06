@@ -1,22 +1,30 @@
-const BASE_URL = 'http://localhost:8080';
+import { getBaseUrl, BASE_PORT } from '../config';
+
+function baseUrl(): string {
+  // 1. Check if set explicitly by auth fixture
+  if (process.env.HC_TEST_BASE_URL) return process.env.HC_TEST_BASE_URL;
+  // 2. Playwright sets this in worker threads (v1.40+)
+  const project = process.env.PLAYWRIGHT_PROJECT_NAME;
+  if (project) return getBaseUrl(project);
+  // 3. Fallback: use port from TEST_PARALLEL_INDEX
+  const idx = parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
+  return `http://localhost:${BASE_PORT + idx}`;
+}
 
 export async function resetDatabase(page?: import('@playwright/test').Page): Promise<void> {
-  const res = await fetch(`${BASE_URL}/api/test/reset`, { method: 'POST' });
+  const url = baseUrl();
+  const res = await fetch(`${url}/api/test/reset`, { method: 'POST' });
   if (!res.ok) {
     throw new Error(`Database reset failed: ${res.status}`);
   }
-  // Clear stale JWT token so router guard detects "no token" state.
-  // Must navigate to app origin first (localStorage inaccessible on about:blank).
-  // Use /login (guest page) to avoid router-guard redirects on protected routes.
   if (page) {
-    await page.goto(`${BASE_URL}/#/login`);
+    await page.goto(`${url}/#/login`);
     await page.evaluate(() => localStorage.clear());
   }
 }
 
 export async function initAdmin(): Promise<{ token: string }> {
-  // 初始化管理员
-  const initRes = await fetch(`${BASE_URL}/api/init/setup`, {
+  const initRes = await fetch(`${baseUrl()}/api/init/setup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -56,7 +64,7 @@ export async function seedLedgers(
   token: string,
   options?: SeedLedgersOptions
 ): Promise<SeedLedgersResult> {
-  const res = await fetch(`${BASE_URL}/api/test/seed-ledgers`, {
+  const res = await fetch(`${baseUrl()}/api/test/seed-ledgers`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -89,7 +97,7 @@ export interface CreateMemberResult {
 export async function createMember(
   options: { username?: string; password?: string; name?: string } = {}
 ): Promise<CreateMemberResult> {
-  const res = await fetch(`${BASE_URL}/api/test/create-member`, {
+  const res = await fetch(`${baseUrl()}/api/test/create-member`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

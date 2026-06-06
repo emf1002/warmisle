@@ -1,27 +1,36 @@
 import path from 'path';
 import { defineConfig, devices } from '@playwright/test';
+import { WORKERS, BASE_PORT, getBaseUrl } from './config';
 
-const rootDir = path.resolve(__dirname, '..');
 const e2eDir = __dirname;
-const reportsDir = path.join(e2eDir, 'reports');
-const binaryPath = path.join(rootDir, 'dist', 'warmisle.exe');
+
+// When HC_TEST_PORT is set (by run-test.bat), use single-instance mode
+// and isolate reports by port to avoid conflicts in parallel runs
+const isSingleInstance = !!process.env.HC_TEST_PORT;
+const portSuffix = process.env.HC_TEST_PORT || 'default';
+const reportsDir = path.join(e2eDir, 'reports', portSuffix);
+const effectiveBaseUrl = process.env.HC_TEST_BASE_URL || getBaseUrl('chromium');
 
 export default defineConfig({
   testDir: './tests',
-  globalSetup: './global-setup.ts',
+  // In single-instance mode (run-test.bat), skip global setup/teardown
+  // since the server is managed externally
+  ...(isSingleInstance ? {} : {
+    globalSetup: './global-setup.ts',
+    globalTeardown: './global-teardown.ts',
+  }),
   snapshotDir: path.join(reportsDir, 'snapshots'),
   outputDir: path.join(reportsDir, 'output'),
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: true,
   retries: 0,
-  workers: 1,
+  workers: isSingleInstance ? 1 : WORKERS,
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: path.join(reportsDir, 'html') }],
     ['json', { outputFile: path.join(reportsDir, 'results.json') }],
   ],
   use: {
-    baseURL: 'http://localhost:8080',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     actionTimeout: 5000,
@@ -32,26 +41,16 @@ export default defineConfig({
       name: 'chromium',
       use: {
         viewport: { width: 1280, height: 720 },
+        baseURL: effectiveBaseUrl,
       },
     },
     {
       name: 'mobile',
       use: {
         ...devices['iPhone 13'],
+        baseURL: effectiveBaseUrl,
       },
       grep: /@mobile/,
     },
   ],
-  webServer: {
-    command: binaryPath,
-    cwd: e2eDir,
-    port: 8080,
-    timeout: 30000,
-    reuseExistingServer: false,
-    env: {
-      HC_DB_PATH: path.join(e2eDir, 'e2e-data', 'test.db'),
-      HC_TEST_MODE: 'true',
-      HC_PORT: '8080',
-    },
-  },
 });

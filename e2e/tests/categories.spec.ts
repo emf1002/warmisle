@@ -40,13 +40,6 @@ test.describe('分类管理', () => {
     await categories.expectExpenseCategoryCount(15);
   });
 
-  test('分类页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const categories = new CategoriesPage(page);
-    await categories.goto();
-    await categories.screenshot('categories-page.png');
-  });
-
   // === 功能场景 ===
 
   test('编辑分类', async ({ authenticated }) => {

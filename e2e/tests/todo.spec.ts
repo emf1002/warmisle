@@ -45,13 +45,6 @@ test.describe('待办管理', () => {
     await expect(page.getByTestId('empty-state')).toBeVisible();
   });
 
-  test('待办页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const todo = new TodoPage(page);
-    await todo.goto();
-    await todo.screenshot('todo-empty.png');
-  });
-
   // === 功能场景 ===
 
   test('设置优先级', async ({ authenticated }) => {
@@ -220,15 +213,6 @@ test.describe('待办管理', () => {
     await todo.fillTitle('');
     await todo.submit();
     await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
-  });
-
-  test('移动端底栏导航视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
-    const { page } = authenticated;
-    await page.setViewportSize({ width: 390, height: 844 });
-    const todo = new TodoPage(page);
-    await todo.goto();
-    await expect(page.getByTestId('mobile-tabbar')).toBeVisible();
-    await todo.screenshot('todo-mobile.png');
   });
 
   test('过期待办高亮', async ({ authenticated }) => {

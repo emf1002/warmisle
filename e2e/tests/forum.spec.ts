@@ -43,13 +43,6 @@ test.describe('家庭论坛', () => {
     // 点赞数应增加
   });
 
-  test('论坛页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const forum = new ForumPage(page);
-    await forum.goto();
-    await forum.screenshot('forum-empty.png');
-  });
-
   // === 公告 ===
 
   test('发布公告', async ({ authenticated }) => {

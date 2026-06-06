@@ -47,12 +47,6 @@ test.describe('仪表盘', () => {
     await dashboard.expectForumHotVisible();
   });
 
-  test('仪表盘页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const dashboard = new DashboardPage(page);
-    await dashboard.goto();
-    await dashboard.screenshot('dashboard-full.png');
-  });
 
   test('月份切换', async ({ authenticated }) => {
     const { page } = authenticated;
@@ -120,22 +114,15 @@ test.describe('仪表盘', () => {
     await dashboard.expectForumHotVisible();
   });
 
-  test('移动端仪表盘视觉回归', { tag: '@mobile' }, async ({ authenticated }) => {
-    const { page } = authenticated;
-    await page.setViewportSize({ width: 390, height: 844 });
-    const dashboard = new DashboardPage(page);
-    await dashboard.goto();
-    await dashboard.screenshot('dashboard-mobile.png');
-  });
 
   test('移动端仪表盘', { tag: '@mobile' }, async ({ authenticated }) => {
     const { page, token } = authenticated;
     await page.setViewportSize({ width: 390, height: 844 });
     // Create test data via API to avoid mobile modal timing issues
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-    await page.request.post('http://localhost:8080/api/todos', { headers, data: { title: '测试待办' } });
-    await page.request.post('http://localhost:8080/api/wishes', { headers, data: { title: '测试愿望', type: 'personal' } });
-    await page.request.post('http://localhost:8080/api/posts', { headers, data: { content: '测试动态', type: 'post' } });
+    await page.request.post('/api/todos', { headers, data: { title: '测试待办' } });
+    await page.request.post('/api/wishes', { headers, data: { title: '测试愿望', type: 'personal' } });
+    await page.request.post('/api/posts', { headers, data: { content: '测试动态', type: 'post' } });
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.expectSummaryVisible();

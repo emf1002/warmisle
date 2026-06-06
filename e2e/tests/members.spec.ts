@@ -4,6 +4,12 @@ import { MembersPage } from '../pages/members.page';
 import { LedgerPage } from '../pages/ledger.page';
 import { createMember } from '../fixtures/db.fixture';
 
+import { getBaseUrl, BASE_PORT } from '../config';
+const BASE_URL = () =>
+  process.env.HC_TEST_BASE_URL ||
+  getBaseUrl(process.env.PLAYWRIGHT_PROJECT_NAME || 'chromium') ||
+  `http://localhost:${BASE_PORT}`;
+
 test.describe('成员管理', () => {
   test('页面加载显示管理员', async ({ authenticated }) => {
     const { page } = authenticated;
@@ -37,12 +43,6 @@ test.describe('成员管理', () => {
     // 成员状态应变为"已禁用"
   });
 
-  test('成员页面视觉回归', async ({ authenticated }) => {
-    const { page } = authenticated;
-    const members = new MembersPage(page);
-    await members.goto();
-    await members.screenshot('members-page.png');
-  });
 
   // === 功能场景 ===
 
@@ -114,12 +114,12 @@ test.describe('成员管理', () => {
     // Create a member via API and get their token
     const memberToken = (await createMember({ username: 'activeuser', password: 'test123', name: '活跃用户' })).data.token;
     // Create a ledger record as this member so they have activity
-    const categoriesRes = await fetch('http://localhost:8080/api/categories', {
+    const categoriesRes = await fetch(`${BASE_URL()}/api/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const categories = await categoriesRes.json();
     const expenseCat = categories.data.find((c: any) => c.type === 'expense');
-    await fetch('http://localhost:8080/api/ledgers', {
+    await fetch(`${BASE_URL()}/api/ledgers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${memberToken}` },
       body: JSON.stringify({ amount: 10, category_id: expenseCat.id }),

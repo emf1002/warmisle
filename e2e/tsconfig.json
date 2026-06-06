@@ -6,9 +6,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "types": ["node"],
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "."
   },
-  "include": ["fixtures/**/*.ts", "pages/**/*.ts", "tests/**/*.ts"]
+  "include": ["fixtures/**/*.ts", "pages/**/*.ts", "tests/**/*.ts", "config.ts", "global-setup.ts", "global-teardown.ts"]
 }
