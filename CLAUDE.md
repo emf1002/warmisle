@@ -9,12 +9,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 构建与开发命令
 
 ```bash
-make dev       # 启动开发环境（后端 air 热重载 + 前端 vite dev）
-make build     # 构建单二进制（前端 dist → embed 到 Go binary）
-make clean     # 清理构建产物
+# 开发环境启动（需分别启动前后端）
+cd backend && go run main.go          # 后端 → http://localhost:8080
+cd frontend && npm run dev            # 前端 → http://localhost:3000（代理 /api 到后端）
+
+# 生产构建（编译为单二进制）
+cd frontend && npm run build -- --emptyOutDir
+cd backend && go build -o ../dist/warmisle .
 ```
 
-前端开发代理：Vite dev server (port 3000) 代理 `/api` 到后端 `localhost:8080`。
+> 注意：Windows 下 `make` 不可用，需直接执行上述命令。`air` 热重载工具未预装，开发时用 `go run` 替代。
+> 前端 Vite dev server (port 3000) 自动代理 `/api` 到后端 `localhost:8080`。
 
 ## 技术栈
 
@@ -28,7 +33,7 @@ make clean     # 清理构建产物
 ```
 warmisle/
 ├── backend/
-│   ├── cmd/server/main.go       # Web 服务入口，embed 前端 dist
+│   ├── main.go                  # Web 服务入口（embed 前端 dist）
 │   ├── cmd/cli/main.go          # CLI 工具（reset-password）
 │   ├── internal/
 │   │   ├── handler/             # Gin 处理器（HTTP 层）
@@ -50,8 +55,7 @@ warmisle/
 │       └── utils/               # 工具函数（request.ts: Axios 拦截器）
 ├── docs/prd.md                  # 产品需求文档（权威需求来源）
 ├── docs/superpowers/specs/      # 技术设计 + UI 风格指南
-├── docs/superpowers/plans/      # 实施计划（包含 task 依赖关系）
-└── Makefile
+└── docs/superpowers/plans/      # 实施计划（包含 task 依赖关系）
 ```
 
 前端构建输出到 `backend/frontend/dist/`，通过 `//go:embed` 嵌入 Go 二进制。
@@ -138,7 +142,7 @@ E2E 测试（Playwright）运行非常耗时，遵循以下原则：
    需要获取详细测试信息时，先读取已有报告，而非重新运行测试。
 2. **避免重复运行**：仅在代码变更影响测试逻辑时才重新运行。调试阶段优先运行单个测试文件（`npx playwright test <file>`），不要运行全量测试。
 3. **运行命令**：
-   - Windows 快捷：`e2e\test.bat`（缺失二进制时自动 `make build`，参数透传给 playwright）
+   - Windows 快捷：`e2e\test.bat`（缺失二进制时自动构建，参数透传给 playwright）
    - 直接执行：
      ```bash
      cd e2e && npx playwright test              # 全量测试（慎用）

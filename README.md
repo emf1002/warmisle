@@ -31,14 +31,19 @@
 ```bash
 git clone https://github.com/emf1002/warmisle.git
 cd warmisle
-make build    # 构建单二进制
-./warmisle    # 启动
+cd frontend && npm run build -- --emptyOutDir
+cd ../backend && go build -o ../dist/warmisle .
+../dist/warmisle    # 启动
 ```
 
 ### 开发模式
 
 ```bash
-make dev      # 后端 air 热重载 :8080 + 前端 Vite dev :3000
+# 后端
+cd backend && go run main.go       # :8080
+
+# 前端（另一个终端）
+cd frontend && npm run dev         # :3000（代理 /api 到后端）
 ```
 
 ## 🛠️ 技术栈
@@ -65,7 +70,7 @@ make dev      # 后端 air 热重载 :8080 + 前端 Vite dev :3000
 ```
 warmisle/
 ├── backend/
-│   ├── cmd/server/        # Web 服务入口
+│   ├── main.go           # Web 服务入口
 │   ├── cmd/cli/           # CLI 工具（reset-password）
 │   ├── internal/
 │   │   ├── handler/       # HTTP 处理器
@@ -84,7 +89,6 @@ warmisle/
 │       ├── stores/        # Pinia 状态管理
 │       ├── router/        # 路由配置
 │       └── api/           # API 请求封装
-└── Makefile
 ```
 
 ## 🏗️ 架构

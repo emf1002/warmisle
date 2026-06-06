@@ -1,97 +1,82 @@
 <template>
-  <div class="auth-container" data-testid="login-page">
-    <!-- 背景装饰 -->
-    <div class="auth-bg-decoration">
-      <div class="decoration-circle decoration-circle-1"></div>
-      <div class="decoration-circle decoration-circle-2"></div>
-      <div class="decoration-circle decoration-circle-3"></div>
+  <div data-testid="login-page">
+    <!-- 品牌区域 -->
+    <div class="auth-brand">
+      <div class="brand-logo">
+        <LogoIcon :size="48" />
+      </div>
+      <h1 class="brand-title">暖屿</h1>
+      <p class="brand-subtitle">WarmIsle · 温暖每一刻</p>
     </div>
 
-    <!-- 认证卡片 -->
-    <div class="auth-card" data-testid="auth-card">
-      <!-- 品牌区域 -->
-      <div class="auth-brand">
-        <div class="brand-logo">
-          <LogoIcon :size="48" />
-        </div>
-        <h1 class="brand-title">暖屿</h1>
-        <p class="brand-subtitle">WarmIsle · 温暖每一刻</p>
+    <!-- 表单区域 -->
+    <a-form
+      :model="form"
+      :rules="rules"
+      layout="vertical"
+      @finish="handleLogin"
+      class="auth-form"
+    >
+      <a-form-item name="username" class="form-item">
+        <a-input
+          v-model:value="form.username"
+          placeholder="请输入用户名"
+          size="large"
+          :min-height="44"
+          data-testid="username-input"
+          class="auth-input"
+        >
+          <template #prefix>
+            <Icon name="User" :size="18" class="input-icon" />
+          </template>
+        </a-input>
+      </a-form-item>
+
+      <a-form-item name="password" class="form-item">
+        <a-input-password
+          v-model:value="form.password"
+          placeholder="请输入密码"
+          size="large"
+          :min-height="44"
+          data-testid="password-input"
+          class="auth-input"
+        >
+          <template #prefix>
+            <Icon name="Lock" :size="18" class="input-icon" />
+          </template>
+        </a-input-password>
+      </a-form-item>
+
+      <div class="form-options">
+        <a-checkbox v-model:checked="rememberMe" class="remember-checkbox">
+          记住我
+        </a-checkbox>
       </div>
 
-      <!-- 表单区域 -->
-      <a-form
-        :model="form"
-        :rules="rules"
-        layout="vertical"
-        @finish="handleLogin"
-        class="auth-form"
-      >
-        <a-form-item name="username" class="form-item">
-          <a-input
-            v-model:value="form.username"
-            placeholder="请输入用户名"
-            size="large"
-            :min-height="44"
-            data-testid="username-input"
-            class="auth-input"
-          >
-            <template #prefix>
-              <Icon name="User" :size="18" class="input-icon" />
-            </template>
-          </a-input>
-        </a-form-item>
+      <a-form-item class="form-submit">
+        <a-button
+          type="primary"
+          html-type="submit"
+          size="large"
+          :loading="loading"
+          block
+          data-testid="login-btn"
+          class="login-btn"
+        >
+          <template #icon>
+            <Icon name="LogIn" :size="18" />
+          </template>
+          登 录
+        </a-button>
+      </a-form-item>
+    </a-form>
 
-        <a-form-item name="password" class="form-item">
-          <a-input-password
-            v-model:value="form.password"
-            placeholder="请输入密码"
-            size="large"
-            :min-height="44"
-            data-testid="password-input"
-            class="auth-input"
-          >
-            <template #prefix>
-              <Icon name="Lock" :size="18" class="input-icon" />
-            </template>
-          </a-input-password>
-        </a-form-item>
-
-        <div class="form-options">
-          <a-checkbox v-model:checked="rememberMe" class="remember-checkbox">
-            记住我
-          </a-checkbox>
-        </div>
-
-        <a-form-item class="form-submit">
-          <a-button
-            type="primary"
-            html-type="submit"
-            size="large"
-            :loading="loading"
-            block
-            data-testid="login-btn"
-            class="login-btn"
-          >
-            <template #icon>
-              <Icon name="LogIn" :size="18" />
-            </template>
-            登 录
-          </a-button>
-        </a-form-item>
-      </a-form>
-
-      <!-- 底部提示 -->
-      <div class="auth-footer">
-        <p class="footer-text">
-          <Icon name="Shield" :size="14" />
-          <span>私有化部署 · 数据安全有保障</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- 主题切换 -->
-    <div class="theme-switch">
-      <ThemeToggle />
+    <!-- 底部提示 -->
+    <div class="auth-footer">
+      <p class="footer-text">
+        <Icon name="Shield" :size="14" />
+        <span>私有化部署 · 数据安全有保障</span>
+      </p>
     </div>
   </div>
 </template>
@@ -102,7 +87,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Icon from '@/components/Icon.vue'
 import LogoIcon from '@/components/LogoIcon.vue'
-import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -133,89 +117,6 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.auth-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-md);
-  background: var(--color-bg-layout);
-  position: relative;
-  overflow: hidden;
-}
-
-/* ==================== 背景装饰 ==================== */
-.auth-bg-decoration {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.decoration-circle {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.4;
-  animation: float 20s ease-in-out infinite;
-}
-
-.decoration-circle-1 {
-  width: 400px;
-  height: 400px;
-  background: var(--color-brand);
-  top: -100px;
-  right: -100px;
-  animation-delay: 0s;
-}
-
-.decoration-circle-2 {
-  width: 300px;
-  height: 300px;
-  background: var(--color-chart-color-3, #F2B84B);
-  bottom: -50px;
-  left: -50px;
-  animation-delay: -7s;
-}
-
-.decoration-circle-3 {
-  width: 200px;
-  height: 200px;
-  background: var(--color-chart-color-2, #6BBAA7);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation-delay: -14s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -30px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-}
-
-/* ==================== 认证卡片 ==================== */
-.auth-card {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 420px;
-  background: var(--auth-card-bg, rgba(255, 255, 255, 0.72));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--auth-card-border, rgba(255, 255, 255, 0.6));
-  border-radius: var(--radius-2xl, 24px);
-  padding: var(--space-2xl, 48px) var(--space-xl, 32px);
-  box-shadow: var(--auth-card-shadow, 0 4px 24px rgba(61, 53, 48, 0.06));
-  animation: cardSlideUp var(--duration-slow, 300ms) cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-:root[data-theme="dark"] .auth-card {
-  background: var(--auth-card-bg, rgba(26, 35, 64, 0.85));
-  border: 1px solid var(--auth-card-border, rgba(255, 255, 255, 0.08));
-  box-shadow: var(--auth-card-shadow, 0 8px 40px rgba(0, 0, 0, 0.4));
-}
-
 /* ==================== 品牌区域 ==================== */
 .auth-brand {
   text-align: center;
@@ -351,21 +252,7 @@ async function handleLogin() {
   margin: 0;
 }
 
-/* ==================== 主题切换 ==================== */
-.theme-switch {
-  position: fixed;
-  top: var(--space-md, 16px);
-  right: var(--space-md, 16px);
-  z-index: var(--z-dropdown, 20);
-  animation: fadeIn var(--duration-normal, 200ms) ease-out 400ms both;
-}
-
 /* ==================== 动画 ==================== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -377,24 +264,8 @@ async function handleLogin() {
   }
 }
 
-@keyframes cardSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 /* ==================== 响应式 ==================== */
 @media (max-width: 480px) {
-  .auth-card {
-    padding: var(--space-xl, 32px) var(--space-lg, 24px);
-    border-radius: var(--radius-xl, 20px);
-  }
-
   .brand-logo {
     width: 64px;
     height: 64px;

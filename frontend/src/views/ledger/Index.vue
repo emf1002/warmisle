@@ -1,25 +1,12 @@
 <template>
   <div class="ledger-page" data-testid="ledger-page">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h2>记账本</h2>
-    </div>
-
-    <!-- Month Navigation -->
-    <div class="month-switcher">
-      <a-button type="text" @click="goPrevMonth" class="month-arrow" data-testid="month-prev">◀</a-button>
-      <span class="month-text" data-testid="current-month">{{ selectedMonth.format('YYYY年M月') }}</span>
-      <a-button type="text" @click="goNextMonth" class="month-arrow" data-testid="month-next">▶</a-button>
-    </div>
-
-    <!-- Date Range Picker -->
+    <!-- Month Picker -->
     <div class="month-row">
-      <a-range-picker
-        v-model:value="dateRange"
-        format="YYYY-MM-DD"
-        :presets="rangePresets"
-        @change="onDateRangeChange"
-        data-testid="date-range-picker"
+      <a-month-picker
+        v-model:value="selectedMonth"
+        format="YYYY年M月"
+        @change="onMonthChange"
+        data-testid="month-picker"
       />
       <a-button type="primary" @click="openCreate()" data-testid="add-btn"><span class="btn-text-full">记一笔</span><span class="btn-text-short">记</span></a-button>
     </div>
@@ -169,7 +156,7 @@
                   @click="form.category_id = cat.id"
                   :data-testid="'cat-expense-' + cat.id"
                 >
-                  <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="24" />
+                  <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="32" />
                   <span class="category-pick-name">{{ cat.name }}</span>
                 </div>
               </div>
@@ -183,7 +170,7 @@
                   @click="form.category_id = cat.id"
                   :data-testid="'cat-income-' + cat.id"
                 >
-                  <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="24" />
+                  <CategoryIcon :icon="cat.icon" :category-id="cat.id" :size="32" />
                   <span class="category-pick-name">{{ cat.name }}</span>
                 </div>
               </div>
@@ -295,8 +282,7 @@ const submitting = ref(false)
 const dialogOpen = ref(false)
 const editingRecord = ref<LedgerItem | null>(null)
 
-const selectedMonth = ref(dayjs())
-const dateRange = ref<[Dayjs, Dayjs]>([dayjs().startOf('month'), dayjs().endOf('month')])
+const selectedMonth = ref<Dayjs>(dayjs())
 const groups = ref<LedgerGroup[]>([])
 const summary = ref<LedgerSummary>({ income: 0, expense: 0, balance: 0 })
 const nextCursor = ref<string | null>(null)
@@ -304,14 +290,6 @@ const hasMore = ref(false)
 const sentinelRef = ref<HTMLElement | null>(null)
 let abortController: AbortController | null = null
 let observer: IntersectionObserver | null = null
-
-const rangePresets = [
-  { label: '本月', value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
-  { label: '上月', value: [dayjs().subtract(1, 'month').startOf('month'), dayjs().subtract(1, 'month').endOf('month')] as [Dayjs, Dayjs] },
-  { label: '近三个月', value: [dayjs().subtract(2, 'month').startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
-  { label: '近半年', value: [dayjs().subtract(5, 'month').startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs] },
-  { label: '今年', value: [dayjs().startOf('year'), dayjs().endOf('year')] as [Dayjs, Dayjs] },
-]
 
 const filters = reactive<Filters>({
   category_id: undefined,
@@ -375,22 +353,7 @@ function formatTime(iso: string): string {
 }
 
 // Methods
-function onDateRangeChange(dates: [Dayjs, Dayjs] | null) {
-  if (dates) {
-    dateRange.value = dates
-    fetchLedgers()
-  }
-}
-
-function goPrevMonth() {
-  selectedMonth.value = selectedMonth.value.subtract(1, 'month')
-  dateRange.value = [selectedMonth.value.startOf('month'), selectedMonth.value.endOf('month')]
-  fetchLedgers()
-}
-
-function goNextMonth() {
-  selectedMonth.value = selectedMonth.value.add(1, 'month')
-  dateRange.value = [selectedMonth.value.startOf('month'), selectedMonth.value.endOf('month')]
+function onMonthChange() {
   fetchLedgers()
 }
 
@@ -409,8 +372,8 @@ async function fetchLedgers(append = false) {
 
   try {
     const params: Record<string, unknown> = {
-      start_date: dateRange.value[0].format('YYYY-MM-DD'),
-      end_date: dateRange.value[1].add(1, 'day').format('YYYY-MM-DD'),
+      start_date: selectedMonth.value.startOf('month').format('YYYY-MM-DD'),
+      end_date: selectedMonth.value.endOf('month').add(1, 'day').format('YYYY-MM-DD'),
       limit: 20,
     }
     if (filters.category_id) params.category_id = filters.category_id
@@ -586,28 +549,6 @@ watch(sentinelRef, (el, oldEl) => {
   margin: 0 auto;
 }
 
-/* Month Row */
-/* Month Switcher */
-.month-switcher {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-  gap: 16px;
-}
-
-.month-arrow {
-  min-width: 44px;
-  min-height: 44px;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-}
-
-.month-text {
-  font-size: 16px;
-  font-weight: 600;
-}
-
 .month-row {
   display: flex;
   justify-content: space-between;
@@ -770,13 +711,13 @@ watch(sentinelRef, (el, oldEl) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 12px;
+  gap: 4px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 64px;
+  min-width: 72px;
   background: var(--color-bg-container);
 }
 
