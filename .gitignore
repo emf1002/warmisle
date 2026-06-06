@@ -26,6 +26,9 @@ e2e-data/
 .vscode/
 .codegraph/
 
+# Brainstorm visual companion
+.superpowers/
+
 # OS
 .DS_Store
 Thumbs.db

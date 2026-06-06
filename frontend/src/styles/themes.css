@@ -1,52 +1,119 @@
 /* ==================== 亮色主题（晨屿） ==================== */
 [data-theme="light"] {
-  /* Typography */
+  /* ========== 字体系统 ========== */
   --font-display: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
   --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* 品牌色 */
+  /* 字体大小层级（完善） */
+  --text-xs: 0.75rem;     /* 12px - 辅助文本 */
+  --text-sm: 0.875rem;    /* 14px - 常规文本 */
+  --text-base: 1rem;      /* 16px - 正文 */
+  --text-lg: 1.125rem;    /* 18px - 小标题 */
+  --text-xl: 1.25rem;    /* 20px - 标题 */
+  --text-2xl: 1.5rem;    /* 24px - 大标题 */
+  --text-3xl: 1.875rem;  /* 30px - 页面标题 */
+  --text-4xl: 2.25rem;   /* 36px - 展示标题 */
+
+  /* 字体粗细 */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* 行高 */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* ========== 品牌色系 ========== */
   --color-brand: #E87461;
   --color-brand-light: rgba(232, 116, 97, 0.1);
   --color-brand-bg: rgba(232, 116, 97, 0.12);
   --color-brand-hover: #D05A48;
+  --color-brand-active: #B84A3A;
+  --color-brand-subtle: rgba(232, 116, 97, 0.06);
 
-  /* 语义色 */
+  /* 品牌渐变 */
+  --gradient-brand: linear-gradient(135deg, #E87461 0%, #F2B84B 100%);
+  --gradient-brand-soft: linear-gradient(135deg, rgba(232, 116, 97, 0.1) 0%, rgba(242, 184, 75, 0.1) 100%);
+
+  /* ========== 语义色 ========== */
   --color-success: #389E0D;
   --color-success-light: #F6FFED;
+  --color-success-bg: rgba(56, 158, 13, 0.1);
   --color-warning: #E8A830;
   --color-warning-light: #FFFBE6;
+  --color-warning-bg: rgba(232, 168, 48, 0.1);
   --color-danger: #E85D5D;
   --color-danger-light: #FFF2F0;
+  --color-danger-bg: rgba(232, 93, 93, 0.1);
+  --color-info: #1890FF;
+  --color-info-light: #E6F7FF;
+  --color-info-bg: rgba(24, 144, 255, 0.1);
 
-  /* 文字 */
+  /* ========== 文字色彩 ========== */
   --color-text-primary: #3D3530;
   --color-text-secondary: #8A807A;
+  --color-text-tertiary: #B8AFA8;
   --color-text-disabled: #B8AFA8;
+  --color-text-inverse: #FFFFFF;
   --color-muted: #8A807A;
 
-  /* 背景 */
+  /* ========== 背景系统 ========== */
   --color-bg-layout: #FDF8F4;
   --color-bg-container: #FFFFFF;
   --color-bg-sidebar: #FDF8F4;
   --color-bg-elevated: #FFFFFF;
+  --color-bg-subtle: #FAF7F5;
+  --color-bg-muted: #F5F0EC;
 
-  /* 边框 */
+  /* ========== 边框系统 ========== */
   --color-border: rgba(61, 53, 48, 0.08);
   --color-border-secondary: rgba(61, 53, 48, 0.05);
+  --color-border-strong: rgba(61, 53, 48, 0.12);
 
-  /* 阴影 */
+  /* ========== 阴影系统（增强层次） ========== */
   --shadow-level-0: none;
-  --shadow-level-1: 0 1px 4px rgba(61, 53, 48, 0.05);
-  --shadow-level-2: 0 2px 8px rgba(61, 53, 48, 0.08);
-  --shadow-level-3: 0 4px 16px rgba(61, 53, 48, 0.08);
-  --shadow-level-4: 0 8px 24px rgba(61, 53, 48, 0.1);
+  --shadow-level-1: 0 1px 3px rgba(61, 53, 48, 0.04), 0 1px 2px rgba(61, 53, 48, 0.06);
+  --shadow-level-2: 0 4px 6px -1px rgba(61, 53, 48, 0.07), 0 2px 4px -1px rgba(61, 53, 48, 0.04);
+  --shadow-level-3: 0 10px 15px -3px rgba(61, 53, 48, 0.08), 0 4px 6px -2px rgba(61, 53, 48, 0.04);
+  --shadow-level-4: 0 20px 25px -5px rgba(61, 53, 48, 0.1), 0 10px 10px -5px rgba(61, 53, 48, 0.04);
+  --shadow-level-5: 0 25px 50px -12px rgba(61, 53, 48, 0.2);
 
-  /* 圆角 */
+  /* 特殊阴影 */
+  --shadow-card-hover: 0 8px 24px rgba(61, 53, 48, 0.12);
+  --shadow-dropdown: 0 6px 16px rgba(61, 53, 48, 0.08);
+  --shadow-modal: 0 20px 60px rgba(61, 53, 48, 0.15);
+
+  /* ========== 圆角系统（完善） ========== */
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
 
-  /* 特有变量 */
+  /* ========== 动画系统 ========== */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  --duration-instant: 0ms;
+  --duration-fastest: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --duration-slowest: 700ms;
+
+  /* ========== 布局变量 ========== */
   --sidebar-text: var(--color-text-secondary);
   --sidebar-text-active: var(--color-brand);
   --sidebar-border: var(--color-border);
@@ -60,9 +127,9 @@
   --input-bg: var(--color-bg-container);
   --input-border: var(--color-border);
   --dropdown-bg: var(--color-bg-container);
-  --dropdown-shadow: var(--shadow-level-3);
+  --dropdown-shadow: var(--shadow-dropdown);
 
-  /* 图表色 */
+  /* ========== 图表色系 ========== */
   --chart-color-1: #E87461;
   --chart-color-2: #6BBAA7;
   --chart-color-3: #F2B84B;
@@ -71,7 +138,7 @@
   --chart-color-6: #F09888;
   --chart-color-7: #EDE9E4;
 
-  /* Semantic data colors */
+  /* ========== 语义数据色 ========== */
   --color-income: #4CAF50;
   --color-income-bg: rgba(76, 175, 80, 0.1);
   --color-expense: #F44336;
@@ -79,7 +146,7 @@
   --color-balance: #2196F3;
   --color-balance-bg: rgba(33, 150, 243, 0.1);
 
-  /* 认证页 */
+  /* ========== 认证页 ========== */
   --auth-bg: var(--color-bg-layout);
   --auth-card-bg: rgba(255, 255, 255, 0.72);
   --auth-card-border: rgba(255, 255, 255, 0.6);
@@ -88,53 +155,120 @@
 
 /* ==================== 暗色主题（夜屿） ==================== */
 [data-theme="dark"] {
-  /* Typography */
+  /* ========== 字体系统（继承亮色） ========== */
   --font-display: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
   --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* 品牌色 */
+  /* 字体大小层级 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  /* 字体粗细 */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* 行高 */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* ========== 品牌色系 ========== */
   --color-brand: #E5A84B;
   --color-brand-light: rgba(229, 168, 75, 0.12);
   --color-brand-bg: rgba(229, 168, 75, 0.15);
   --color-brand-hover: #F0C273;
+  --color-brand-active: #F5D089;
+  --color-brand-subtle: rgba(229, 168, 75, 0.08);
 
-  /* 语义色 */
+  /* 品牌渐变 */
+  --gradient-brand: linear-gradient(135deg, #E5A84B 0%, #F0C273 100%);
+  --gradient-brand-soft: linear-gradient(135deg, rgba(229, 168, 75, 0.15) 0%, rgba(240, 194, 115, 0.15) 100%);
+
+  /* ========== 语义色 ========== */
   --color-success: #52C41A;
   --color-success-light: rgba(82, 196, 26, 0.12);
+  --color-success-bg: rgba(82, 196, 26, 0.15);
   --color-warning: #FAAD14;
   --color-warning-light: rgba(250, 173, 20, 0.12);
+  --color-warning-bg: rgba(250, 173, 20, 0.15);
   --color-danger: #FF6B6B;
   --color-danger-light: rgba(255, 107, 107, 0.12);
+  --color-danger-bg: rgba(255, 107, 107, 0.15);
+  --color-info: #40A9FF;
+  --color-info-light: rgba(64, 169, 255, 0.12);
+  --color-info-bg: rgba(64, 169, 255, 0.15);
 
-  /* 文字 */
+  /* ========== 文字色彩 ========== */
   --color-text-primary: #E8E4DE;
   --color-text-secondary: #8A94A8;
+  --color-text-tertiary: #5A6478;
   --color-text-disabled: #5A6478;
+  --color-text-inverse: #0F1729;
   --color-muted: #5A6478;
 
-  /* 背景 */
+  /* ========== 背景系统 ========== */
   --color-bg-layout: #0F1729;
   --color-bg-container: rgba(26, 35, 64, 0.65);
   --color-bg-sidebar: rgba(15, 23, 41, 0.95);
   --color-bg-elevated: #1A2340;
+  --color-bg-subtle: rgba(255, 255, 255, 0.04);
+  --color-bg-muted: rgba(255, 255, 255, 0.02);
 
-  /* 边框 */
+  /* ========== 边框系统 ========== */
   --color-border: rgba(255, 255, 255, 0.06);
   --color-border-secondary: rgba(255, 255, 255, 0.04);
+  --color-border-strong: rgba(255, 255, 255, 0.1);
 
-  /* 阴影 */
+  /* ========== 阴影系统（增强层次） ========== */
   --shadow-level-0: none;
-  --shadow-level-1: 0 1px 4px rgba(0, 0, 0, 0.2);
-  --shadow-level-2: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-level-3: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-level-4: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-level-2: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-level-3: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-level-4: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+  --shadow-level-5: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 
-  /* 圆角 */
+  /* 特殊阴影 */
+  --shadow-card-hover: 0 12px 28px rgba(0, 0, 0, 0.5);
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 25px 65px rgba(0, 0, 0, 0.7);
+
+  /* ========== 圆角系统 ========== */
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
 
-  /* 特有变量 */
+  /* ========== 动画系统（继承亮色） ========== */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  --duration-instant: 0ms;
+  --duration-fastest: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --duration-slowest: 700ms;
+
+  /* ========== 布局变量 ========== */
   --sidebar-text: var(--color-text-secondary);
   --sidebar-text-active: var(--color-brand);
   --sidebar-border: rgba(255, 255, 255, 0.06);
@@ -148,9 +282,9 @@
   --input-bg: rgba(255, 255, 255, 0.04);
   --input-border: rgba(255, 255, 255, 0.08);
   --dropdown-bg: #1A2340;
-  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --dropdown-shadow: var(--shadow-dropdown);
 
-  /* 图表色 */
+  /* ========== 图表色系 ========== */
   --chart-color-1: #E5A84B;
   --chart-color-2: #F0C273;
   --chart-color-3: #6BBAA7;
@@ -159,7 +293,7 @@
   --chart-color-6: #FF6B6B;
   --chart-color-7: rgba(255, 255, 255, 0.08);
 
-  /* Semantic data colors */
+  /* ========== 语义数据色 ========== */
   --color-income: #66BB6A;
   --color-income-bg: rgba(102, 187, 106, 0.15);
   --color-expense: #EF5350;
@@ -167,13 +301,13 @@
   --color-balance: #42A5F5;
   --color-balance-bg: rgba(66, 165, 245, 0.15);
 
-  /* 认证页 */
+  /* ========== 认证页 ========== */
   --auth-bg: #0F1729;
   --auth-card-bg: rgba(26, 35, 64, 0.85);
   --auth-card-border: rgba(255, 255, 255, 0.08);
   --auth-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 
-  /* 背景渐变（暗色主题用） */
+  /* ========== 背景渐变 ========== */
   --bg-gradient: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(36, 48, 84, 0.5) 0%, transparent 60%),
                  radial-gradient(ellipse 60% 50% at 80% 90%, rgba(40, 30, 60, 0.3) 0%, transparent 50%);
 }

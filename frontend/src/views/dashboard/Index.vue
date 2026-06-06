@@ -1,93 +1,185 @@
 <template>
   <div class="dashboard" data-testid="dashboard-page">
+    <!-- 页面标题区 -->
+    <header class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">仪表盘</h1>
+        <p class="page-subtitle">为您呈现家庭财务概览</p>
+      </div>
+    </header>
+
     <!-- 月份切换 -->
     <div class="month-switcher">
-      <a-button type="text" @click="goPrevMonth" class="month-arrow" aria-label="上个月" data-testid="month-prev">
-        ◀
+      <a-button
+        type="text"
+        @click="goPrevMonth"
+        class="month-arrow"
+        aria-label="上个月"
+        data-testid="month-prev"
+      >
+        <template #icon><Icon name="ChevronLeft" :size="18" /></template>
       </a-button>
-      <span class="month-text" data-testid="current-month">{{ selectedMonth.format('YYYY年M月') }}</span>
-      <a-button type="text" @click="goNextMonth" class="month-arrow" aria-label="下个月" data-testid="month-next">
-        ▶
+      <span class="month-text" data-testid="current-month">
+        {{ selectedMonth.format('YYYY年M月') }}
+      </span>
+      <a-button
+        type="text"
+        @click="goNextMonth"
+        class="month-arrow"
+        aria-label="下个月"
+        data-testid="month-next"
+      >
+        <template #icon><Icon name="ChevronRight" :size="18" /></template>
       </a-button>
     </div>
 
     <!-- 月度统计卡片 - Skeleton -->
     <div v-if="loading" class="summary-grid" data-testid="summary-grid">
-      <div v-for="i in 3" :key="i" class="stat-card">
+      <div v-for="i in 3" :key="i" class="stat-card stat-card--skeleton">
         <div class="stat-card-header">
-          <SkeletonCard width="36px" height="36px" borderRadius="10px" />
-          <SkeletonCard width="60px" height="14px" />
+          <SkeletonCard width="44px" height="44px" :borderRadius="12" />
+          <SkeletonCard width="80px" height="16px" />
         </div>
-        <SkeletonCard width="120px" height="28px" />
-        <SkeletonCard width="100%" height="32px" />
+        <SkeletonCard width="140px" height="36px" />
+        <SkeletonCard width="100%" height="40px" />
       </div>
     </div>
 
     <!-- 月度统计卡片 - Loaded -->
     <div v-else class="summary-grid" data-testid="summary-grid">
-      <div class="stat-card stat-card--income" data-testid="summary-income">
+      <article class="stat-card stat-card--income" data-testid="summary-income">
         <div class="stat-card-header">
           <div class="stat-icon stat-icon--income">
-            <Icon name="TrendingUp" :size="18" />
+            <Icon name="TrendingUp" :size="20" />
           </div>
-          <span class="stat-label">本月收入</span>
+          <div class="stat-header-text">
+            <span class="stat-label">本月收入</span>
+            <Icon name="HelpCircle" :size="14" class="stat-help" title="收入合计" />
+          </div>
         </div>
-        <div class="stat-amount amount-income">¥{{ (displayIncome / 100).toFixed(2) }}</div>
-        <MiniSparkline :data="incomeTrend" color="var(--color-income)" />
-      </div>
+        <div class="stat-amount amount-income">
+          <span class="amount-prefix">¥</span>
+          <span class="amount-value">{{ (displayIncome / 100).toFixed(2) }}</span>
+        </div>
+        <div class="stat-chart">
+          <MiniSparkline :data="incomeTrend" color="var(--color-income)" />
+        </div>
+      </article>
 
-      <div class="stat-card stat-card--expense" data-testid="summary-expense">
+      <article class="stat-card stat-card--expense" data-testid="summary-expense">
         <div class="stat-card-header">
           <div class="stat-icon stat-icon--expense">
-            <Icon name="TrendingDown" :size="18" />
+            <Icon name="TrendingDown" :size="20" />
           </div>
-          <span class="stat-label">本月支出</span>
+          <div class="stat-header-text">
+            <span class="stat-label">本月支出</span>
+            <Icon name="HelpCircle" :size="14" class="stat-help" title="支出合计" />
+          </div>
         </div>
-        <div class="stat-amount amount-expense">¥{{ (displayExpense / 100).toFixed(2) }}</div>
-        <MiniSparkline :data="expenseTrend" color="var(--color-expense)" />
-      </div>
+        <div class="stat-amount amount-expense">
+          <span class="amount-prefix">¥</span>
+          <span class="amount-value">{{ (displayExpense / 100).toFixed(2) }}</span>
+        </div>
+        <div class="stat-chart">
+          <MiniSparkline :data="expenseTrend" color="var(--color-expense)" />
+        </div>
+      </article>
 
-      <div class="stat-card stat-card--balance" data-testid="summary-balance">
+      <article class="stat-card stat-card--balance" data-testid="summary-balance">
         <div class="stat-card-header">
           <div class="stat-icon stat-icon--balance">
-            <Icon name="Wallet" :size="18" />
+            <Icon name="Wallet" :size="20" />
           </div>
-          <span class="stat-label">本月结余</span>
+          <div class="stat-header-text">
+            <span class="stat-label">本月结余</span>
+            <Icon name="HelpCircle" :size="14" class="stat-help" title="收入 - 支出" />
+          </div>
         </div>
-        <div class="stat-amount amount-balance">¥{{ (displayBalance / 100).toFixed(2) }}</div>
+        <div class="stat-amount amount-balance">
+          <span class="amount-prefix">¥</span>
+          <span class="amount-value">{{ (displayBalance / 100).toFixed(2) }}</span>
+        </div>
         <div class="stat-trend">
-          <span v-if="balanceChange >= 0" class="trend-up">较上月 +{{ balanceChange }}%</span>
-          <span v-else class="trend-down">较上月 {{ balanceChange }}%</span>
+          <span v-if="balanceChange >= 0" class="trend-badge trend-up">
+            <Icon name="ArrowUp" :size="12" />
+            较上月 +{{ balanceChange }}%
+          </span>
+          <span v-else class="trend-badge trend-down">
+            <Icon name="ArrowDown" :size="12" />
+            较上月 {{ balanceChange }}%
+          </span>
         </div>
-      </div>
+      </article>
     </div>
 
+    <!-- 主内容网格 -->
     <div class="dashboard-grid">
       <!-- 支出分类图表 -->
-      <a-card title="支出分类" class="section-card">
+      <section class="section-card" data-testid="expense-chart-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <Icon name="PieChart" :size="18" class="section-icon" />
+            支出分类
+          </h2>
+          <a-button type="link" size="small" @click="$router.push('/ledger')">
+            查看详情
+            <Icon name="ArrowRight" :size="14" />
+          </a-button>
+        </div>
         <div v-if="expenseChart.length === 0" class="empty-section">
-          <EmptyState type="no-data" description="暂无数据" />
+          <EmptyState type="no-data" description="暂无支出数据" />
         </div>
-        <div v-else data-testid="expense-chart">
-          <BarChart :data="barChartData" color="var(--color-expense)" :height="180" />
+        <div v-else class="chart-container" data-testid="expense-chart">
+          <BarChart :data="barChartData" color="var(--color-expense)" :height="200" />
         </div>
-      </a-card>
+      </section>
 
       <!-- 近期待办 -->
-      <a-card title="近期待办" class="section-card">
-        <div v-if="upcomingTodos.length === 0" class="empty-section">
-          <EmptyState type="no-data" description="暂无待办" />
+      <section class="section-card" data-testid="upcoming-todos-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <Icon name="ListTodo" :size="18" class="section-icon" />
+            近期待办
+          </h2>
+          <a-button type="link" size="small" @click="$router.push('/todo')">
+            查看全部
+            <Icon name="ArrowRight" :size="14" />
+          </a-button>
         </div>
-        <a-list v-else :data-source="upcomingTodos" size="small" data-testid="upcoming-todos">
+        <div v-if="upcomingTodos.length === 0" class="empty-section">
+          <EmptyState type="no-data" description="暂无待办事项" />
+        </div>
+        <a-list
+          v-else
+          :data-source="upcomingTodos"
+          size="small"
+          class="todo-list"
+          data-testid="upcoming-todos"
+        >
           <template #renderItem="{ item: todo }">
-            <a-list-item class="todo-item" :data-testid="'todo-link-' + todo.id" @click="$router.push('/todo')">
+            <a-list-item
+              class="todo-item"
+              :data-testid="'todo-link-' + todo.id"
+              @click="$router.push('/todo')"
+            >
               <div class="todo-item-content">
-                <span class="todo-title">{{ todo.title }}</span>
+                <a-checkbox
+                  :checked="todo.status === 'completed'"
+                  class="todo-checkbox"
+                  @click.stop
+                />
+                <span class="todo-title" :class="{ 'todo-completed': todo.status === 'completed' }">
+                  {{ todo.title }}
+                </span>
                 <span class="todo-meta">
-                  <a-tag v-if="todo.priority === 'urgent'" color="red">紧急</a-tag>
-                  <a-tag v-else-if="todo.priority === 'important'" color="orange">重要</a-tag>
-                  <span v-if="todo.assignee" class="todo-assignee">{{ todo.assignee.name }}</span>
+                  <a-tag v-if="todo.priority === 'urgent'" color="red" class="priority-tag">紧急</a-tag>
+                  <a-tag v-else-if="todo.priority === 'important'" color="orange" class="priority-tag">重要</a-tag>
+                  <span v-if="todo.assignee" class="todo-assignee">
+                    <Icon name="User" :size="12" />
+                    {{ todo.assignee.name }}
+                  </span>
                   <span v-if="todo.due_date" class="todo-due" :class="{ overdue: isOverdue(todo.due_date) }">
+                    <Icon name="Calendar" :size="12" />
                     {{ formatDate(todo.due_date) }}
                   </span>
                 </span>
@@ -95,56 +187,116 @@
             </a-list-item>
           </template>
         </a-list>
-      </a-card>
+      </section>
     </div>
 
-    <div class="bottom-grid" style="margin-top: 16px">
+    <!-- 底部网格 -->
+    <div class="bottom-grid" style="margin-top: 24px">
       <!-- 愿望动态 -->
-      <a-card title="愿望动态" class="section-card">
+      <section class="section-card" data-testid="wish-trends-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <Icon name="Star" :size="18" class="section-icon" />
+            愿望动态
+          </h2>
+          <a-button type="link" size="small" @click="$router.push('/wish')">
+            查看全部
+            <Icon name="ArrowRight" :size="14" />
+          </a-button>
+        </div>
         <div v-if="wishTrends.length === 0" class="empty-section">
           <EmptyState type="no-data" description="暂无愿望" />
         </div>
-        <a-list v-else :data-source="wishTrends" size="small" data-testid="wish-trends">
+        <a-list
+          v-else
+          :data-source="wishTrends"
+          size="small"
+          class="wish-list"
+          data-testid="wish-trends"
+        >
           <template #renderItem="{ item: trend }">
-            <a-list-item class="clickable-item" :data-testid="'wish-link-' + trend.id" @click="$router.push('/wish')">
+            <a-list-item
+              class="wish-item"
+              :data-testid="'wish-link-' + trend.id"
+              @click="$router.push('/wish')"
+            >
               <a-list-item-meta>
-                <template #title>{{ trend.title }}</template>
+                <template #title>
+                  <span class="wish-title">{{ trend.title }}</span>
+                </template>
                 <template #description>
-                  <span>{{ trend.creator.name }}</span>
-                  <span style="margin-left: 8px">{{ trend.vote_count }} 票</span>
+                  <span class="wish-meta">
+                    <Icon name="User" :size="12" />
+                    {{ trend.creator.name }}
+                  </span>
+                  <span class="wish-votes">
+                    <Icon name="ThumbsUp" :size="12" />
+                    {{ trend.vote_count }} 票
+                  </span>
                 </template>
               </a-list-item-meta>
               <template #extra>
-                <a-tag v-if="trend.status === 'pending'" color="default">待定</a-tag>
-                <a-tag v-else-if="trend.status === 'agreed'" color="blue">已同意</a-tag>
-                <a-tag v-else-if="trend.status === 'achieved'" color="green">已实现</a-tag>
-                <a-tag v-else-if="trend.status === 'abandoned'">已放弃</a-tag>
+                <a-tag v-if="trend.status === 'pending'" color="default" class="status-tag">待定</a-tag>
+                <a-tag v-else-if="trend.status === 'agreed'" color="blue" class="status-tag">已同意</a-tag>
+                <a-tag v-else-if="trend.status === 'achieved'" color="green" class="status-tag">已实现</a-tag>
+                <a-tag v-else-if="trend.status === 'abandoned'" class="status-tag">已放弃</a-tag>
               </template>
             </a-list-item>
           </template>
         </a-list>
-      </a-card>
+      </section>
 
       <!-- 论坛热点 -->
-      <a-card title="论坛热点" class="section-card">
-        <div v-if="forumHot.length === 0" class="empty-section">
-          <EmptyState type="no-data" description="暂无动态" />
+      <section class="section-card" data-testid="forum-hot-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <Icon name="MessageSquare" :size="18" class="section-icon" />
+            论坛热点
+          </h2>
+          <a-button type="link" size="small" @click="$router.push('/forum')">
+            查看全部
+            <Icon name="ArrowRight" :size="14" />
+          </a-button>
         </div>
-        <a-list v-else :data-source="forumHot" size="small" data-testid="forum-hot">
+        <div v-if="forumHot.length === 0" class="empty-section">
+          <EmptyState type="no-data" description="暂无论坛动态" />
+        </div>
+        <a-list
+          v-else
+          :data-source="forumHot"
+          size="small"
+          class="forum-list"
+          data-testid="forum-hot"
+        >
           <template #renderItem="{ item: feed }">
-            <a-list-item class="clickable-item" :data-testid="'topic-link-' + feed.id" @click="$router.push('/forum')">
+            <a-list-item
+              class="forum-item"
+              :data-testid="'topic-link-' + feed.id"
+              @click="$router.push('/forum')"
+            >
               <a-list-item-meta>
                 <template #title>
-                  <a-tag v-if="feed.type === 'topic'" color="blue" size="small">话题</a-tag>
-                  <a-tag v-else size="small">动态</a-tag>
-                  <span>{{ feed.title || feed.content }}</span>
+                  <div class="forum-title">
+                    <a-tag v-if="feed.type === 'topic'" color="blue" size="small" class="type-tag">话题</a-tag>
+                    <a-tag v-else size="small" class="type-tag">动态</a-tag>
+                    <span>{{ feed.title || feed.content }}</span>
+                  </div>
                 </template>
-                <template #description>{{ feed.creator.name }} · {{ timeAgo(feed.created_at) }}</template>
+                <template #description>
+                  <span class="forum-meta">
+                    <Icon name="User" :size="12" />
+                    {{ feed.creator.name }}
+                  </span>
+                  <span class="forum-time">
+                    <Icon name="Clock" :size="12" />
+                    {{ timeAgo(feed.created_at) }}
+                  </span>
+                </template>
               </a-list-item-meta>
             </a-list-item>
           </template>
         </a-list>
-      </a-card>
+      </section>
     </div>
   </div>
 </template>
@@ -188,10 +340,9 @@ const balanceChange = computed(() => {
   return Math.round(((summary.value.balance - prevSummary.value.balance) / Math.abs(prevSummary.value.balance)) * 100)
 })
 
-// Sparkline trend data (placeholder 7-point arrays for visual effect)
+// Sparkline trend data
 const incomeTrend = computed(() => {
   if (expenseChart.value.length === 0) return [0, 0, 0, 0, 0, 0, 0]
-  // Generate 7-point trend from summary data for visual placeholder
   const val = summary.value.income
   return [0.3, 0.5, 0.4, 0.6, 0.7, 0.8, 1.0].map(p => Math.round(val * p * 0.15))
 })
@@ -272,25 +423,63 @@ onMounted(() => {
 
 <style scoped>
 .dashboard {
-  padding: var(--space-md);
-  max-width: var(--max-content-width);
+  padding: var(--space-lg, 24px);
+  max-width: var(--max-content-width, 1200px);
   margin: 0 auto;
+  animation: fadeIn var(--duration-normal, 200ms) ease-out;
 }
 
-/* Month Switcher */
+/* ==================== 页面标题区 ==================== */
+.page-header {
+  margin-bottom: var(--space-lg, 24px);
+  animation: slideInUp var(--duration-slow, 300ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs, 8px);
+}
+
+.page-title {
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ==================== 月份切换 ==================== */
 .month-switcher {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
-  gap: 16px;
+  margin-bottom: var(--space-lg, 24px);
+  gap: var(--space-md, 16px);
+  animation: slideInUp var(--duration-slow, 300ms) cubic-bezier(0.4, 0, 0.2, 1) 50ms both;
 }
 
 .month-arrow {
   min-width: 44px;
   min-height: 44px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-text-secondary);
+  border-radius: var(--radius-md, 12px);
+  transition: all var(--duration-fast, 150ms) ease-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.month-arrow:hover:not(:disabled) {
+  color: var(--color-brand);
+  background: var(--color-brand-light);
 }
 
 .month-arrow:disabled {
@@ -299,158 +488,428 @@ onMounted(() => {
 }
 
 .month-text {
-  font-size: 16px;
+  font-size: var(--text-lg, 1.125rem);
   font-weight: 600;
-  min-width: 120px;
+  min-width: 140px;
   text-align: center;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
 }
 
-/* Summary Grid */
+/* ==================== 统计卡片网格 ==================== */
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  gap: var(--space-lg, 24px);
+  margin-bottom: var(--space-xl, 32px);
 }
 
 .stat-card {
   background: var(--color-bg-elevated);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
+  border-radius: var(--radius-xl, 20px);
+  padding: var(--space-lg, 24px);
   border: 1px solid var(--color-border);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-level-2);
+  transition: all var(--duration-normal, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp var(--duration-slow, 300ms) cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+.stat-card:nth-child(1) { animation-delay: 100ms; }
+.stat-card:nth-child(2) { animation-delay: 150ms; }
+.stat-card:nth-child(3) { animation-delay: 200ms; }
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-text-disabled, #B8AFA8);
+  opacity: 0;
+  transition: opacity var(--duration-normal, 200ms) ease-out;
+}
+
+.stat-card--income::before {
+  background: var(--color-income, #4CAF50);
+}
+
+.stat-card--expense::before {
+  background: var(--color-expense, #F44336);
+}
+
+.stat-card--balance::before {
+  background: var(--color-balance, #2196F3);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card--skeleton {
+  min-height: 180px;
+}
+
+/* ==================== 卡片头部 ==================== */
 .stat-card-header {
   display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
+  align-items: flex-start;
+  gap: var(--space-sm, 12px);
+  margin-bottom: var(--space-md, 16px);
 }
 
 .stat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md, 12px);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  transition: transform var(--duration-normal, 200ms) cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1);
+}
+
 .stat-icon--income {
-  background: var(--color-income-bg);
-  color: var(--color-income);
+  background: var(--color-income-bg, rgba(76, 175, 80, 0.1));
+  color: var(--color-income, #4CAF50);
 }
+
 .stat-icon--expense {
-  background: var(--color-expense-bg);
-  color: var(--color-expense);
+  background: var(--color-expense-bg, rgba(244, 67, 54, 0.1));
+  color: var(--color-expense, #F44336);
 }
+
 .stat-icon--balance {
-  background: var(--color-balance-bg);
-  color: var(--color-balance);
+  background: var(--color-balance-bg, rgba(33, 150, 243, 0.1));
+  color: var(--color-balance, #2196F3);
+}
+
+.stat-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
 
 .stat-label {
-  font-size: 13px;
-  color: var(--color-muted);
-  font-family: var(--font-display);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 8px);
 }
 
-.stat-amount {
-  font-size: 28px;
-  font-weight: 700;
-  font-family: var(--font-display);
-  font-variant-numeric: tabular-nums;
-  margin-bottom: var(--space-xs);
+.stat-help {
+  color: var(--color-text-disabled);
+  cursor: help;
+  transition: color var(--duration-fast, 150ms) ease-out;
 }
-.amount-income { color: var(--color-income); }
-.amount-expense { color: var(--color-expense); }
-.amount-balance { color: var(--color-balance); }
+
+.stat-help:hover {
+  color: var(--color-brand);
+}
+
+/* ==================== 金额显示 ==================== */
+.stat-amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: var(--space-sm, 12px);
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.amount-income { color: var(--color-income, #4CAF50); }
+.amount-expense { color: var(--color-expense, #F44336); }
+.amount-balance { color: var(--color-balance, #2196F3); }
+
+.amount-prefix {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+}
+
+.amount-value {
+  font-size: var(--text-3xl, 1.875rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ==================== 趋势图表 ==================== */
+.stat-chart {
+  height: 40px;
+  margin-top: var(--space-xs, 8px);
+}
 
 .stat-trend {
-  font-size: 12px;
-  color: var(--color-muted);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-secondary);
 }
-.trend-up { color: var(--color-income); }
-.trend-down { color: var(--color-expense); }
 
-/* Dashboard Grids */
+.trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 8px);
+  padding: var(--space-xs, 8px) var(--space-sm, 12px);
+  border-radius: var(--radius-full, 9999px);
+  font-weight: 600;
+  font-size: var(--text-xs, 0.75rem);
+}
+
+.trend-up {
+  background: var(--color-income-bg, rgba(76, 175, 80, 0.1));
+  color: var(--color-income, #4CAF50);
+}
+
+.trend-down {
+  background: var(--color-expense-bg, rgba(244, 67, 54, 0.1));
+  color: var(--color-expense, #F44336);
+}
+
+/* ==================== 内容区域网格 ==================== */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 16px;
+  gap: var(--space-lg, 24px);
+  margin-bottom: var(--space-lg, 24px);
 }
 
 .bottom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-lg, 24px);
 }
 
+/* ==================== 区块卡片 ==================== */
 .section-card {
-  height: 100%;
-  box-shadow: var(--shadow-level-1);
-  border-radius: var(--radius-md);
-  transition: box-shadow var(--duration-normal) ease;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-xl, 20px);
+  border: 1px solid var(--color-border);
+  padding: var(--space-lg, 24px);
+  transition: all var(--duration-normal, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInUp var(--duration-slow, 300ms) cubic-bezier(0.4, 0, 0.2, 1) both;
 }
+
+.dashboard-grid .section-card:nth-child(1) { animation-delay: 250ms; }
+.dashboard-grid .section-card:nth-child(2) { animation-delay: 300ms; }
+
+.bottom-grid .section-card:nth-child(1) { animation-delay: 350ms; }
+.bottom-grid .section-card:nth-child(2) { animation-delay: 400ms; }
 
 .section-card:hover {
   box-shadow: var(--shadow-level-2);
 }
 
-.empty-section {
-  padding: 24px 0;
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md, 16px);
+  padding-bottom: var(--space-md, 16px);
+  border-bottom: 1px solid var(--color-border-secondary);
 }
 
-/* Todo items in dashboard */
+.section-title {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm, 12px);
+}
+
+.section-icon {
+  color: var(--color-brand);
+}
+
+.chart-container {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-section {
+  padding: var(--space-xl, 32px) 0;
+}
+
+/* ==================== 待办列表 ==================== */
+.todo-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
 .todo-item {
   cursor: pointer;
   min-height: 44px;
+  padding: var(--space-sm, 12px) !important;
+  border-radius: var(--radius-md, 12px);
+  transition: all var(--duration-fast, 150ms) ease-out;
+  margin-bottom: var(--space-xs, 8px);
+}
+
+.todo-item:hover {
+  background: var(--color-bg-subtle, #FAF7F5);
 }
 
 .todo-item-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: var(--space-sm, 12px);
   width: 100%;
-  gap: 8px;
+}
+
+.todo-checkbox {
+  flex-shrink: 0;
 }
 
 .todo-title {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-primary);
+  transition: all var(--duration-fast, 150ms) ease-out;
+}
+
+.todo-completed {
+  text-decoration: line-through;
+  color: var(--color-text-disabled);
 }
 
 .todo-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs, 8px);
   flex-shrink: 0;
 }
 
-.todo-assignee {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+.priority-tag {
+  font-size: var(--text-xs, 0.75rem);
+  border-radius: var(--radius-xs, 4px);
 }
 
+.todo-assignee,
 .todo-due {
-  font-size: 12px;
+  font-size: var(--text-xs, 0.75rem);
   color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .todo-due.overdue {
-  color: var(--color-danger);
+  color: var(--color-danger, #E85D5D);
+  font-weight: 600;
 }
 
-.clickable-item {
+/* ==================== 愿望列表 ==================== */
+.wish-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.wish-item {
   cursor: pointer;
   min-height: 44px;
+  padding: var(--space-sm, 12px) !important;
+  border-radius: var(--radius-md, 12px);
+  transition: all var(--duration-fast, 150ms) ease-out;
+  margin-bottom: var(--space-xs, 8px);
 }
 
-/* Responsive */
+.wish-item:hover {
+  background: var(--color-bg-subtle, #FAF7F5);
+}
+
+.wish-title {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.wish-meta,
+.wish-votes {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.status-tag {
+  font-size: var(--text-xs, 0.75rem);
+  border-radius: var(--radius-xs, 4px);
+}
+
+/* ==================== 论坛列表 ==================== */
+.forum-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.forum-item {
+  cursor: pointer;
+  min-height: 44px;
+  padding: var(--space-sm, 12px) !important;
+  border-radius: var(--radius-md, 12px);
+  transition: all var(--duration-fast, 150ms) ease-out;
+  margin-bottom: var(--space-xs, 8px);
+}
+
+.forum-item:hover {
+  background: var(--color-bg-subtle, #FAF7F5);
+}
+
+.forum-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs, 8px);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-primary);
+}
+
+.type-tag {
+  font-size: var(--text-xs, 0.75rem);
+  border-radius: var(--radius-xs, 4px);
+}
+
+.forum-meta,
+.forum-time {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ==================== 动画 ==================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== 响应式 ==================== */
 @media (max-width: 1023px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
@@ -459,20 +918,30 @@ onMounted(() => {
 
 @media (max-width: 767px) {
   .dashboard {
-    padding: 12px;
+    padding: var(--space-md, 16px);
   }
 
   .summary-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-md, 16px);
   }
 
   .dashboard-grid,
   .bottom-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-md, 16px);
   }
 
   .stat-amount {
-    font-size: 24px;
+    font-size: var(--text-2xl, 1.5rem);
+  }
+
+  .page-title {
+    font-size: var(--text-xl, 1.25rem);
+  }
+
+  .section-card {
+    padding: var(--space-md, 16px);
   }
 }
 </style>
