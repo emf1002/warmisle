@@ -114,14 +114,25 @@ func (h *ForumHandler) Vote(c *gin.Context) {
 	}
 
 	var req struct {
-		OptionID uint `json:"option_id" binding:"required"`
+		OptionID   uint   `json:"option_id"`
+		OptionIDs  []uint `json:"option_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		pkg.Error(c, 400, 40001, "参数校验失败")
 		return
 	}
 
-	result, err := h.svc.Vote(uint(id), req.OptionID, getMemberID(c))
+	// Support both single option_id and multiple option_ids
+	optionIDs := req.OptionIDs
+	if len(optionIDs) == 0 && req.OptionID > 0 {
+		optionIDs = []uint{req.OptionID}
+	}
+	if len(optionIDs) == 0 {
+		pkg.Error(c, 400, 40001, "请选择投票选项")
+		return
+	}
+
+	result, err := h.svc.Vote(uint(id), optionIDs, getMemberID(c))
 	if err != nil {
 		handleServiceError(c, err,
 			serviceError{service.ErrForumVoteNotFound, 404, 40401, "投票不存在"},

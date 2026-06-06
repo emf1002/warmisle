@@ -56,13 +56,20 @@ func (s *ForumService) DeleteVote(id uint, currentMemberID uint, currentRole str
 	return s.repo.DeleteVote(id)
 }
 
-func (s *ForumService) Vote(id uint, optionID, memberID uint) (*repository.VoteWithDetail, error) {
+func (s *ForumService) Vote(id uint, optionIDs []uint, memberID uint) (*repository.VoteWithDetail, error) {
 	vote, err := s.repo.FindVoteByID(id, memberID)
 	if err != nil {
 		return nil, ErrForumVoteNotFound
 	}
 	if vote.Deadline != nil && time.Now().After(vote.Deadline.ToTime()) {
 		return nil, ErrForumVoteDeadlinePassed
+	}
+	if len(optionIDs) == 0 {
+		return nil, ErrForumInvalidTargetType
+	}
+	// For single-select polls, only allow one option
+	if !vote.IsMulti && len(optionIDs) > 1 {
+		optionIDs = optionIDs[:1]
 	}
 	hasVoted, err := s.repo.HasVotedForVote(id, memberID)
 	if err != nil {
@@ -71,7 +78,7 @@ func (s *ForumService) Vote(id uint, optionID, memberID uint) (*repository.VoteW
 	if hasVoted {
 		return nil, ErrForumAlreadyVoted
 	}
-	if err := s.repo.RecordVote(id, optionID, memberID); err != nil {
+	if err := s.repo.RecordVotes(id, optionIDs, memberID); err != nil {
 		return nil, err
 	}
 	return s.repo.FindVoteByID(id, memberID)

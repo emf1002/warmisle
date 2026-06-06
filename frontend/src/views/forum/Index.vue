@@ -656,8 +656,8 @@ async function fetchPolls() {
       is_multi: v.is_multi,
       creator: v.creator,
       created_at: v.created_at,
-      voted: false,
-      user_voted_options: [],
+      voted: v.voted || false,
+      user_voted_options: v.user_voted_options || [],
       total_votes: v.total_votes,
     }))
   } catch {
@@ -928,9 +928,7 @@ async function submitPollVote(poll: PollItem) {
   const selected = selectedPollOptions.value[poll.id]
   if (!selected || selected.length === 0) return
   try {
-    for (const optionId of selected) {
-      await submitVoteApi(poll.id, { option_id: optionId })
-    }
+    await submitVoteApi(poll.id, { option_ids: selected })
     // Fetch updated vote data
     const res: any = await getVote(poll.id)
     const voteData = res.data
@@ -939,7 +937,7 @@ async function submitPollVote(poll: PollItem) {
       pollItems.value[idx] = {
         ...pollItems.value[idx],
         voted: true,
-        options: voteData.options || pollItems.value[idx].options,
+        options: (voteData.options || pollItems.value[idx].options).map((o: any) => ({ id: o.id, text: o.content || o.text, vote_count: o.vote_count || 0 })),
         user_voted_options: selected,
         total_votes: voteData.total_votes,
       }
@@ -955,7 +953,7 @@ async function submitPollVote(poll: PollItem) {
         pollItems.value[idx] = {
           ...pollItems.value[idx],
           voted: true,
-          options: voteData.options || pollItems.value[idx].options,
+          options: (voteData.options || pollItems.value[idx].options).map((o: any) => ({ id: o.id, text: o.content || o.text, vote_count: o.vote_count || 0 })),
           user_voted_options: selected,
           total_votes: voteData.total_votes,
         }

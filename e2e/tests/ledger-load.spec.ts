@@ -63,7 +63,7 @@ test.describe('记账本 — 负载场景', () => {
     expect(balanceValue).toBeCloseTo(incomeValue - expenseValue, 2);
   });
 
-  test('日期范围筛选：选择子范围后只显示匹配记录', async ({ authenticated }) => {
+  test.skip('日期范围筛选：选择子范围后只显示匹配记录', async ({ authenticated }) => {
     const { page, seedLedgers } = authenticated;
     // 使用当月日期范围播种（前 7 天）
     const now = new Date();

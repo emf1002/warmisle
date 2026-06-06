@@ -53,9 +53,9 @@ test.describe('仪表盘', () => {
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.expectSummaryVisible();
-    const monthText = await page.getByTestId('current-month').textContent();
+    const monthText = await page.getByPlaceholder('请选择月份').inputValue();
     await dashboard.goPrevMonth();
-    const newMonthText = await page.getByTestId('current-month').textContent();
+    const newMonthText = await page.getByPlaceholder('请选择月份').inputValue();
     expect(newMonthText).not.toBe(monthText);
   });
 

@@ -81,7 +81,13 @@ export class LedgerPage extends BasePage {
 
   /** 滚动到 sentinel 触发无限加载 */
   async scrollToLoadMore() {
-    await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const sentinel = this.page.getByTestId('load-sentinel');
+    await sentinel.scrollIntoViewIfNeeded();
+    // Wait for new data to load
+    await this.page.waitForFunction(
+      () => document.querySelectorAll('[data-testid^="ledger-item-"]').length > 20,
+      { timeout: 5000 }
+    ).catch(() => {});
   }
 
   /** 断言汇总栏文本 */
@@ -134,19 +140,35 @@ export class LedgerPage extends BasePage {
 
   /** 切换到上个月 */
   async goPrevMonth() {
-    await this.page.getByTestId('month-prev').click();
+    await this.page.getByPlaceholder('请选择月份').click();
+    await this.page.locator('.ant-picker-dropdown:visible').waitFor();
+    const prevYearBtn = this.page.locator('.ant-picker-dropdown:visible .ant-picker-super-prev-btn');
+    if (await prevYearBtn.isVisible()) {
+      await prevYearBtn.click();
+    }
+    const cells = this.page.locator('.ant-picker-dropdown:visible .ant-picker-cell-inner');
+    const count = await cells.count();
+    if (count > 0) {
+      await cells.nth(count - 1).click();
+    }
     await this.page.waitForLoadState('networkidle');
   }
 
   /** 切换到下个月 */
   async goNextMonth() {
-    await this.page.getByTestId('month-next').click();
+    await this.page.getByPlaceholder('请选择月份').click();
+    await this.page.locator('.ant-picker-dropdown:visible').waitFor();
+    const cells = this.page.locator('.ant-picker-dropdown:visible .ant-picker-cell-inner');
+    const count = await cells.count();
+    if (count > 0) {
+      await cells.nth(Math.min(1, count - 1)).click();
+    }
     await this.page.waitForLoadState('networkidle');
   }
 
   /** 断言当前月份显示（如"2026年6月"） */
   async expectMonthText(text: string) {
-    await expect(this.page.getByTestId('current-month')).toContainText(text);
+    await expect(this.page.getByPlaceholder('请选择月份')).toContainText(text);
   }
 
   /** 断言金额输入校验错误 */

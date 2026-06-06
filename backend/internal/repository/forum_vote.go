@@ -11,9 +11,11 @@ import (
 
 type VoteWithDetail struct {
 	model.Vote
-	Creator    model.Member        `json:"creator"`
-	Options    []VoteOptionSummary `json:"options"`
-	TotalVotes int64               `json:"total_votes"`
+	Creator          model.Member        `json:"creator"`
+	Options          []VoteOptionSummary `json:"options"`
+	TotalVotes       int64               `json:"total_votes"`
+	Voted            bool                `json:"voted"`
+	UserVotedOptions []uint              `json:"user_voted_options"`
 }
 
 type VoteOptionSummary struct {
@@ -47,11 +49,15 @@ func (r *ForumRepo) ListVotes(page, pageSize int, currentMemberID uint) ([]VoteW
 			options = append(options, VoteOptionSummary{VoteOption: opt, VoteCount: count})
 		}
 
+		userOpts, _ := r.GetUserVotedOptionIDs(v.ID, currentMemberID)
+
 		results = append(results, VoteWithDetail{
-			Vote:       v,
-			Creator:    v.Creator,
-			Options:    options,
-			TotalVotes: totalVotes,
+			Vote:             v,
+			Creator:          v.Creator,
+			Options:          options,
+			TotalVotes:       totalVotes,
+			Voted:            len(userOpts) > 0,
+			UserVotedOptions: userOpts,
 		})
 	}
 	return results, total, nil
@@ -84,11 +90,15 @@ func (r *ForumRepo) FindVoteByID(id uint, currentMemberID uint) (*VoteWithDetail
 		options = append(options, VoteOptionSummary{VoteOption: opt, VoteCount: count})
 	}
 
+	userOpts, _ := r.GetUserVotedOptionIDs(id, currentMemberID)
+
 	return &VoteWithDetail{
-		Vote:       vote,
-		Creator:    vote.Creator,
-		Options:    options,
-		TotalVotes: totalVotes,
+		Vote:             vote,
+		Creator:          vote.Creator,
+		Options:          options,
+		TotalVotes:       totalVotes,
+		Voted:            len(userOpts) > 0,
+		UserVotedOptions: userOpts,
 	}, nil
 }
 
@@ -109,12 +119,28 @@ func (r *ForumRepo) RecordVote(voteID, optionID, memberID uint) error {
 	return pkg.DB.Create(&record).Error
 }
 
+func (r *ForumRepo) RecordVotes(voteID uint, optionIDs []uint, memberID uint) error {
+	records := make([]model.VoteRecord, len(optionIDs))
+	for i, oid := range optionIDs {
+		records[i] = model.VoteRecord{VoteID: voteID, OptionID: oid, MemberID: memberID}
+	}
+	return pkg.DB.Create(&records).Error
+}
+
 func (r *ForumRepo) HasVotedForVote(voteID, memberID uint) (bool, error) {
 	var count int64
 	err := pkg.DB.Model(&model.VoteRecord{}).
 		Where("vote_id = ? AND member_id = ?", voteID, memberID).
 		Count(&count).Error
 	return count > 0, err
+}
+
+func (r *ForumRepo) GetUserVotedOptionIDs(voteID, memberID uint) ([]uint, error) {
+	var ids []uint
+	err := pkg.DB.Model(&model.VoteRecord{}).
+		Where("vote_id = ? AND member_id = ?", voteID, memberID).
+		Pluck("option_id", &ids).Error
+	return ids, err
 }
 
 // --- Likes ---

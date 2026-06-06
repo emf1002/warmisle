@@ -1,36 +1,13 @@
 <template>
   <div class="dashboard" data-testid="dashboard-page">
-    <!-- 页面标题区 -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">仪表盘</h1>
-        <p class="page-subtitle">为您呈现家庭财务概览</p>
-      </div>
-    </header>
-
-    <!-- 月份切换 -->
-    <div class="month-switcher">
-      <a-button
-        type="text"
-        @click="goPrevMonth"
-        class="month-arrow"
-        aria-label="上个月"
-        data-testid="month-prev"
-      >
-        <template #icon><Icon name="ChevronLeft" :size="18" /></template>
-      </a-button>
-      <span class="month-text" data-testid="current-month">
-        {{ selectedMonth.format('YYYY年M月') }}
-      </span>
-      <a-button
-        type="text"
-        @click="goNextMonth"
-        class="month-arrow"
-        aria-label="下个月"
-        data-testid="month-next"
-      >
-        <template #icon><Icon name="ChevronRight" :size="18" /></template>
-      </a-button>
+    <!-- 月份选择器 -->
+    <div class="month-row">
+      <a-month-picker
+        v-model:value="selectedMonth"
+        format="YYYY年M月"
+        @change="onMonthChange"
+        data-testid="month-picker"
+      />
     </div>
 
     <!-- 月度统计卡片 - Skeleton -->
@@ -130,7 +107,7 @@
           <EmptyState type="no-data" description="暂无支出数据" />
         </div>
         <div v-else class="chart-container" data-testid="expense-chart">
-          <BarChart :data="barChartData" color="var(--color-expense)" :height="200" />
+          <PieChart :data="barChartData" :size="180" />
         </div>
       </section>
 
@@ -307,7 +284,7 @@ import { getSummary, getExpenseChart, getUpcomingTodos, getWishTrends, getForumH
 import EmptyState from '@/components/EmptyState.vue'
 import Icon from '@/components/Icon.vue'
 import MiniSparkline from '@/components/MiniSparkline.vue'
-import BarChart from '@/components/BarChart.vue'
+import PieChart from '@/components/PieChart.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 import { formatDate, timeAgo } from '@/utils/format'
 import dayjs from 'dayjs'
@@ -361,13 +338,7 @@ const barChartData = computed(() => {
   }))
 })
 
-function goPrevMonth() {
-  selectedMonth.value = selectedMonth.value.subtract(1, 'month')
-  fetchData()
-}
-
-function goNextMonth() {
-  selectedMonth.value = selectedMonth.value.add(1, 'month')
+function onMonthChange() {
   fetchData()
 }
 
@@ -455,45 +426,13 @@ onMounted(() => {
   margin: 0;
 }
 
-/* ==================== 月份切换 ==================== */
-.month-switcher {
+/* ==================== 月份选择器 ==================== */
+.month-row {
   display: flex;
+  justify-content: flex-start;
   align-items: center;
-  justify-content: center;
   margin-bottom: var(--space-lg, 24px);
-  gap: var(--space-md, 16px);
   animation: slideInUp var(--duration-slow, 300ms) cubic-bezier(0.4, 0, 0.2, 1) 50ms both;
-}
-
-.month-arrow {
-  min-width: 44px;
-  min-height: 44px;
-  font-size: 16px;
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-md, 12px);
-  transition: all var(--duration-fast, 150ms) ease-out;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.month-arrow:hover:not(:disabled) {
-  color: var(--color-brand);
-  background: var(--color-brand-light);
-}
-
-.month-arrow:disabled {
-  color: var(--color-text-disabled);
-  cursor: not-allowed;
-}
-
-.month-text {
-  font-size: var(--text-lg, 1.125rem);
-  font-weight: 600;
-  min-width: 140px;
-  text-align: center;
-  color: var(--color-text-primary);
-  font-family: var(--font-display);
 }
 
 /* ==================== 统计卡片网格 ==================== */
@@ -679,7 +618,7 @@ onMounted(() => {
 /* ==================== 内容区域网格 ==================== */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-lg, 24px);
   margin-bottom: var(--space-lg, 24px);
 }
@@ -734,14 +673,17 @@ onMounted(() => {
 }
 
 .chart-container {
-  min-height: 200px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .empty-section {
-  padding: var(--space-xl, 32px) 0;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ==================== 待办列表 ==================== */

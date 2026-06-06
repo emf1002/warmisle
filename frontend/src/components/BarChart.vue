@@ -44,7 +44,6 @@ const max = computed(() => Math.max(...props.data.map(d => d.value), 1))
 <style scoped>
 .bar-chart {
   display: flex;
-  align-items: flex-end;
   gap: 12px;
   padding: 0 8px;
 }
@@ -52,6 +51,7 @@ const max = computed(() => Math.max(...props.data.map(d => d.value), 1))
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
   position: relative;
 }

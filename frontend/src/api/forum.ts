@@ -111,7 +111,8 @@ export function deleteVote(id: number) {
 }
 
 export function vote(id: number, data: {
-  option_id: number
+  option_id?: number
+  option_ids?: number[]
 }) {
   return request.post(`/votes/${id}/vote`, data)
 }
