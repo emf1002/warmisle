@@ -113,6 +113,7 @@ func Register(r *gin.Engine) {
 	api.POST("/likes", authRequired, forum.ToggleLike)
 
 	// Forum - votes
+	api.GET("/votes", authRequired, forum.ListVotes)
 	api.POST("/votes", authRequired, forum.CreateVote)
 	api.DELETE("/votes/:id", authRequired, forum.DeleteVote)
 	api.POST("/votes/:id/vote", authRequired, forum.Vote)

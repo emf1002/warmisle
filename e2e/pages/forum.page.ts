@@ -101,6 +101,10 @@ export class ForumPage extends BasePage {
     await inputs.last().fill(option);
   }
 
+  async fillPollOption(index: number, option: string) {
+    await this.page.getByTestId(`option-input-${index + 1}`).fill(option);
+  }
+
   async setPollMultiSelect(enabled: boolean) {
     const checkbox = this.page.getByTestId('poll-multi-select');
     const isChecked = await checkbox.isChecked();

@@ -140,6 +140,46 @@ test.describe('家庭论坛', () => {
     await forum.expectFeedCount(1);
   });
 
+  test('投票选项在列表中显示', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const forum = new ForumPage(page);
+    await forum.goto();
+    await forum.openCreatePoll();
+    await forum.fillPollTitle('列表显示测试');
+    // Fill the 2 pre-existing option inputs
+    await forum.fillPollOption(0, '选项一');
+    await forum.fillPollOption(1, '选项二');
+    await forum.submitModal();
+    await forum.expectFeedCount(1);
+    // Verify poll options are visible in the list
+    await expect(page.getByTestId('poll-option-0')).toBeVisible();
+    await expect(page.getByTestId('poll-option-1')).toBeVisible();
+    await expect(page.getByTestId('poll-option-0')).toContainText('选项一');
+    await expect(page.getByTestId('poll-option-1')).toContainText('选项二');
+  });
+
+  test('刷新页面后投票仍显示', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const forum = new ForumPage(page);
+    await forum.goto();
+    // Create a poll
+    await forum.openCreatePoll();
+    await forum.fillPollTitle('持久化测试');
+    await forum.fillPollOption(0, '苹果');
+    await forum.fillPollOption(1, '香蕉');
+    await forum.submitModal();
+    await forum.expectFeedCount(1);
+    // Refresh the page
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    // Poll should still be visible with its options
+    await forum.expectFeedCount(1);
+    await expect(page.getByTestId('poll-option-0')).toBeVisible();
+    await expect(page.getByTestId('poll-option-1')).toBeVisible();
+    await expect(page.getByTestId('poll-option-0')).toContainText('苹果');
+    await expect(page.getByTestId('poll-option-1')).toContainText('香蕉');
+  });
+
   // === 评论 ===
 
   test('评论动态', async ({ authenticated }) => {

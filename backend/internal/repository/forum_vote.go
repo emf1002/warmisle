@@ -21,6 +21,42 @@ type VoteOptionSummary struct {
 	VoteCount int64 `json:"vote_count"`
 }
 
+func (r *ForumRepo) ListVotes(page, pageSize int, currentMemberID uint) ([]VoteWithDetail, int64, error) {
+	var total int64
+	pkg.DB.Model(&model.Vote{}).Count(&total)
+
+	var votes []model.Vote
+	err := pkg.DB.Preload("Creator").Preload("Options").
+		Order("created_at DESC").
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Find(&votes).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	results := make([]VoteWithDetail, 0, len(votes))
+	for _, v := range votes {
+		var totalVotes int64
+		pkg.DB.Model(&model.VoteRecord{}).Where("vote_id = ?", v.ID).Count(&totalVotes)
+
+		options := make([]VoteOptionSummary, 0, len(v.Options))
+		for _, opt := range v.Options {
+			var count int64
+			pkg.DB.Model(&model.VoteRecord{}).Where("option_id = ?", opt.ID).Count(&count)
+			options = append(options, VoteOptionSummary{VoteOption: opt, VoteCount: count})
+		}
+
+		results = append(results, VoteWithDetail{
+			Vote:       v,
+			Creator:    v.Creator,
+			Options:    options,
+			TotalVotes: totalVotes,
+		})
+	}
+	return results, total, nil
+}
+
 func (r *ForumRepo) CreateVote(vote *model.Vote, options []model.VoteOption) error {
 	return pkg.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(vote).Error; err != nil {

@@ -451,6 +451,7 @@ import {
   createVote,
   vote as submitVoteApi,
   getVote,
+  listVotes,
 } from '@/api/forum'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
@@ -634,6 +635,32 @@ async function fetchTags() {
     tags.value = res.data || []
   } catch {
     // tags are optional
+  }
+}
+
+async function fetchPolls() {
+  try {
+    const res: any = await listVotes({ page: 1, page_size: 50 })
+    const data = res.data
+    const items = data.items || []
+    pollItems.value = items.map((v: any) => ({
+      type: 'vote' as const,
+      id: v.id,
+      title: v.title,
+      options: (v.options || []).map((o: any) => ({
+        id: o.id,
+        text: o.content || o.text,
+        vote_count: o.vote_count || 0,
+      })),
+      is_multi: v.is_multi,
+      creator: v.creator,
+      created_at: v.created_at,
+      voted: false,
+      user_voted_options: [],
+      total_votes: v.total_votes,
+    }))
+  } catch {
+    // votes are optional
   }
 }
 
@@ -862,7 +889,8 @@ async function handlePollSubmit() {
       type: 'vote',
       id: voteData.id,
       title: voteData.title,
-      options: voteData.options || validOptions.map((text, i) => ({ id: i + 1, text, vote_count: 0 })),
+      options: (voteData.options || validOptions.map((text, i) => ({ id: i + 1, content: text, vote_count: 0 })))
+        .map((o: any) => ({ id: o.id, text: o.text || o.content, vote_count: o.vote_count || 0 })),
       is_multi: voteData.is_multi ?? pollForm.is_multi,
       creator: voteData.creator || { id: authStore.currentUserId, name: authStore.memberInfo?.name || '我', avatar: authStore.memberInfo?.avatar || '👤' },
       created_at: voteData.created_at || new Date().toISOString(),
@@ -946,6 +974,7 @@ function getPollPercent(poll: PollItem, opt: PollOption): number {
 onMounted(() => {
   fetchFeed()
   fetchTags()
+  fetchPolls()
 })
 </script>
 

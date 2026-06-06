@@ -90,6 +90,13 @@ export function toggleLike(data: {
 
 // --- Votes ---
 
+export function listVotes(params: {
+  page?: number
+  page_size?: number
+}) {
+  return request.get('/votes', { params })
+}
+
 export function createVote(data: {
   title: string
   options: string[]

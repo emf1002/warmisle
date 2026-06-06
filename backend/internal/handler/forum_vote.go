@@ -31,6 +31,30 @@ func (h *ForumHandler) ToggleLike(c *gin.Context) {
 	pkg.Success(c, gin.H{"liked": liked})
 }
 
+// GET /api/votes
+func (h *ForumHandler) ListVotes(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	items, total, err := h.svc.ListVotes(page, pageSize, getMemberID(c))
+	if err != nil {
+		pkg.Error(c, 500, 50001, "服务器内部错误")
+		return
+	}
+	pkg.Success(c, gin.H{
+		"items": items,
+		"total": total,
+		"page":  page,
+		"page_size": pageSize,
+	})
+}
+
 // POST /api/votes
 func (h *ForumHandler) CreateVote(c *gin.Context) {
 	var req struct {

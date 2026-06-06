@@ -15,6 +15,10 @@ func (s *ForumService) ToggleLike(targetType string, targetID, memberID uint) (b
 	return s.repo.ToggleLike(targetType, targetID, memberID)
 }
 
+func (s *ForumService) ListVotes(page, pageSize int, memberID uint) ([]repository.VoteWithDetail, int64, error) {
+	return s.repo.ListVotes(page, pageSize, memberID)
+}
+
 func (s *ForumService) CreateVote(title string, options []string, isMulti bool, deadline *time.Time, creatorID uint) (*repository.VoteWithDetail, error) {
 	if title == "" {
 		return nil, ErrForumTitleRequired
