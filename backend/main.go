@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"crypto/md5"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -82,7 +83,26 @@ func main() {
 		if err != nil {
 			// SPA fallback: 前端路由交由 index.html 处理
 			data, _ = fs.ReadFile(dist, "index.html")
+			path = "/index.html"
 		}
+
+		// ETag 支持
+		hash := md5.Sum(data)
+		etag := `"` + hex.EncodeToString(hash[:]) + `"`
+		if match := c.GetHeader("If-None-Match"); match == etag {
+			c.Status(http.StatusNotModified)
+			c.Abort()
+			return
+		}
+		c.Header("ETag", etag)
+
+		// Cache-Control: Vite 构建的文件带内容哈希，可长期缓存；index.html 不缓存
+		if strings.HasSuffix(path, ".html") || path == "/index.html" {
+			c.Header("Cache-Control", "no-cache")
+		} else {
+			c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		}
+
 		c.Data(http.StatusOK, getContentType(path), data)
 		c.Abort()
 	})

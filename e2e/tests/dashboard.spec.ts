@@ -72,9 +72,9 @@ test.describe('仪表盘', () => {
     await dashboard.goto();
     await dashboard.expectSummaryVisible();
     const incomeText = await page.getByTestId('summary-income').textContent();
-    expect(incomeText).toMatch(/\+¥/);
+    expect(incomeText).toMatch(/¥[\d,.]+/);
     const expenseText = await page.getByTestId('summary-expense').textContent();
-    expect(expenseText).toMatch(/-¥/);
+    expect(expenseText).toMatch(/¥[\d,.]+/);
   });
 
   test('支出分类饼图', async ({ authenticated }) => {

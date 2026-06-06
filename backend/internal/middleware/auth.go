@@ -23,9 +23,9 @@ func AuthRequired() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		// 检查成员是否被禁用
-		var member model.Member
-		if err := pkg.DB.First(&member, claims.MemberID).Error; err != nil || member.Status == "disabled" {
+		// 只查询 status 字段检查是否被禁用（避免加载整个 member 记录）
+		var status string
+		if err := pkg.DB.Model(&model.Member{}).Select("status").Where("id = ?", claims.MemberID).Scan(&status).Error; err != nil || status == "disabled" {
 			pkg.Error(c, 403, 40301, "账号已被禁用")
 			c.Abort()
 			return

@@ -248,7 +248,10 @@ test.describe('记账本', () => {
     await ledger.openCreate();
     await ledger.pickCategory('餐饮');
     await ledger.fillAmount('0');
-    await ledger.submit();
+    // 值保持为 0（a-input-number 的 :min 不会自动转换输入值）
+    await expect(page.locator('.ant-modal:visible').getByRole('spinbutton')).toHaveValue('0');
+    // 提交时验证逻辑阻止（amount <= 0），modal 保持打开
+    await page.getByTestId('submit-btn').click();
     await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
   });
 

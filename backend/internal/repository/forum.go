@@ -62,17 +62,21 @@ func (r *ForumRepo) GetFeed(page, pageSize int) (*FeedResponse, error) {
 	pkg.DB.Model(&model.Topic{}).Where("is_pinned = ?", false).Count(&topicCount)
 	total := postCount + topicCount
 
-	// 3. Fetch posts and non-pinned topics as separate queries, then merge in Go
+	// 3. Fetch with SQL-level LIMIT, then merge a small set in Go
+	// Each query fetches at most (page * pageSize) items, merge, sort, slice
+	fetchLimit := page * pageSize
+
 	var posts []model.Post
-	pkg.DB.Preload("Creator").Order("created_at DESC").Find(&posts)
+	pkg.DB.Preload("Creator").Order("created_at DESC").Limit(fetchLimit).Find(&posts)
 
 	var topics []model.Topic
 	pkg.DB.Preload("Creator").Preload("Tag").
 		Where("is_pinned = ?", false).
 		Order("created_at DESC").
+		Limit(fetchLimit).
 		Find(&topics)
 
-	// Merge and sort
+	// Merge into small slice
 	allItems := make([]FeedItem, 0, len(posts)+len(topics))
 	for _, p := range posts {
 		allItems = append(allItems, FeedItem{
@@ -95,12 +99,10 @@ func (r *ForumRepo) GetFeed(page, pageSize int) (*FeedResponse, error) {
 		})
 	}
 
-	// Sort by created_at DESC
-	for i := 0; i < len(allItems); i++ {
-		for j := i + 1; j < len(allItems); j++ {
-			if allItems[j].CreatedAt.After(allItems[i].CreatedAt) {
-				allItems[i], allItems[j] = allItems[j], allItems[i]
-			}
+	// Sort by created_at DESC (small slice, insertion sort is fine)
+	for i := 1; i < len(allItems); i++ {
+		for j := i; j > 0 && allItems[j].CreatedAt.After(allItems[j-1].CreatedAt); j-- {
+			allItems[j], allItems[j-1] = allItems[j-1], allItems[j]
 		}
 	}
 

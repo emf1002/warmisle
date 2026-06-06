@@ -1,6 +1,10 @@
 package service
 
 import (
+	"fmt"
+	"sort"
+	"time"
+
 	"warmisle/internal/model"
 	"warmisle/internal/pkg"
 	"warmisle/internal/repository"
@@ -25,16 +29,32 @@ type WishTrend struct {
 	VoteCount int64        `json:"vote_count"`
 }
 
+// monthBounds returns the start and end time for a "YYYY-MM" string.
+func monthBounds(month string) (time.Time, time.Time, error) {
+	t, err := time.Parse("2006-01", month)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid month format: %w", err)
+	}
+	start := t
+	end := t.AddDate(0, 1, 0)
+	return start, end, nil
+}
+
 func (s *DashboardService) GetSummary(month string) (map[string]int64, error) {
+	start, end, err := monthBounds(month)
+	if err != nil {
+		return nil, err
+	}
+
 	type row struct {
 		Type   string
 		Amount int64
 	}
 	var rows []row
-	err := pkg.DB.Table("ledgers").
+	err = pkg.DB.Table("ledgers").
 		Select("categories.type, COALESCE(SUM(ledgers.amount), 0) as amount").
 		Joins("JOIN categories ON ledgers.category_id = categories.id AND categories.deleted_at IS NULL").
-		Where("strftime('%Y-%m', ledgers.occurred_at) = ?", month).
+		Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", start, end).
 		Group("categories.type").
 		Scan(&rows).Error
 	if err != nil {
@@ -54,12 +74,17 @@ func (s *DashboardService) GetSummary(month string) (map[string]int64, error) {
 }
 
 func (s *DashboardService) GetExpenseChart(month string) ([]CategorySum, error) {
+	start, end, err := monthBounds(month)
+	if err != nil {
+		return nil, err
+	}
+
 	var rows []CategorySum
-	err := pkg.DB.Table("ledgers").
+	err = pkg.DB.Table("ledgers").
 		Select("categories.id as category_id, categories.name as category_name, categories.icon, COALESCE(SUM(ledgers.amount), 0) as amount").
 		Joins("JOIN categories ON ledgers.category_id = categories.id AND categories.deleted_at IS NULL").
 		Where("categories.type = 'expense'").
-		Where("strftime('%Y-%m', ledgers.occurred_at) = ?", month).
+		Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", start, end).
 		Group("categories.id").
 		Order("amount DESC").
 		Scan(&rows).Error
@@ -100,14 +125,33 @@ func (s *DashboardService) GetWishTrends() ([]WishTrend, error) {
 		return nil, err
 	}
 
+	// Batch load vote counts to avoid N+1
+	wishIDs := make([]uint, len(wishes))
+	for i, w := range wishes {
+		wishIDs[i] = w.ID
+	}
+	type voteRow struct {
+		WishID    uint
+		VoteCount int64
+	}
+	var voteRows []voteRow
+	pkg.DB.Model(&model.WishVote{}).
+		Select("wish_id, COUNT(*) as vote_count").
+		Where("wish_id IN ?", wishIDs).
+		Group("wish_id").
+		Scan(&voteRows)
+
+	voteMap := make(map[uint]int64, len(voteRows))
+	for _, vr := range voteRows {
+		voteMap[vr.WishID] = vr.VoteCount
+	}
+
 	trends := make([]WishTrend, 0, len(wishes))
 	for _, w := range wishes {
-		var voteCount int64
-		pkg.DB.Model(&model.WishVote{}).Where("wish_id = ?", w.ID).Count(&voteCount)
 		trends = append(trends, WishTrend{
 			Wish:      w,
 			Creator:   w.Creator,
-			VoteCount: voteCount,
+			VoteCount: voteMap[w.ID],
 		})
 	}
 	return trends, nil
@@ -151,13 +195,9 @@ func (s *DashboardService) GetForumHot() ([]repository.FeedItem, error) {
 	}
 
 	// Sort merged list by created_at DESC
-	for i := 0; i < len(items); i++ {
-		for j := i + 1; j < len(items); j++ {
-			if items[j].CreatedAt.After(items[i].CreatedAt) {
-				items[i], items[j] = items[j], items[i]
-			}
-		}
-	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.After(items[j].CreatedAt)
+	})
 	if len(items) > 5 {
 		items = items[:5]
 	}
