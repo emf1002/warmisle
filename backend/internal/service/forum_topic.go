@@ -2,6 +2,7 @@ package service
 
 import (
 	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 	"warmisle/internal/repository"
 )
 
@@ -9,7 +10,9 @@ func (s *ForumService) CreateTopic(title, content string, tagID *uint, creatorID
 	if title == "" {
 		return nil, ErrForumTitleRequired
 	}
-	topic := &model.Topic{Title: title, Content: content, TagID: tagID, CreatorID: creatorID}
+	// XSS 防护：过滤 HTML 内容
+	sanitizedContent := pkg.SanitizeHTML(content)
+	topic := &model.Topic{Title: title, Content: sanitizedContent, TagID: tagID, CreatorID: creatorID}
 	if err := s.repo.CreateTopic(topic); err != nil {
 		return nil, err
 	}
@@ -31,7 +34,8 @@ func (s *ForumService) UpdateTopic(id uint, title, content *string, tagID *uint,
 		existing.Title = *title
 	}
 	if content != nil {
-		existing.Content = *content
+		sanitized := pkg.SanitizeHTML(*content)
+		existing.Content = sanitized
 	}
 	if tagID != nil {
 		existing.TagID = tagID

@@ -2,6 +2,7 @@ package service
 
 import (
 	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 	"warmisle/internal/repository"
 )
 
@@ -22,11 +23,13 @@ func (s *ForumService) CreateComment(targetType string, targetID uint, parentID 
 			return nil, ErrForumNestingTooDeep
 		}
 	}
+	// XSS 防护：过滤 HTML 内容
+	sanitizedContent := pkg.SanitizeHTML(content)
 	comment := &model.Comment{
 		TargetType: targetType,
 		TargetID:   targetID,
 		ParentID:   parentID,
-		Content:    content,
+		Content:    sanitizedContent,
 		CreatorID:  creatorID,
 	}
 	if err := s.repo.CreateComment(comment); err != nil {

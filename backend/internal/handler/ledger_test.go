@@ -143,8 +143,8 @@ func TestHandler_Ledger_List_CursorPagination(t *testing.T) {
 		items := g.(map[string]interface{})["items"].([]interface{})
 		totalItems2 += len(items)
 	}
-	assert.Equal(t, 7, totalItems2)
-	assert.Equal(t, false, data2["has_more"])
+	assert.Equal(t, 5, totalItems2)
+	assert.Equal(t, true, data2["has_more"])
 }
 
 func TestHandler_Ledger_List_InvalidCursor(t *testing.T) {

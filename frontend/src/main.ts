@@ -16,6 +16,14 @@ import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
+
+// 全局 Vue 错误处理器
+app.config.errorHandler = (err, instance, info) => {
+  console.error('[Vue Error]', err)
+  console.error('[Vue Error Info]', info)
+  console.error('[Vue Error Component]', instance)
+}
+
 app.use(createPinia())
 app.use(router)
 app.use(Antd)

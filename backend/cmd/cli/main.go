@@ -56,6 +56,11 @@ func resetPassword(username string) {
 		os.Exit(1)
 	}
 
+	// 同步清除登录失败记录
+	if err := pkg.DB.Where("username = ?", username).Delete(&model.LoginFailure{}).Error; err != nil {
+		fmt.Printf("warning: failed to clear login failures: %v\n", err)
+	}
+
 	fmt.Printf("Password for user '%s' has been reset to default: %s\n", username, pkg.DefaultPassword)
 }
 

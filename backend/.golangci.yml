@@ -1,0 +1,18 @@
+version: "1"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - revive
+    - ineffassign
+    - unused
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    # 允许 main 包中 main 函数不处理错误（程序入口）
+    - path: cmd/.*
+      linters:
+        - errcheck

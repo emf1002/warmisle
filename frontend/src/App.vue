@@ -1,12 +1,14 @@
 <template>
   <a-config-provider :theme="themeConfig" :locale="zhCN">
-    <component :is="layout">
-      <router-view v-slot="{ Component: RouteComponent }">
-        <transition name="page-fade" mode="out-in">
-          <component :is="RouteComponent" />
-        </transition>
-      </router-view>
-    </component>
+    <ErrorBoundary>
+      <component :is="layout">
+        <router-view v-slot="{ Component: RouteComponent }">
+          <transition name="page-fade" mode="out-in">
+            <component :is="RouteComponent" />
+          </transition>
+        </router-view>
+      </component>
+    </ErrorBoundary>
   </a-config-provider>
 </template>
 
@@ -19,6 +21,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import MainLayout from '@/layouts/MainLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
+import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import { useThemeStore } from '@/stores/theme'
 
 dayjs.locale('zh-cn')

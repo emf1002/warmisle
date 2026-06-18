@@ -31,7 +31,6 @@ func TestReset(c *gin.Context) {
 		"wishes",
 		"todo_logs",
 		"todos",
-		"ledger_members",
 		"ledgers",
 		"tags",
 		"categories",

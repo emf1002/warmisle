@@ -40,6 +40,7 @@ func SetupTestDB() *gorm.DB {
 		&model.Comment{},
 		&model.Like{},
 		&model.Tag{},
+		&model.LoginFailure{},
 	)
 	if err != nil {
 		panic("failed to migrate test database: " + err.Error())

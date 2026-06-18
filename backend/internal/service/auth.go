@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"sync"
 	"time"
 
+	"warmisle/internal/model"
 	"warmisle/internal/pkg"
 	"warmisle/internal/repository"
 )
@@ -14,59 +14,63 @@ var (
 	ErrAccountLocked      = errors.New("account locked")
 )
 
-type lockInfo struct {
-	failedCount int
-	lockedUntil time.Time
-}
-
 type AuthService struct {
-	repo     *repository.AuthRepo
-	mu       sync.Mutex
-	attempts map[string]*lockInfo
+	authRepo     *repository.AuthRepo
+	failureRepo  *repository.LoginFailureRepo
 }
 
 func NewAuthService() *AuthService {
 	return &AuthService{
-		repo:     &repository.AuthRepo{},
-		attempts: make(map[string]*lockInfo),
+		authRepo:    &repository.AuthRepo{},
+		failureRepo: &repository.LoginFailureRepo{},
 	}
 }
 
+// isLocked 检查用户是否被锁定（从数据库读取）
 func (s *AuthService) isLocked(username string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	info, exists := s.attempts[username]
-	if !exists {
+	lf, err := s.failureRepo.FindByUsername(username)
+	if err != nil {
+		// 记录不存在，说明未被锁定
 		return false
 	}
-	if !info.lockedUntil.IsZero() && time.Now().Before(info.lockedUntil) {
+	// 检查 locked_until 是否有效
+	if lf.LockedUntil == nil {
+		return false
+	}
+	if time.Now().Before(*lf.LockedUntil) {
 		return true
 	}
-	if !info.lockedUntil.IsZero() {
-		// 锁定期已过，清除记录
-		delete(s.attempts, username)
-	}
+	// 锁定期已过，删除记录
+	_ = s.failureRepo.Delete(username)
 	return false
 }
 
+// recordFailed 记录一次登录失败（写入数据库）
 func (s *AuthService) recordFailed(username string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	info, exists := s.attempts[username]
-	if !exists {
-		info = &lockInfo{}
-		s.attempts[username] = info
+	lf, err := s.failureRepo.FindByUsername(username)
+	if err != nil {
+		// 记录不存在，创建新记录
+		lf = &model.LoginFailure{
+			Username:    username,
+			FailedCount: 1,
+			LockedUntil: nil,
+		}
+	} else {
+		lf.FailedCount++
 	}
-	info.failedCount++
-	if info.failedCount >= 5 {
-		info.lockedUntil = time.Now().Add(15 * time.Minute)
+
+	// 失败次数 >= 5，锁定 15 分钟
+	if lf.FailedCount >= 5 {
+		t := time.Now().Add(15 * time.Minute)
+		lf.LockedUntil = &t
 	}
+
+	_ = s.failureRepo.Save(lf)
 }
 
+// clearAttempts 清除指定用户的登录失败记录
 func (s *AuthService) clearAttempts(username string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	delete(s.attempts, username)
+	_ = s.failureRepo.Delete(username)
 }
 
 func (s *AuthService) Login(username, password string) (string, error) {
@@ -75,7 +79,7 @@ func (s *AuthService) Login(username, password string) (string, error) {
 		return "", ErrAccountLocked
 	}
 
-	member, err := s.repo.FindByUsername(username)
+	member, err := s.authRepo.FindByUsername(username)
 	if err != nil {
 		s.recordFailed(username)
 		return "", ErrInvalidCredentials
@@ -102,7 +106,7 @@ func (s *AuthService) Login(username, password string) (string, error) {
 }
 
 func (s *AuthService) InitCheck() (bool, error) {
-	count, err := s.repo.Count()
+	count, err := s.authRepo.Count()
 	if err != nil {
 		return false, err
 	}

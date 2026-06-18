@@ -224,10 +224,10 @@ func TestForumService_Vote_CastAndDuplicate(t *testing.T) {
 	creator := testutil.CreateTestMember(pkg.DB, "vc_c", "VCC", "member")
 	voter := testutil.CreateTestMember(pkg.DB, "vc_v", "VCV", "member")
 	vote, _ := svc.CreateVote("选哪个", []string{"A", "B"}, false, nil, creator.ID)
-	result, err := svc.Vote(vote.ID, vote.Options[0].ID, voter.ID)
+	result, err := svc.Vote(vote.ID, []uint{vote.Options[0].ID}, voter.ID)
 	require.NoError(t, err)
 	assert.Equal(t, int64(1), result.TotalVotes)
-	_, err = svc.Vote(vote.ID, vote.Options[1].ID, voter.ID)
+	_, err = svc.Vote(vote.ID, []uint{vote.Options[1].ID}, voter.ID)
 	assert.ErrorIs(t, err, ErrForumAlreadyVoted)
 }
 
