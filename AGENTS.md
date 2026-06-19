@@ -1,6 +1,6 @@
-# AGENTS.md
+# CLAUDE.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 项目概述
 
@@ -18,6 +18,7 @@ cd frontend && npm run build -- --emptyOutDir
 cd backend && go build -o ../dist/warmisle .
 ```
 
+> 注意：Windows 下 `make` 不可用，需直接执行上述命令。`air` 热重载工具未预装，开发时用 `go run` 替代。
 > 前端 Vite dev server (port 3000) 自动代理 `/api` 到后端 `localhost:8080`。
 
 ## 技术栈
@@ -52,7 +53,7 @@ warmisle/
 │       ├── router/              # 路由配置（含守卫：auth + init 检测）
 │       ├── api/                 # Axios 请求封装
 │       └── utils/               # 工具函数（request.ts: Axios 拦截器）
-├── docs/prd.md                  # 产品需求文档（权威需求来源）
+├── docs/prd/                    # 产品需求文档（权威需求来源，按模块拆分）
 ├── docs/superpowers/specs/      # 技术设计 + UI 风格指南
 └── docs/superpowers/plans/      # 实施计划（包含 task 依赖关系）
 ```
@@ -123,9 +124,56 @@ warmisle/
 - 日期格式：今天/"昨天"/"M月D日 周X"
 - 头像使用预置 emoji 列表（约 30 个），不支持自定义图片上传
 
+## E2E 测试
+
+E2E 测试（Playwright）使用 `e2e/run-test.sh` 运行，**每次运行自动启动独立 server（隔离端口+DB），测试完成后自动清理**。不使用 `npx playwright test` 直接运行。
+
+### 运行命令
+
+```bash
+# 单文件
+bash e2e/run-test.sh tests/auth.spec.ts
+
+# 多文件
+bash e2e/run-test.sh tests/ledger.spec.ts tests/todo.spec.ts
+
+# 指定端口（多终端并行时避免冲突）
+bash e2e/run-test.sh --port 8082 tests/forum.spec.ts
+
+# 全量测试
+bash e2e/run-test.sh --all
+```
+
+### 并行运行（多终端）
+
+端口自动检测，被占用时自增。多终端可同时运行不同测试文件，环境完全隔离：
+
+```bash
+# 终端 1 → 自动分配 :8081
+bash e2e/run-test.sh tests/auth.spec.ts tests/members.spec.ts
+
+# 终端 2 → 自动分配 :8082
+bash e2e/run-test.sh tests/ledger.spec.ts tests/categories.spec.ts
+
+# 终端 3 → 手动指定 :8090
+bash e2e/run-test.sh --port 8090 tests/forum.spec.ts
+```
+
+### 报告
+
+报告按端口隔离在 `e2e/reports/<port>/` 下（如 `e2e/reports/8081/`），并行运行互不覆盖。整个 `e2e/reports/` 已在 `.gitignore` 中。
+
+需要获取详细测试信息时，先读取已有报告，而非重新运行测试。
+
+### 环境隔离机制
+
+- 每次运行启动独立 server 进程，使用独立端口和独立 SQLite DB（`e2e/e2e-data/test-<port>.db`）
+- 测试完成后自动 kill server 并清理 DB 文件
+- 通过 `HC_TEST_PORT` 和 `HC_TEST_BASE_URL` 环境变量传递端口给 Playwright
+
 ## 实施顺序
 
 按 RICE 优先级：认证与权限 → 成员管理 → 分类管理 → 记账本 → 待办管理 → 仪表盘 → 愿望清单 → 家庭论坛 → 个人中心 → 布局与响应式。
 
 完整实施计划（含 task 依赖关系 DAG）见 `docs/superpowers/plans/2026-05-16-warmisle-implementation.md`。
-详细验收标准、业务规则、字段约束见 `docs/prd.md`。
+详细验收标准：`docs/prd/modules/<module>.md`；业务规则与字段约束：`docs/prd/business-rules.md`；全局概述：`docs/prd/index.md`。
