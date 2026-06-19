@@ -1,3 +1,4 @@
+// Package testutil provides test helpers for warmisle.
 package testutil
 
 import (

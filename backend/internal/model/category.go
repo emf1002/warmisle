@@ -1,3 +1,4 @@
+// Package model provides data models for the warmisle application.
 package model
 
 import (
@@ -6,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Category represents a ledger category.
 type Category struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Type      string         `gorm:"size:10;not null" json:"type"` // income / expense
@@ -18,4 +20,5 @@ type Category struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
+// TableName returns the table name for Category.
 func (Category) TableName() string { return "categories" }

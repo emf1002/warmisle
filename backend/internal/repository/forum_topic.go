@@ -7,6 +7,7 @@ import (
 
 // --- Topics ---
 
+// TopicWithMeta is a topic with associated metadata.
 type TopicWithMeta struct {
 	model.Topic
 	Creator      model.Member `json:"creator"`
@@ -16,10 +17,12 @@ type TopicWithMeta struct {
 	Liked        bool         `json:"liked"`
 }
 
+// CreateTopic creates a new topic.
 func (r *ForumRepo) CreateTopic(topic *model.Topic) error {
 	return pkg.DB.Create(topic).Error
 }
 
+// FindTopicByID finds a topic by ID with metadata.
 func (r *ForumRepo) FindTopicByID(id uint, currentMemberID uint) (*TopicWithMeta, error) {
 	var topic model.Topic
 	if err := pkg.DB.Preload("Creator").Preload("Tag").First(&topic, id).Error; err != nil {
@@ -40,10 +43,12 @@ func (r *ForumRepo) FindTopicByID(id uint, currentMemberID uint) (*TopicWithMeta
 	}, nil
 }
 
+// UpdateTopic updates an existing topic.
 func (r *ForumRepo) UpdateTopic(topic *model.Topic) error {
 	return pkg.DB.Save(topic).Error
 }
 
+// DeleteTopic soft-deletes a topic.
 func (r *ForumRepo) DeleteTopic(id uint) error {
 	return pkg.DB.Delete(&model.Topic{}, id).Error
 }

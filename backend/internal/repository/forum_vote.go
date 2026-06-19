@@ -9,6 +9,7 @@ import (
 
 // --- Votes ---
 
+// VoteWithDetail is a vote with options and member counts.
 type VoteWithDetail struct {
 	model.Vote
 	Creator          model.Member        `json:"creator"`
@@ -18,11 +19,13 @@ type VoteWithDetail struct {
 	UserVotedOptions []uint              `json:"user_voted_options"`
 }
 
+// VoteOptionSummary is a vote option with vote count and member info.
 type VoteOptionSummary struct {
 	model.VoteOption
 	VoteCount int64 `json:"vote_count"`
 }
 
+// ListVotes lists votes with pagination and per-user vote state.
 func (r *ForumRepo) ListVotes(page, pageSize int, currentMemberID uint) ([]VoteWithDetail, int64, error) {
 	var total int64
 	pkg.DB.Model(&model.Vote{}).Count(&total)
@@ -63,6 +66,7 @@ func (r *ForumRepo) ListVotes(page, pageSize int, currentMemberID uint) ([]VoteW
 	return results, total, nil
 }
 
+// CreateVote inserts a vote with its options in a transaction.
 func (r *ForumRepo) CreateVote(vote *model.Vote, options []model.VoteOption) error {
 	return pkg.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(vote).Error; err != nil {
@@ -75,6 +79,7 @@ func (r *ForumRepo) CreateVote(vote *model.Vote, options []model.VoteOption) err
 	})
 }
 
+// FindVoteByID finds a vote by ID with all details.
 func (r *ForumRepo) FindVoteByID(id uint, currentMemberID uint) (*VoteWithDetail, error) {
 	var vote model.Vote
 	if err := pkg.DB.Preload("Creator").Preload("Options").First(&vote, id).Error; err != nil {
@@ -102,6 +107,7 @@ func (r *ForumRepo) FindVoteByID(id uint, currentMemberID uint) (*VoteWithDetail
 	}, nil
 }
 
+// DeleteVote removes a vote and its associated options and records.
 func (r *ForumRepo) DeleteVote(id uint) error {
 	return pkg.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("vote_id = ?", id).Delete(&model.VoteRecord{}).Error; err != nil {
@@ -114,11 +120,13 @@ func (r *ForumRepo) DeleteVote(id uint) error {
 	})
 }
 
+// RecordVote records a single vote option selection.
 func (r *ForumRepo) RecordVote(voteID, optionID, memberID uint) error {
 	record := model.VoteRecord{VoteID: voteID, OptionID: optionID, MemberID: memberID}
 	return pkg.DB.Create(&record).Error
 }
 
+// RecordVotes records multiple vote option selections.
 func (r *ForumRepo) RecordVotes(voteID uint, optionIDs []uint, memberID uint) error {
 	records := make([]model.VoteRecord, len(optionIDs))
 	for i, oid := range optionIDs {
@@ -127,6 +135,7 @@ func (r *ForumRepo) RecordVotes(voteID uint, optionIDs []uint, memberID uint) er
 	return pkg.DB.Create(&records).Error
 }
 
+// HasVotedForVote checks whether a member has voted on a vote.
 func (r *ForumRepo) HasVotedForVote(voteID, memberID uint) (bool, error) {
 	var count int64
 	err := pkg.DB.Model(&model.VoteRecord{}).
@@ -135,6 +144,7 @@ func (r *ForumRepo) HasVotedForVote(voteID, memberID uint) (bool, error) {
 	return count > 0, err
 }
 
+// GetUserVotedOptionIDs returns the option IDs a member voted for.
 func (r *ForumRepo) GetUserVotedOptionIDs(voteID, memberID uint) ([]uint, error) {
 	var ids []uint
 	err := pkg.DB.Model(&model.VoteRecord{}).
@@ -145,6 +155,7 @@ func (r *ForumRepo) GetUserVotedOptionIDs(voteID, memberID uint) ([]uint, error)
 
 // --- Likes ---
 
+// ToggleLike toggles a like on a target. Returns true if liked, false if unliked.
 func (r *ForumRepo) ToggleLike(targetType string, targetID, memberID uint) (bool, error) {
 	var existing model.Like
 	err := pkg.DB.Where("target_type = ? AND target_id = ? AND member_id = ?", targetType, targetID, memberID).
@@ -158,6 +169,7 @@ func (r *ForumRepo) ToggleLike(targetType string, targetID, memberID uint) (bool
 	return true, pkg.DB.Create(&like).Error
 }
 
+// GetLikeCount returns the number of likes on a target.
 func (r *ForumRepo) GetLikeCount(targetType string, targetID uint) (int64, error) {
 	var count int64
 	err := pkg.DB.Model(&model.Like{}).

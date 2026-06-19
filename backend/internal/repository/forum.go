@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// ForumRepo handles forum data access.
 type ForumRepo struct{}
 
 func tagPtr(t model.Topic) *model.Tag {
@@ -17,6 +18,7 @@ func tagPtr(t model.Topic) *model.Tag {
 
 // --- Feed ---
 
+// FeedItem represents a single item in the forum feed.
 type FeedItem struct {
 	Type      string       `json:"type"` // post / topic
 	ID        uint         `json:"id"`
@@ -28,12 +30,14 @@ type FeedItem struct {
 	CreatedAt time.Time    `json:"created_at"`
 }
 
+// FeedResponse is the paginated feed API response.
 type FeedResponse struct {
 	Pinned []FeedItem `json:"pinned"`
 	Items  []FeedItem `json:"items"`
 	Total  int64      `json:"total"`
 }
 
+// GetFeed returns the paginated forum feed with pinned items.
 func (r *ForumRepo) GetFeed(page, pageSize int) (*FeedResponse, error) {
 	// 1. Pinned topics
 	var pinnedTopics []model.Topic
@@ -126,26 +130,31 @@ func (r *ForumRepo) GetFeed(page, pageSize int) (*FeedResponse, error) {
 
 // --- Tags ---
 
+// ListTags returns all available tags.
 func (r *ForumRepo) ListTags() ([]model.Tag, error) {
 	var tags []model.Tag
 	err := pkg.DB.Order("id ASC").Find(&tags).Error
 	return tags, err
 }
 
+// CreateTag creates a new tag.
 func (r *ForumRepo) CreateTag(tag *model.Tag) error {
 	return pkg.DB.Create(tag).Error
 }
 
+// UpdateTag updates an existing tag.
 func (r *ForumRepo) UpdateTag(tag *model.Tag) error {
 	return pkg.DB.Save(tag).Error
 }
 
+// FindTagByID finds a tag by ID.
 func (r *ForumRepo) FindTagByID(id uint) (*model.Tag, error) {
 	var tag model.Tag
 	err := pkg.DB.First(&tag, id).Error
 	return &tag, err
 }
 
+// DeleteTag deletes a tag if it has no associated topics.
 func (r *ForumRepo) DeleteTag(id uint) (int64, error) {
 	var count int64
 	pkg.DB.Model(&model.Topic{}).Where("tag_id = ?", id).Count(&count)

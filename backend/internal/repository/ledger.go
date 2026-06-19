@@ -36,8 +36,10 @@ func DecodeCursor(s string) (*CursorData, error) {
 	return &c, nil
 }
 
+// LedgerRepo handles ledger database operations.
 type LedgerRepo struct{}
 
+// LedgerFilter contains filtering options for ledger queries.
 type LedgerFilter struct {
 	StartDate  string // "2026-05-01"
 	EndDate    string // "2026-06-01" (exclusive upper bound)
@@ -47,18 +49,21 @@ type LedgerFilter struct {
 	Cursor     *CursorData // nil = first page
 }
 
+// LedgerGroup groups ledger items by date with a daily total.
 type LedgerGroup struct {
 	Date       string           `json:"date"`
 	DailyTotal int64            `json:"daily_total"`
 	Items      []LedgerWithAssoc `json:"items"`
 }
 
+// LedgerWithAssoc is a ledger entry with associated category and creator.
 type LedgerWithAssoc struct {
 	model.Ledger
 	Category model.Category `json:"category"`
 	Creator  model.Member   `json:"creator"`
 }
 
+// ListResult holds the paginated ledger list response with summary.
 type ListResult struct {
 	Summary    LedgerSummary `json:"summary"`
 	Groups     []LedgerGroup `json:"groups"`
@@ -66,6 +71,7 @@ type ListResult struct {
 	HasMore    bool          `json:"has_more"`
 }
 
+// LedgerSummary summarizes income and expense totals.
 type LedgerSummary struct {
 	Income  int64 `json:"income"`
 	Expense int64 `json:"expense"`
@@ -102,9 +108,10 @@ func (r *LedgerRepo) computeSummary(filter LedgerFilter) (LedgerSummary, error) 
 		return summary, err
 	}
 	for _, row := range rows {
-		if row.Type == "income" {
+		switch row.Type {
+		case "income":
 			summary.Income = row.Amount
-		} else if row.Type == "expense" {
+		case "expense":
 			summary.Expense = row.Amount
 		}
 	}
@@ -125,6 +132,7 @@ func (r *LedgerRepo) calcDailyTotal(items []LedgerWithAssoc) int64 {
 	return total
 }
 
+// List fetches paginated ledgers with filters, grouped by date.
 func (r *LedgerRepo) List(filter LedgerFilter) (*ListResult, error) {
 	// 1. Compute summary (now applies category/creator filters)
 	summary, err := r.computeSummary(filter)
@@ -178,14 +186,14 @@ func (r *LedgerRepo) List(filter LedgerFilter) (*ListResult, error) {
 		lastGroup := &groups[len(groups)-1]
 		extraDate := time.Time(extraRecord.OccurredAt).Format("2006-01-02")
 		if extraDate == lastGroup.Date {
-			minId := lastGroup.Items[len(lastGroup.Items)-1].ID
+			minID := lastGroup.Items[len(lastGroup.Items)-1].ID
 			nextDay := time.Time(extraRecord.OccurredAt).AddDate(0, 0, 1).Format("2006-01-02")
 
 		补全Q := pkg.DB.Model(&model.Ledger{}).
 				Preload("Category").
 				Preload("Creator").
 				Where("ledgers.occurred_at >= ? AND ledgers.occurred_at < ?", lastGroup.Date, nextDay).
-				Where("ledgers.id < ?", minId)
+				Where("ledgers.id < ?", minID)
 			补全Q = r.applyOptionalFilters(补全Q, filter)
 
 			var extraRecords []model.Ledger
@@ -267,14 +275,17 @@ func (r *LedgerRepo) groupByDate(ledgers []model.Ledger) []LedgerGroup {
 	return groups
 }
 
+// Create inserts a new ledger entry.
 func (r *LedgerRepo) Create(ledger *model.Ledger) error {
 	return pkg.DB.Create(ledger).Error
 }
 
+// Update modifies an existing ledger entry.
 func (r *LedgerRepo) Update(ledger *model.Ledger) error {
 	return pkg.DB.Save(ledger).Error
 }
 
+// FindByID finds a ledger by ID with associated category and creator.
 func (r *LedgerRepo) FindByID(id uint) (*LedgerWithAssoc, error) {
 	var ledger model.Ledger
 	err := pkg.DB.
@@ -291,6 +302,7 @@ func (r *LedgerRepo) FindByID(id uint) (*LedgerWithAssoc, error) {
 	}, nil
 }
 
+// Delete soft-deletes a ledger entry.
 func (r *LedgerRepo) Delete(id uint) error {
 	return pkg.DB.Delete(&model.Ledger{}, id).Error
 }

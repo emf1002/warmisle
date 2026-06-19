@@ -22,6 +22,7 @@ import (
 	_ "modernc.org/sqlite"
 	"github.com/pressly/goose/v3"
 
+	"warmisle/internal/middleware"
 	"warmisle/internal/pkg"
 	"warmisle/internal/repository"
 	"warmisle/internal/routes"
@@ -64,7 +65,21 @@ func main() {
 	// 迁移由 goose 管理，无需 GORM AutoMigrate
 	// 如需添加字段，创建新的 goose 迁移文件
 
-	r := gin.Default()
+	r := gin.New()
+
+	// 请求体大小限制：1MB（防止内存耗尽攻击）
+	r.Use(func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 1<<20) // 1MB
+		c.Next()
+	})
+
+	// 基础中间件
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+
+	// 安全中间件（全局）
+	r.Use(middleware.SecurityHeaders())
+	r.Use(middleware.CORS())
 
 	// 前端静态文件（从 embed 提供）
 	dist, _ := fs.Sub(frontendFS, "frontend/dist")

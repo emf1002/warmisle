@@ -39,7 +39,7 @@ func TestHandler_InitCheck_NeedInit(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	json.Unmarshal(w.Body.Bytes(), &resp) //nolint:errcheck
 	assert.Equal(t, float64(0), resp["code"])
 	data := resp["data"].(map[string]interface{})
 	assert.True(t, data["need_init"].(bool))
@@ -59,7 +59,7 @@ func TestHandler_InitCheck_NoNeedInit(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	json.Unmarshal(w.Body.Bytes(), &resp) //nolint:errcheck
 	data := resp["data"].(map[string]interface{})
 	assert.False(t, data["need_init"].(bool))
 }
@@ -83,7 +83,7 @@ func TestHandler_Login_Success(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	json.Unmarshal(w.Body.Bytes(), &resp) //nolint:errcheck
 	assert.Equal(t, float64(0), resp["code"])
 	data := resp["data"].(map[string]interface{})
 	assert.NotEmpty(t, data["token"])
@@ -108,7 +108,7 @@ func TestHandler_Login_WrongPassword(t *testing.T) {
 
 	assert.Equal(t, 401, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	json.Unmarshal(w.Body.Bytes(), &resp) //nolint:errcheck
 	assert.Equal(t, float64(40101), resp["code"])
 }
 
@@ -126,7 +126,7 @@ func TestHandler_Login_EmptyCredentials(t *testing.T) {
 
 	assert.Equal(t, 400, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	json.Unmarshal(w.Body.Bytes(), &resp) //nolint:errcheck
 	assert.Equal(t, float64(40001), resp["code"])
 }
 
@@ -144,7 +144,7 @@ func TestHandler_Login_MissingPassword(t *testing.T) {
 
 	assert.Equal(t, 400, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	json.Unmarshal(w.Body.Bytes(), &resp) //nolint:errcheck
 	assert.Equal(t, float64(40001), resp["code"])
 }
 

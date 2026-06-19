@@ -5,8 +5,10 @@ import (
 	"warmisle/internal/pkg"
 )
 
+// WishRepo handles wish data access.
 type WishRepo struct{}
 
+// WishFilter specifies query filters for wishes.
 type WishFilter struct {
 	Type      string
 	Status    string
@@ -15,12 +17,14 @@ type WishFilter struct {
 	PageSize  int
 }
 
+// WishWithAssoc is a wish with associated creator and vote count.
 type WishWithAssoc struct {
 	model.Wish
 	Creator   model.Member `json:"creator"`
 	VoteCount int64        `json:"vote_count"`
 }
 
+// WishListResult is the paginated wish list response.
 type WishListResult struct {
 	List     []WishWithAssoc `json:"list"`
 	Total    int64           `json:"total"`
@@ -28,6 +32,7 @@ type WishListResult struct {
 	PageSize int             `json:"page_size"`
 }
 
+// List returns wishes matching the given filter.
 func (r *WishRepo) List(filter WishFilter) (*WishListResult, error) {
 	query := pkg.DB.Model(&model.Wish{}).Preload("Creator")
 
@@ -75,6 +80,7 @@ func (r *WishRepo) List(filter WishFilter) (*WishListResult, error) {
 	}, nil
 }
 
+// FindByID finds a wish by ID with metadata.
 func (r *WishRepo) FindByID(id uint) (*WishWithAssoc, error) {
 	var wish model.Wish
 	err := pkg.DB.Preload("Creator").First(&wish, id).Error
@@ -90,18 +96,22 @@ func (r *WishRepo) FindByID(id uint) (*WishWithAssoc, error) {
 	}, nil
 }
 
+// Create inserts a new wish.
 func (r *WishRepo) Create(wish *model.Wish) error {
 	return pkg.DB.Create(wish).Error
 }
 
+// Update modifies an existing wish.
 func (r *WishRepo) Update(wish *model.Wish) error {
 	return pkg.DB.Save(wish).Error
 }
 
+// Delete soft-deletes a wish.
 func (r *WishRepo) Delete(id uint) error {
 	return pkg.DB.Delete(&model.Wish{}, id).Error
 }
 
+// HasVoted checks if a member has voted on a wish.
 func (r *WishRepo) HasVoted(wishID, memberID uint) (bool, error) {
 	var count int64
 	err := pkg.DB.Model(&model.WishVote{}).
@@ -110,14 +120,17 @@ func (r *WishRepo) HasVoted(wishID, memberID uint) (bool, error) {
 	return count > 0, err
 }
 
+// CreateVote casts a vote on a wish.
 func (r *WishRepo) CreateVote(vote *model.WishVote) error {
 	return pkg.DB.Create(vote).Error
 }
 
+// DeleteVote removes a vote from a wish.
 func (r *WishRepo) DeleteVote(wishID, memberID uint) error {
 	return pkg.DB.Where("wish_id = ? AND member_id = ?", wishID, memberID).Delete(&model.WishVote{}).Error
 }
 
+// CountByStatus counts wishes by ID and status.
 func (r *WishRepo) CountByStatus(wishID uint, status string) (int64, error) {
 	var count int64
 	err := pkg.DB.Model(&model.Wish{}).Where("id = ? AND status = ?", wishID, status).Count(&count).Error

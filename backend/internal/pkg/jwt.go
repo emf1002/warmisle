@@ -8,10 +8,12 @@ import (
 
 var jwtSecret []byte
 
+// InitJWT initializes the JWT signing key.
 func InitJWT(secret string) {
 	jwtSecret = []byte(secret)
 }
 
+// Claims represents JWT claims with member info.
 type Claims struct {
 	MemberID uint   `json:"member_id"`
 	Username string `json:"username"`
@@ -19,6 +21,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// GenerateToken creates a JWT token for a member.
 func GenerateToken(memberID uint, username, role string) (string, error) {
 	claims := Claims{
 		MemberID: memberID,
@@ -32,8 +35,9 @@ func GenerateToken(memberID uint, username, role string) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
+// ParseToken validates and parses a JWT token.
 func ParseToken(tokenStr string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(_ *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil
 	})
 	if err != nil {

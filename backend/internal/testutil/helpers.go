@@ -100,6 +100,7 @@ func SeedAdminAndMember(t *testing.T) (model.Member, model.Member, string, strin
 }
 
 // SeedDisabledMember 创建一个禁用成员
+//nolint:revive
 func SeedDisabledMember(t *testing.T) (model.Member, string) {
 	db := pkg.DB
 	hash, _ := pkg.HashPassword("testpass123")

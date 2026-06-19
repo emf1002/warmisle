@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ToggleLike toggles a like on a target.
 // POST /api/likes
 func (h *ForumHandler) ToggleLike(c *gin.Context) {
 	var req struct {
@@ -31,6 +32,7 @@ func (h *ForumHandler) ToggleLike(c *gin.Context) {
 	pkg.Success(c, gin.H{"liked": liked})
 }
 
+// ListVotes lists votes with pagination.
 // GET /api/votes
 func (h *ForumHandler) ListVotes(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -55,6 +57,7 @@ func (h *ForumHandler) ListVotes(c *gin.Context) {
 	})
 }
 
+// CreateVote creates a new vote.
 // POST /api/votes
 func (h *ForumHandler) CreateVote(c *gin.Context) {
 	var req struct {
@@ -86,6 +89,7 @@ func (h *ForumHandler) CreateVote(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// DeleteVote deletes a vote by ID.
 // DELETE /api/votes/:id
 func (h *ForumHandler) DeleteVote(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -105,6 +109,7 @@ func (h *ForumHandler) DeleteVote(c *gin.Context) {
 	pkg.Success(c, nil)
 }
 
+// Vote casts a vote on a vote item.
 // POST /api/votes/:id/vote
 func (h *ForumHandler) Vote(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -144,6 +149,7 @@ func (h *ForumHandler) Vote(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// GetVote returns a vote by ID with full details.
 // GET /api/votes/:id
 func (h *ForumHandler) GetVote(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ListComments lists comments for a given target type and target ID.
 // GET /api/comments?target_type=&target_id=
 func (h *ForumHandler) ListComments(c *gin.Context) {
 	targetType := c.Query("target_type")
@@ -35,6 +36,7 @@ func (h *ForumHandler) ListComments(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// CreateComment creates a new comment on a target.
 // POST /api/comments
 func (h *ForumHandler) CreateComment(c *gin.Context) {
 	var req struct {
@@ -61,6 +63,7 @@ func (h *ForumHandler) CreateComment(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// DeleteComment deletes a comment by ID.
 // DELETE /api/comments/:id
 func (h *ForumHandler) DeleteComment(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

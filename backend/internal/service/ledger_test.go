@@ -157,8 +157,8 @@ func TestLedgerService_List_ByMonth(t *testing.T) {
 	m1, _, cat := seedLedgerFixtures()
 
 	// Create records in different months
-	svc.Create(1000, "5月", cat.ID, time.Date(2026, 5, 15, 0, 0, 0, 0, time.UTC), m1.ID)
-	svc.Create(2000, "6月", cat.ID, time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC), m1.ID)
+	svc.Create(1000, "5月", cat.ID, time.Date(2026, 5, 15, 0, 0, 0, 0, time.UTC), m1.ID) //nolint:errcheck
+	svc.Create(2000, "6月", cat.ID, time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC), m1.ID) //nolint:errcheck
 
 	result, err := svc.List(repository.LedgerFilter{StartDate: "2026-05-01", EndDate: "2026-06-01", Limit: 20})
 	require.NoError(t, err)
@@ -175,7 +175,7 @@ func TestLedgerService_List_CursorPagination(t *testing.T) {
 
 	// Create 15 records on different dates within May to trigger cursor pagination
 	for i := 1; i <= 15; i++ {
-		svc.Create(int64(i*100), fmt.Sprintf("记录%d", i), cat.ID,
+		svc.Create(int64(i*100), fmt.Sprintf("记录%d", i), cat.ID, //nolint:errcheck
 			time.Date(2026, 5, i, 12, 0, 0, 0, time.UTC), m1.ID)
 	}
 

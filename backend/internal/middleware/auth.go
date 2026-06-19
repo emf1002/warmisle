@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware for warmisle.
 package middleware
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AuthRequired validates the JWT token and attaches member info to the context.
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
@@ -36,6 +38,7 @@ func AuthRequired() gin.HandlerFunc {
 	}
 }
 
+// AdminRequired checks that the current user has admin role.
 func AdminRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, _ := c.Get("role")

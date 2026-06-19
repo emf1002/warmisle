@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Tag represents a forum tag.
 type Tag struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Name      string         `gorm:"size:20;uniqueIndex" json:"name"`
@@ -14,4 +15,5 @@ type Tag struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
+// TableName returns the table name for Tag.
 func (Tag) TableName() string { return "tags" }

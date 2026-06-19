@@ -5,8 +5,10 @@ import (
 	"warmisle/internal/pkg"
 )
 
+// TodoRepo handles todo data access.
 type TodoRepo struct{}
 
+// TodoFilter specifies query filters for todos.
 type TodoFilter struct {
 	Status     string
 	AssigneeID *uint
@@ -14,12 +16,14 @@ type TodoFilter struct {
 	PageSize   int
 }
 
+// TodoWithAssoc is a todo with associated member info.
 type TodoWithAssoc struct {
 	model.Todo
 	Assignee *model.Member `json:"assignee"`
 	Creator  model.Member  `json:"creator"`
 }
 
+// TodoListResult is the paginated todo list response.
 type TodoListResult struct {
 	List     []TodoWithAssoc `json:"list"`
 	Total    int64           `json:"total"`
@@ -27,6 +31,7 @@ type TodoListResult struct {
 	PageSize int             `json:"page_size"`
 }
 
+// List returns todos matching the given filter.
 func (r *TodoRepo) List(filter TodoFilter) (*TodoListResult, error) {
 	query := pkg.DB.Model(&model.Todo{}).
 		Preload("Assignee").
@@ -73,6 +78,7 @@ func (r *TodoRepo) List(filter TodoFilter) (*TodoListResult, error) {
 	}, nil
 }
 
+// FindByID finds a todo by ID with associations.
 func (r *TodoRepo) FindByID(id uint) (*TodoWithAssoc, error) {
 	var todo model.Todo
 	err := pkg.DB.
@@ -89,18 +95,22 @@ func (r *TodoRepo) FindByID(id uint) (*TodoWithAssoc, error) {
 	}, nil
 }
 
+// Create inserts a new todo.
 func (r *TodoRepo) Create(todo *model.Todo) error {
 	return pkg.DB.Create(todo).Error
 }
 
+// Update modifies an existing todo.
 func (r *TodoRepo) Update(todo *model.Todo) error {
 	return pkg.DB.Save(todo).Error
 }
 
+// Delete soft-deletes a todo.
 func (r *TodoRepo) Delete(id uint) error {
 	return pkg.DB.Delete(&model.Todo{}, id).Error
 }
 
+// CreateLog inserts a todo change log entry.
 func (r *TodoRepo) CreateLog(log *model.TodoLog) error {
 	return pkg.DB.Create(log).Error
 }

@@ -63,9 +63,10 @@ func (s *DashboardService) GetSummary(month string) (map[string]int64, error) {
 
 	result := map[string]int64{"income": 0, "expense": 0, "balance": 0}
 	for _, r := range rows {
-		if r.Type == "income" {
+		switch r.Type {
+		case "income":
 			result["income"] = r.Amount
-		} else if r.Type == "expense" {
+		case "expense":
 			result["expense"] = r.Amount
 		}
 	}

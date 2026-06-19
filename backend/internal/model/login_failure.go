@@ -11,4 +11,5 @@ type LoginFailure struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
+// TableName returns the table name for LoginFailure.
 func (LoginFailure) TableName() string { return "login_failures" }

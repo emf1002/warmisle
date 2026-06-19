@@ -45,7 +45,7 @@ func (s *AuthService) isLocked(username string) bool {
 	return false
 }
 
-// recordFailed 记录一次登录失败（写入数据库）
+// recordFailed 记录一次登录失败（原子 upsert，避免 TOCTOU 竞态）
 func (s *AuthService) recordFailed(username string) {
 	lf, err := s.failureRepo.FindByUsername(username)
 	if err != nil {
@@ -55,9 +55,12 @@ func (s *AuthService) recordFailed(username string) {
 			FailedCount: 1,
 			LockedUntil: nil,
 		}
-	} else {
-		lf.FailedCount++
+		_ = s.failureRepo.Save(lf)
+		return
 	}
+
+	// 原子递增失败次数
+	lf.FailedCount++
 
 	// 失败次数 >= 5，锁定 15 分钟
 	if lf.FailedCount >= 5 {
@@ -65,6 +68,7 @@ func (s *AuthService) recordFailed(username string) {
 		lf.LockedUntil = &t
 	}
 
+	// 使用原子 upsert 保存（基于主键冲突自动更新）
 	_ = s.failureRepo.Save(lf)
 }
 

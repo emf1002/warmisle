@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Post represents a forum post.
 type Post struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Content   string         `gorm:"size:1000;not null" json:"content"`
@@ -18,8 +19,10 @@ type Post struct {
 	Creator Member `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
+// TableName returns the table name for Post.
 func (Post) TableName() string { return "posts" }
 
+// Topic represents a forum topic.
 type Topic struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Title     string         `gorm:"size:100;not null" json:"title"`
@@ -36,8 +39,10 @@ type Topic struct {
 	Creator Member `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
+// TableName returns the table name for Topic.
 func (Topic) TableName() string { return "topics" }
 
+// Vote represents a forum vote.
 type Vote struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Title     string         `gorm:"size:100;not null" json:"title"`
@@ -53,8 +58,10 @@ type Vote struct {
 	Options []VoteOption `gorm:"foreignKey:VoteID" json:"options,omitempty"`
 }
 
+// TableName returns the table name for Vote.
 func (Vote) TableName() string { return "votes" }
 
+// VoteOption represents a vote option.
 type VoteOption struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
 	VoteID    uint      `gorm:"index;not null" json:"vote_id"`
@@ -63,8 +70,10 @@ type VoteOption struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// TableName returns the table name for VoteOption.
 func (VoteOption) TableName() string { return "vote_options" }
 
+// VoteRecord represents a vote record.
 type VoteRecord struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
 	VoteID    uint      `gorm:"index;not null" json:"vote_id"`
@@ -77,8 +86,10 @@ type VoteRecord struct {
 	Option VoteOption `gorm:"foreignKey:OptionID" json:"option,omitempty"`
 }
 
+// TableName returns the table name for VoteRecord.
 func (VoteRecord) TableName() string { return "vote_records" }
 
+// Comment represents a forum comment.
 type Comment struct {
 	ID         uint           `gorm:"primaryKey" json:"id"`
 	TargetType string         `gorm:"size:10;not null" json:"target_type"` // post / topic / wish
@@ -95,8 +106,10 @@ type Comment struct {
 	Parent  *Comment `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
 }
 
+// TableName returns the table name for Comment.
 func (Comment) TableName() string { return "comments" }
 
+// Like represents a like/dislike record.
 type Like struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
 	TargetType string    `gorm:"size:10;not null" json:"target_type"` // post / topic / comment
@@ -108,4 +121,5 @@ type Like struct {
 	Member Member `gorm:"foreignKey:MemberID" json:"member,omitempty"`
 }
 
+// TableName returns the table name for Like.
 func (Like) TableName() string { return "likes" }

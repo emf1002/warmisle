@@ -126,7 +126,7 @@ func TestWishService_Vote_Duplicate(t *testing.T) {
 
 	wish, _ := svc.Create("重复投票", "", "other", "normal", "", nil, creator.ID)
 
-	svc.Vote(wish.ID, voter.ID)
+	svc.Vote(wish.ID, voter.ID) //nolint:errcheck
 	_, err := svc.Vote(wish.ID, voter.ID)
 	assert.ErrorIs(t, err, ErrWishAlreadyVoted)
 }
@@ -139,7 +139,7 @@ func TestWishService_Unvote_Success(t *testing.T) {
 	voter := testutil.CreateTestMember(pkg.DB, "unvoter", "Unvoter", "member")
 
 	wish, _ := svc.Create("取消投票", "", "other", "normal", "", nil, creator.ID)
-	svc.Vote(wish.ID, voter.ID)
+	svc.Vote(wish.ID, voter.ID) //nolint:errcheck
 
 	result, err := svc.Unvote(wish.ID, voter.ID)
 	require.NoError(t, err)

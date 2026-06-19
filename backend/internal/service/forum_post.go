@@ -2,6 +2,7 @@ package service
 
 import (
 	"warmisle/internal/model"
+	"warmisle/internal/pkg"
 	"warmisle/internal/repository"
 )
 
@@ -9,7 +10,9 @@ func (s *ForumService) CreatePost(content string, creatorID uint) (*repository.P
 	if content == "" {
 		return nil, ErrForumContentRequired
 	}
-	post := &model.Post{Content: content, CreatorID: creatorID}
+	// XSS 防护：过滤 HTML 内容
+	sanitizedContent := pkg.SanitizeHTML(content)
+	post := &model.Post{Content: sanitizedContent, CreatorID: creatorID}
 	if err := s.repo.CreatePost(post); err != nil {
 		return nil, err
 	}
@@ -27,7 +30,8 @@ func (s *ForumService) UpdatePost(id uint, content string, currentMemberID uint,
 	if content == "" {
 		return nil, ErrForumContentRequired
 	}
-	existing.Content = content
+	// XSS 防护：过滤 HTML 内容
+	existing.Content = pkg.SanitizeHTML(content)
 	if err := s.repo.UpdatePost(&existing.Post); err != nil {
 		return nil, err
 	}

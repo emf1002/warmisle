@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreatePost creates a new forum post.
 // POST /api/posts
 func (h *ForumHandler) CreatePost(c *gin.Context) {
 	var req struct {
@@ -29,6 +30,7 @@ func (h *ForumHandler) CreatePost(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// UpdatePost updates an existing forum post by ID.
 // PUT /api/posts/:id
 func (h *ForumHandler) UpdatePost(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -57,6 +59,7 @@ func (h *ForumHandler) UpdatePost(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// DeletePost deletes a forum post by ID.
 // DELETE /api/posts/:id
 func (h *ForumHandler) DeletePost(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

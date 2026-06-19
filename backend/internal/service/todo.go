@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"warmisle/internal/model"
@@ -76,13 +77,15 @@ func (s *TodoService) Create(title, description, priority string, assigneeID *ui
 	}
 
 	if assigneeID != nil {
-		s.repo.CreateLog(&model.TodoLog{
+		if err := s.repo.CreateLog(&model.TodoLog{
 			TodoID:     todo.ID,
 			FieldName:  "assignee",
 			OldValue:   "",
 			NewValue:   fmt.Sprintf("%d", *assigneeID),
 			OperatorID: creatorID,
-		})
+		}); err != nil {
+			log.Printf("todo audit log write failed: %v", err)
+		}
 	}
 
 	return s.repo.FindByID(todo.ID)
@@ -106,20 +109,24 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 			return nil, ErrTodoTitleRequired
 		}
 		if *title != existing.Title {
-			s.repo.CreateLog(&model.TodoLog{
+			if err := s.repo.CreateLog(&model.TodoLog{
 				TodoID: id, FieldName: "title",
 				OldValue: existing.Title, NewValue: *title, OperatorID: currentMemberID,
-			})
+			}); err != nil {
+				log.Printf("todo audit log write failed: %v", err)
+			}
 			existing.Title = *title
 		}
 	}
 
 	if description != nil {
 		if *description != existing.Description {
-			s.repo.CreateLog(&model.TodoLog{
+			if err := s.repo.CreateLog(&model.TodoLog{
 				TodoID: id, FieldName: "description",
 				OldValue: existing.Description, NewValue: *description, OperatorID: currentMemberID,
-			})
+			}); err != nil {
+				log.Printf("todo audit log write failed: %v", err)
+			}
 			existing.Description = *description
 		}
 	}
@@ -129,10 +136,12 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 			return nil, ErrTodoInvalidPriority
 		}
 		if *priority != existing.Priority {
-			s.repo.CreateLog(&model.TodoLog{
+			if err := s.repo.CreateLog(&model.TodoLog{
 				TodoID: id, FieldName: "priority",
 				OldValue: existing.Priority, NewValue: *priority, OperatorID: currentMemberID,
-			})
+			}); err != nil {
+				log.Printf("todo audit log write failed: %v", err)
+			}
 			existing.Priority = *priority
 		}
 	}
@@ -147,10 +156,12 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 			newStr = dueDate.Format("2006-01-02")
 		}
 		if oldStr != newStr {
-			s.repo.CreateLog(&model.TodoLog{
+			if err := s.repo.CreateLog(&model.TodoLog{
 				TodoID: id, FieldName: "due_date",
 				OldValue: oldStr, NewValue: newStr, OperatorID: currentMemberID,
-			})
+			}); err != nil {
+				log.Printf("todo audit log write failed: %v", err)
+			}
 			existing.DueDate = model.FromTimePtr(dueDate)
 		}
 	}
@@ -172,10 +183,12 @@ func (s *TodoService) Update(id uint, title, description, priority *string, assi
 			newStr = fmt.Sprintf("%d", *assigneeID)
 		}
 		if oldStr != newStr {
-			s.repo.CreateLog(&model.TodoLog{
+			if err := s.repo.CreateLog(&model.TodoLog{
 				TodoID: id, FieldName: "assignee",
 				OldValue: oldStr, NewValue: newStr, OperatorID: currentMemberID,
-			})
+			}); err != nil {
+				log.Printf("todo audit log write failed: %v", err)
+			}
 			if *assigneeID != 0 {
 				existing.AssigneeID = assigneeID
 			} else {
@@ -248,13 +261,15 @@ func (s *TodoService) Claim(id uint, currentMemberID uint) (*repository.TodoWith
 		return nil, err
 	}
 
-	s.repo.CreateLog(&model.TodoLog{
+	if err := s.repo.CreateLog(&model.TodoLog{
 		TodoID:     id,
 		FieldName:  "assignee",
 		OldValue:   "",
 		NewValue:   fmt.Sprintf("%d", currentMemberID),
 		OperatorID: currentMemberID,
-	})
+	}); err != nil {
+		log.Printf("todo audit log write failed: %v", err)
+	}
 
 	return s.repo.FindByID(id)
 }

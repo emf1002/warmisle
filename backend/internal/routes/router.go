@@ -33,13 +33,18 @@ func Register(r *gin.Engine, backupSvc *service.BackupService) {
 	tag := handler.NewTagHandler()
 	backupHandler := handler.NewBackupHandler(backupSvc)
 
-	// Auth & Init
-	api.GET("/init/check", auth.InitCheck)
-	api.POST("/init/setup", init.Setup)
-	api.POST("/auth/login", auth.Login)
-
 	authRequired := middleware.AuthRequired()
 	adminRequired := middleware.AdminRequired()
+	rateLimit := middleware.RateLimit()
+	strictRateLimit := middleware.StrictRateLimit()
+
+	// 全局 API 速率限制（不覆盖已注册的测试端点）
+	api.Use(rateLimit)
+
+	// Auth & Init（登录/初始化使用严格速率限制）
+	api.GET("/init/check", auth.InitCheck)
+	api.POST("/init/setup", strictRateLimit, init.Setup)
+	api.POST("/auth/login", strictRateLimit, auth.Login)
 
 	// Member management
 	api.GET("/members", authRequired, member.List)

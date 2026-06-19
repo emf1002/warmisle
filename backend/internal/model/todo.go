@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Todo represents a todo item.
 type Todo struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Title       string         `gorm:"size:100;not null" json:"title"`
@@ -25,8 +26,10 @@ type Todo struct {
 	Creator  Member  `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
+// TableName returns the table name for Todo.
 func (Todo) TableName() string { return "todos" }
 
+// TodoLog represents a todo change log entry.
 type TodoLog struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
 	TodoID     uint      `gorm:"index;not null" json:"todo_id"`
@@ -40,4 +43,5 @@ type TodoLog struct {
 	Operator Member `gorm:"foreignKey:OperatorID" json:"operator,omitempty"`
 }
 
+// TableName returns the table name for TodoLog.
 func (TodoLog) TableName() string { return "todo_logs" }

@@ -1,6 +1,6 @@
 # 后端 lint（暂不阻塞提交，后续修复配置）
-cd backend && golangci-lint run ./... || echo "⚠️ golangci-lint 有问题，请后续修复配置"
+(cd backend && golangci-lint run ./...) || echo "⚠️ golangci-lint 有问题，请后续修复配置"
 
 # 前端 lint + 类型检查
-cd frontend && npx eslint . --ext .ts,.vue --max-warnings 0 || exit 1
-cd frontend && npx vue-tsc --noEmit || exit 1
+(cd frontend && node ./node_modules/eslint/bin/eslint.js . --ext .ts,.vue --max-warnings 0) || exit 1
+(cd frontend && node ./node_modules/vue-tsc/bin/vue-tsc.js --noEmit) || exit 1

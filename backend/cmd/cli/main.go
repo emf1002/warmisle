@@ -1,3 +1,4 @@
+// Package main provides the CLI tool for warmisle (e.g. reset-password).
 package main
 
 import (

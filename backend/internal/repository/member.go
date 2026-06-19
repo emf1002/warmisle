@@ -5,8 +5,10 @@ import (
 	"warmisle/internal/pkg"
 )
 
+// MemberRepo handles member data access.
 type MemberRepo struct{}
 
+// FindByID finds a member by ID.
 func (r *MemberRepo) FindByID(id uint) (*model.Member, error) {
 	var m model.Member
 	err := pkg.DB.First(&m, id).Error
@@ -16,36 +18,43 @@ func (r *MemberRepo) FindByID(id uint) (*model.Member, error) {
 	return &m, nil
 }
 
+// List returns all members.
 func (r *MemberRepo) List() ([]model.Member, error) {
 	var list []model.Member
 	err := pkg.DB.Order("created_at").Find(&list).Error
 	return list, err
 }
 
+// Count returns the total number of members.
 func (r *MemberRepo) Count() (int64, error) {
 	var count int64
 	err := pkg.DB.Model(&model.Member{}).Count(&count).Error
 	return count, err
 }
 
+// CountAdmins returns the number of admin members.
 func (r *MemberRepo) CountAdmins() (int64, error) {
 	var count int64
 	err := pkg.DB.Model(&model.Member{}).Where("role = ?", "admin").Count(&count).Error
 	return count, err
 }
 
+// Create inserts a new member.
 func (r *MemberRepo) Create(m *model.Member) error {
 	return pkg.DB.Create(m).Error
 }
 
+// Update modifies an existing member.
 func (r *MemberRepo) Update(m *model.Member) error {
 	return pkg.DB.Save(m).Error
 }
 
+// SoftDelete soft-deletes a member.
 func (r *MemberRepo) SoftDelete(id uint) error {
 	return pkg.DB.Delete(&model.Member{}, id).Error
 }
 
+// FindByUsername finds a member by username.
 func (r *MemberRepo) FindByUsername(username string) (*model.Member, error) {
 	var m model.Member
 	err := pkg.DB.Where("username = ?", username).First(&m).Error

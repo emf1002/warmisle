@@ -22,7 +22,7 @@ func TestSuccess_ReturnsCorrectFormat(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, 0, resp.Code)
 	assert.Equal(t, "ok", resp.Message)
 	data, ok := resp.Data.(map[string]interface{})
@@ -38,7 +38,7 @@ func TestSuccess_WithNilData(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, 0, resp.Code)
 	assert.Nil(t, resp.Data)
 }
@@ -51,7 +51,7 @@ func TestError_ReturnsCorrectFormat(t *testing.T) {
 
 	assert.Equal(t, 400, w.Code)
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, 40001, resp.Code)
 	assert.Equal(t, "参数错误", resp.Message)
 	assert.Nil(t, resp.Data)

@@ -120,7 +120,7 @@ func TestAuthService_Login_ResetAfterSuccess(t *testing.T) {
 
 	// 4 failures
 	for i := 0; i < 4; i++ {
-		svc.Login("reset_test", "wrong")
+		svc.Login("reset_test", "wrong") //nolint:errcheck
 	}
 
 	// 5th attempt succeeds — should reset counter

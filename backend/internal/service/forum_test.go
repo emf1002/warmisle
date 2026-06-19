@@ -265,7 +265,7 @@ func TestForumService_DeleteTag_InUse(t *testing.T) {
 	defer teardown()
 	creator := testutil.CreateTestMember(pkg.DB, "tag_c", "TagC", "member")
 	tag, _ := svc.CreateTag("育儿")
-	svc.CreateTopic("育儿话题", "内容", &tag.ID, creator.ID)
+	svc.CreateTopic("育儿话题", "内容", &tag.ID, creator.ID) //nolint:errcheck
 	err := svc.DeleteTag(tag.ID)
 	assert.ErrorIs(t, err, ErrForumTagInUse)
 }
@@ -293,7 +293,7 @@ func TestForumService_GetFeed_WithContent(t *testing.T) {
 	svc, teardown := setupForumTest()
 	defer teardown()
 	creator := testutil.CreateTestMember(pkg.DB, "feed_c", "FeedC", "member")
-	svc.CreatePost("Hello feed", creator.ID)
+	svc.CreatePost("Hello feed", creator.ID) //nolint:errcheck
 	feed, err := svc.GetFeed(1, 10)
 	require.NoError(t, err)
 	assert.NotEmpty(t, feed.Items)
@@ -305,7 +305,7 @@ func TestForumService_GetFeed_PinnedTopics(t *testing.T) {
 	defer teardown()
 	creator := testutil.CreateTestMember(pkg.DB, "feed_pin", "FeedPin", "admin")
 	topic, _ := svc.CreateTopic("置顶话题", "内容", nil, creator.ID)
-	svc.TogglePin(topic.ID, "admin")
+	svc.TogglePin(topic.ID, "admin") //nolint:errcheck
 	feed, err := svc.GetFeed(1, 10)
 	require.NoError(t, err)
 	assert.Len(t, feed.Pinned, 1)

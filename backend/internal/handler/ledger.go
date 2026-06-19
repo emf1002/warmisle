@@ -11,14 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// LedgerHandler handles ledger (accounting) related HTTP requests.
 type LedgerHandler struct {
 	svc *service.LedgerService
 }
 
+// NewLedgerHandler creates a new LedgerHandler.
 func NewLedgerHandler() *LedgerHandler {
 	return &LedgerHandler{svc: service.NewLedgerService()}
 }
 
+// List returns a paginated list of ledger entries with optional filters.
 // GET /api/ledgers
 func (h *LedgerHandler) List(c *gin.Context) {
 	var req struct {
@@ -77,6 +80,7 @@ func (h *LedgerHandler) List(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// GetByID returns a single ledger entry by its ID.
 // GET /api/ledgers/:id
 func (h *LedgerHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -103,6 +107,7 @@ type createLedgerRequest struct {
 	OccurredAt string  `json:"occurred_at"`
 }
 
+// Create creates a new ledger entry.
 // POST /api/ledgers
 func (h *LedgerHandler) Create(c *gin.Context) {
 	var req createLedgerRequest
@@ -156,6 +161,7 @@ type updateLedgerRequest struct {
 	OccurredAt *string  `json:"occurred_at"`
 }
 
+// Update updates an existing ledger entry by ID.
 // PUT /api/ledgers/:id
 func (h *LedgerHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -213,6 +219,7 @@ func (h *LedgerHandler) Update(c *gin.Context) {
 	pkg.Success(c, result)
 }
 
+// Delete deletes a ledger entry by ID.
 // DELETE /api/ledgers/:id
 func (h *LedgerHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

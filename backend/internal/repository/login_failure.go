@@ -3,6 +3,9 @@ package repository
 import (
 	"warmisle/internal/model"
 	"warmisle/internal/pkg"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // LoginFailureRepo 登录失败记录仓库
@@ -18,21 +21,29 @@ func (r *LoginFailureRepo) FindByUsername(username string) (*model.LoginFailure,
 	return &lf, nil
 }
 
-// Save 插入或更新记录（Upsert）
+// Save 原子 upsert：INSERT OR REPLACE，消除 TOCTOU 竞态条件
 func (r *LoginFailureRepo) Save(lf *model.LoginFailure) error {
-	var existing model.LoginFailure
-	err := pkg.DB.Where("username = ?", lf.Username).First(&existing).Error
-	if err != nil {
-		// 不存在，创建新记录
-		return pkg.DB.Create(lf).Error
-	}
-	// 存在，更新字段
-	existing.FailedCount = lf.FailedCount
-	existing.LockedUntil = lf.LockedUntil
-	return pkg.DB.Save(&existing).Error
+	return pkg.DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "username"}},       // 主键冲突
+		DoUpdates: clause.AssignmentColumns([]string{"failed_count", "locked_until", "updated_at"}), // 仅更新关键字段
+	}).Create(lf).Error
 }
 
 // Delete 删除指定用户的记录
 func (r *LoginFailureRepo) Delete(username string) error {
 	return pkg.DB.Where("username = ?", username).Delete(&model.LoginFailure{}).Error
+}
+
+// UpsertLocked 原子操作：增加失败计数并可选锁定
+// 返回更新后的记录
+func (r *LoginFailureRepo) UpsertLocked(lf *model.LoginFailure) error {
+	result := pkg.DB.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "username"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{
+			"failed_count": gorm.Expr("failed_count + 1"),
+			"locked_until": lf.LockedUntil,
+			"updated_at":   gorm.Expr("CURRENT_TIMESTAMP"),
+		}),
+	}).Create(lf)
+	return result.Error
 }

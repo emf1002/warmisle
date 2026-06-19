@@ -7,6 +7,7 @@ import (
 
 // --- Posts ---
 
+// PostWithMeta is a post with associated creator info.
 type PostWithMeta struct {
 	model.Post
 	Creator      model.Member `json:"creator"`
@@ -15,10 +16,12 @@ type PostWithMeta struct {
 	Liked        bool         `json:"liked"`
 }
 
+// CreatePost inserts a new post.
 func (r *ForumRepo) CreatePost(post *model.Post) error {
 	return pkg.DB.Create(post).Error
 }
 
+// FindPostByID finds a post by ID with metadata.
 func (r *ForumRepo) FindPostByID(id uint, currentMemberID uint) (*PostWithMeta, error) {
 	var post model.Post
 	if err := pkg.DB.Preload("Creator").First(&post, id).Error; err != nil {
@@ -27,10 +30,12 @@ func (r *ForumRepo) FindPostByID(id uint, currentMemberID uint) (*PostWithMeta, 
 	return r.enrichPost(&post, currentMemberID), nil
 }
 
+// UpdatePost modifies an existing post.
 func (r *ForumRepo) UpdatePost(post *model.Post) error {
 	return pkg.DB.Save(post).Error
 }
 
+// DeletePost soft-deletes a post.
 func (r *ForumRepo) DeletePost(id uint) error {
 	return pkg.DB.Delete(&model.Post{}, id).Error
 }

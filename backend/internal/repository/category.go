@@ -5,24 +5,29 @@ import (
 	"warmisle/internal/pkg"
 )
 
+// CategoryRepo handles category data access.
 type CategoryRepo struct{}
 
+// List returns all categories sorted by sort order.
 func (r *CategoryRepo) List() ([]model.Category, error) {
 	var list []model.Category
 	err := pkg.DB.Order("type, sort_order").Find(&list).Error
 	return list, err
 }
 
+// FindByID finds a category by ID.
 func (r *CategoryRepo) FindByID(id uint) (*model.Category, error) {
 	var c model.Category
 	err := pkg.DB.First(&c, id).Error
 	return &c, err
 }
 
+// Create inserts a new category.
 func (r *CategoryRepo) Create(c *model.Category) error {
 	return pkg.DB.Create(c).Error
 }
 
+// Update modifies an existing category.
 func (r *CategoryRepo) Update(c *model.Category) error {
 	return pkg.DB.Save(c).Error
 }
@@ -37,6 +42,7 @@ func (r *CategoryRepo) SoftDelete(id uint) (int64, error) {
 	return 0, pkg.DB.Delete(&model.Category{}, id).Error
 }
 
+// FindByNameAndType finds a category by name and type.
 func (r *CategoryRepo) FindByNameAndType(name, typ string) (*model.Category, error) {
 	var c model.Category
 	err := pkg.DB.Where("name = ? AND type = ?", name, typ).First(&c).Error

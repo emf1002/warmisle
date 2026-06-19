@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Wish represents a wish list item.
 type Wish struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Title       string         `gorm:"size:100;not null" json:"title"`
@@ -24,8 +25,10 @@ type Wish struct {
 	Creator Member `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
+// TableName returns the table name for Wish.
 func (Wish) TableName() string { return "wishes" }
 
+// WishVote represents a vote on a wish.
 type WishVote struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
 	WishID    uint      `gorm:"index;not null" json:"wish_id"`
@@ -36,4 +39,5 @@ type WishVote struct {
 	Member Member `gorm:"foreignKey:MemberID" json:"member,omitempty"`
 }
 
+// TableName returns the table name for WishVote.
 func (WishVote) TableName() string { return "wish_votes" }

@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Member represents a family member.
 type Member struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Username  string         `gorm:"uniqueIndex;size:20" json:"username"`
@@ -17,7 +18,8 @@ type Member struct {
 	LastLogin *time.Time     `json:"last_login"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+// TableName returns the table name for Member.
 func (Member) TableName() string { return "members" }

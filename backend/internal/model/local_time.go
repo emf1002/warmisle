@@ -11,6 +11,7 @@ import (
 // that SQLite's strftime cannot parse. This type stores as "YYYY-MM-DD HH:MM:SS".
 type LocalTime time.Time
 
+// Value implements driver.Valuer.
 func (t LocalTime) Value() (driver.Value, error) {
 	tt := time.Time(t)
 	if tt.IsZero() {
@@ -19,6 +20,7 @@ func (t LocalTime) Value() (driver.Value, error) {
 	return tt.UTC().Format("2006-01-02 15:04:05"), nil
 }
 
+// Scan implements sql.Scanner.
 func (t *LocalTime) Scan(src interface{}) error {
 	if src == nil {
 		*t = LocalTime{}
@@ -42,6 +44,7 @@ func (t *LocalTime) Scan(src interface{}) error {
 	return nil
 }
 
+// MarshalJSON implements json.Marshaler.
 func (t LocalTime) MarshalJSON() ([]byte, error) {
 	tt := time.Time(t)
 	if tt.IsZero() {
@@ -50,6 +53,7 @@ func (t LocalTime) MarshalJSON() ([]byte, error) {
 	return tt.MarshalJSON()
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
 func (t *LocalTime) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		*t = LocalTime{}

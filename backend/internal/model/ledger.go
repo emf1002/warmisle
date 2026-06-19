@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Ledger represents a ledger record.
 type Ledger struct {
 	ID         uint           `gorm:"primaryKey" json:"id"`
 	Amount     int64          `gorm:"not null" json:"amount"`
@@ -22,4 +23,5 @@ type Ledger struct {
 	Creator  Member   `gorm:"foreignKey:CreatorID" json:"creator,omitempty"`
 }
 
+// TableName returns the table name for Ledger.
 func (Ledger) TableName() string { return "ledgers" }

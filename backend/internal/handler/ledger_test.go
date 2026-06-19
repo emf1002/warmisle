@@ -64,7 +64,7 @@ func TestHandler_Ledger_Create_CategoryNotFound(t *testing.T) {
 	r := setupTestRouter()
 	_, _, _, memberToken := testutil.SeedAdminAndMember(t)
 
-	body := fmt.Sprintf(`{"amount":10,"note":"分类不存在","category_id":99999}`)
+	body := `{"amount":10,"note":"分类不存在","category_id":99999}`
 	w := testutil.MakeRequest(r, "POST", "/api/ledgers", body, memberToken)
 	testutil.AssertErrorResponse(t, w, 400, 40001)
 }

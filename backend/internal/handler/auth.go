@@ -1,3 +1,4 @@
+// Package handler provides HTTP handlers for warmisle.
 package handler
 
 import (
@@ -9,10 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AuthHandler handles authentication-related HTTP requests.
 type AuthHandler struct {
 	svc *service.AuthService
 }
 
+// NewAuthHandler creates a new AuthHandler.
 func NewAuthHandler() *AuthHandler {
 	return &AuthHandler{svc: service.NewAuthService()}
 }
@@ -22,6 +25,7 @@ type loginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Login handles user login via username and password.
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -46,6 +50,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	pkg.Success(c, gin.H{"token": token})
 }
 
+// InitCheck checks whether the system requires initial setup.
 func (h *AuthHandler) InitCheck(c *gin.Context) {
 	needInit, err := h.svc.InitCheck()
 	if err != nil {

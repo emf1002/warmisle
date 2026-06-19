@@ -35,7 +35,7 @@ func TestMemberService_Create_DuplicateUsername(t *testing.T) {
 	svc, teardown := setupMemberTest()
 	defer teardown()
 
-	svc.Create("dup", "pass1234", "First", "", "")
+	svc.Create("dup", "pass1234", "First", "", "") //nolint:errcheck
 	_, err := svc.Create("dup", "pass5678", "Second", "", "")
 	assert.ErrorIs(t, err, ErrUsernameTaken)
 }
@@ -110,7 +110,7 @@ func TestMemberService_Disable_Success(t *testing.T) {
 	defer teardown()
 
 	// Create a second member as the operator, so operator ID != target member ID
-	svc.Create("operator", "password1", "Operator", "👨", "member")
+	svc.Create("operator", "password1", "Operator", "👨", "member") //nolint:errcheck
 	member, _ := svc.Create("todisable", "password1", "ToDisable", "👨", "member")
 
 	err := svc.Disable(member.ID, 1)
@@ -145,7 +145,7 @@ func TestMemberService_Enable_Success(t *testing.T) {
 	defer teardown()
 
 	member, _ := svc.Create("toenable", "password1", "ToEnable", "👨", "member")
-	svc.Disable(member.ID, 1)
+	_ = svc.Disable(member.ID, 1)
 
 	enabled, err := svc.Enable(member.ID)
 	require.NoError(t, err)
@@ -192,8 +192,8 @@ func TestMemberService_List(t *testing.T) {
 	svc, teardown := setupMemberTest()
 	defer teardown()
 
-	svc.Create("user1", "password1", "User1", "", "member")
-	svc.Create("user2", "password1", "User2", "", "admin")
+	svc.Create("user1", "password1", "User1", "", "member") //nolint:errcheck
+	svc.Create("user2", "password1", "User2", "", "admin") //nolint:errcheck
 
 	list, err := svc.List()
 	require.NoError(t, err)
