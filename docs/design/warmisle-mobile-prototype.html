@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暖屿移动端App原型</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+    background: #F0F0F0;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #FDF8F4;
+    border-radius: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+    border: 8px solid #333;
+    flex-shrink: 0;
+  }
+  .status-bar {
+    height: 54px;
+    padding: 12px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FFF;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E1E1E;
+  }
+  .top-bar {
+    height: 60px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FFF;
+    border-bottom: 0.5px solid rgba(0,0,0,0.08);
+  }
+  .top-bar-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1E1E1E;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFF;
+    font-size: 14px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  .card {
+    background: #FFF;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(232,116,97,0.08);
+    overflow: hidden;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #E87461 0%, #E89561 100%);
+    color: #FFF;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-primary:active { opacity: 0.85; }
+  .tab-bar {
+    position: absolute;
+    bottom: 8px;
+    left: 21px;
+    right: 21px;
+    height: 56px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 6px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    border: 0.5px solid rgba(0,0,0,0.06);
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: #999;
+    padding: 6px 12px;
+    border-radius: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .tab-item.active {
+    background: #E87461;
+    color: #FFF;
+  }
+  .tab-item.active svg { stroke: #FFF; fill: #FFF; }
+  .tab-svg { width: 20px; height: 20px; stroke: #999; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tab-svg-fill { width: 20px; height: 20px; stroke: #999; fill: #999; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* SVG Icon Base */
+  .icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .icon svg { display: block; }
+
+  /* Page-specific */
+  .login-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #E87461 0%, #F0A085 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 16px rgba(232,116,97,0.3);
+  }
+  .login-input {
+    width: 100%;
+    height: 50px;
+    border: 1.5px solid #E8E8E8;
+    border-radius: 14px;
+    padding: 0 16px 0 44px;
+    font-size: 15px;
+    color: #1E1E1E;
+    background: #FFF;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: #E87461; }
+  .login-input::placeholder { color: #BBB; }
+  .input-wrapper { position: relative; }
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .input-icon svg { width: 18px; height: 18px; stroke: #BBB; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stat-card {
+    border-radius: 18px;
+    padding: 16px;
+    color: #FFF;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+  }
+  .chart-bar {
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s;
+  }
+  .record-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.5px solid #F0F0F0;
+  }
+  .record-item:last-child { border-bottom: none; }
+  .category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .category-icon svg { width: 20px; height: 20px; }
+  .fab {
+    position: absolute;
+    bottom: 76px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E87461 0%, #E89561 100%);
+    color: #FFF;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(232,116,97,0.4);
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .filter-tab {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+  }
+  .filter-tab.active { background: #E87461; color: #FFF; }
+  .filter-tab.inactive { background: transparent; color: #888; border: 1px solid #DDD; }
+  .priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .wish-card {
+    min-width: 150px;
+    height: 190px;
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
+    color: #1E1E1E;
+  }
+  .wish-card svg { width: 32px; height: 32px; }
+  .topic-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #FFF;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #FFF;
+    border-bottom: 0.5px solid #F5F5F5;
+    cursor: pointer;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .menu-icon svg { width: 18px; height: 18px; }
+</style>
+</head>
+<body>
+
+<!-- SVG Icon Definitions (hidden) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <!-- User/Person -->
+  <symbol id="icon-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <!-- Lock -->
+  <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <!-- Calendar -->
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <!-- Chart/Bar -->
+  <symbol id="icon-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <!-- WarmIsle Logo -->
+  <symbol id="icon-warmisle-logo" viewBox="0 0 32 32">
+    <defs>
+      <linearGradient id="logo-badge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color: #FF8C42" />
+        <stop offset="100%" style="stop-color: #E85D2C" />
+      </linearGradient>
+      <linearGradient id="logo-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color: #FFF8F0" />
+        <stop offset="100%" style="stop-color: #FFF0E0" />
+      </linearGradient>
+    </defs>
+    <rect x="1" y="1" width="30" height="30" rx="6" fill="url(#logo-bg-grad)" stroke="url(#logo-badge-grad)" stroke-width="1.5" />
+    <line x1="16" y1="4" x2="16" y2="7" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round" />
+    <line x1="16" y1="25" x2="16" y2="28" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round" />
+    <line x1="4" y1="16" x2="7" y2="16" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round" />
+    <line x1="25" y1="16" x2="28" y2="16" stroke="#FFD93D" stroke-width="1.5" stroke-linecap="round" />
+    <polygon points="16,9 9,16 23,16" fill="url(#logo-badge-grad)" />
+    <rect x="11" y="16" width="10" height="7" rx="0.5" fill="url(#logo-badge-grad)" />
+    <rect x="14" y="18" width="4" height="5" rx="0.5" fill="#FFF8F0" />
+    <path d="M8,25 Q12,23 16,25 Q20,27 24,25" stroke="#4ECDC4" stroke-width="1.5" fill="none" stroke-linecap="round" />
+  </symbol>
+
+  <!-- Plus -->
+  <symbol id="icon-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <!-- Check/Circle -->
+  <symbol id="icon-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <!-- Circle (empty) -->
+  <symbol id="icon-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+  <!-- Check (small) -->
+  <symbol id="icon-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <!-- Home -->
+  <symbol id="icon-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <!-- Book/Ledger -->
+  <symbol id="icon-ledger" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <!-- Todo/Checkbox -->
+  <symbol id="icon-todo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></symbol>
+  <!-- Star/Wish -->
+  <symbol id="icon-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <!-- Message/Forum -->
+  <symbol id="icon-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <!-- User profile tab -->
+  <symbol id="icon-profile" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <!-- Food/Dining -->
+  <symbol id="icon-food" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></symbol>
+  <!-- Car/Transport -->
+  <symbol id="icon-car" viewBox="0 0 24 24"><path d="M14 16H9v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4.17a2 2 0 0 1 .59-1.41L6 12"/><path d="M16 8l3.5 3.5a2 2 0 0 1 .5 1.5V16h-2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></symbol>
+  <!-- Money -->
+  <symbol id="icon-money" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+  <!-- Shopping -->
+  <symbol id="icon-shopping" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></symbol>
+  <!-- Lightning/Bolt -->
+  <symbol id="icon-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <!-- Game Controller -->
+  <symbol id="icon-game" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="11" r="0.5" fill="currentColor"/><circle cx="17" cy="13" r="0.5" fill="currentColor"/><circle cx="19" cy="11" r="0.5" fill="currentColor"/></symbol>
+  <!-- Dog/Pet -->
+  <symbol id="icon-pet" viewBox="0 0 24 24"><circle cx="5" cy="8" r="1.5"/><circle cx="19" cy="8" r="1.5"/><path d="M3 14s-1 2.5 2 2.5c2 0 3-2 4-2s2 2 4 2 2-2 4-2 2 2.5 2 2.5"/><path d="M12 2C6 2 6 5 6 8s2 4 6 4 6-1.5 6-4-1-6-6-6z"/></symbol>
+  <!-- Home/Wish -->
+  <symbol id="icon-home-wish" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <!-- Sun/Beach -->
+  <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+  <!-- Book/Wish -->
+  <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <!-- Edit/Pen -->
+  <symbol id="icon-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <!-- Pin -->
+  <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <!-- Thumbs Up -->
+  <symbol id="icon-thumbsup" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></symbol>
+  <!-- Thumbs Down -->
+  <symbol id="icon-thumbsdown" viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></symbol>
+  <!-- Heart -->
+  <symbol id="icon-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+  <!-- Users/Group -->
+  <symbol id="icon-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <!-- Folder -->
+  <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+  <!-- Bell -->
+  <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+  <!-- Palette -->
+  <symbol id="icon-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></symbol>
+  <!-- Help -->
+  <symbol id="icon-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <!-- Info -->
+  <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <!-- Logout -->
+  <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <!-- Search -->
+  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <!-- Send -->
+  <symbol id="icon-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <!-- Time/Clock -->
+  <symbol id="icon-time" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <!-- Comment -->
+  <symbol id="icon-comment" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <!-- Trend Up -->
+  <symbol id="icon-trend-up" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+  <!-- Trend Down -->
+  <symbol id="icon-trend-down" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></symbol>
+</svg>
+
+<!-- ==================== 页面1: 登录页 ==================== -->
+<div class="phone">
+  <div style="height: 100%; display: flex; flex-direction: column; padding: 0 32px; justify-content: center;">
+
+    <!-- Logo (WarmIsle Logo) -->
+    <div class="login-logo">
+      <svg width="80" height="80" viewBox="0 0 32 32">
+        <use href="#icon-warmisle-logo"/>
+      </svg>
+    </div>
+
+    <!-- App Name -->
+    <div style="text-align: center; margin-bottom: 40px;">
+      <div style="font-size: 28px; font-weight: 700; color: #E87461; letter-spacing: 2px;">暖屿</div>
+      <div style="font-size: 13px; color: #AAA; margin-top: 6px; letter-spacing: 1px;">WarmIsle · 家庭的温暖小岛</div>
+    </div>
+
+    <!-- Form -->
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+      <div class="input-wrapper">
+        <div class="input-icon"><svg><use href="#icon-user"/></svg></div>
+        <input class="login-input" type="text" placeholder="用户名" value="强哥">
+      </div>
+      <div class="input-wrapper">
+        <div class="input-icon"><svg><use href="#icon-lock"/></svg></div>
+        <input class="login-input" type="password" placeholder="密码" value="••••••">
+      </div>
+    </div>
+
+    <!-- Remember & Forgot -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; font-size: 13px;">
+      <label style="display: flex; align-items: center; gap: 6px; color: #666; cursor: pointer;">
+        <input type="checkbox" checked style="accent-color: #E87461; width: 16px; height: 16px;"> 记住我
+      </label>
+      <span style="color: #E87461; cursor: pointer;">忘记密码？</span>
+    </div>
+
+    <!-- Login Button -->
+    <button class="btn-primary" style="width: 100%; height: 50px;">登 录</button>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; font-size: 11px; color: #CCC; display: flex; align-items: center; justify-content: center; gap: 5px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      数据本地加密存储 · 安全可靠
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面2: 仪表盘页 ==================== -->
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <div style="width: 14px; height: 10px; border: 1.5px solid #1E1E1E; border-radius: 2px; position: relative;"><div style="width: 8px; height: 6px; background: #1E1E1E; position: absolute; bottom: 0; left: 1px; border-radius: 1px;"></div></div>
+      <div style="width: 20px; height: 10px; background: #1E1E1E; border-radius: 2px;"></div>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="top-bar-title" style="font-size: 16px;">2025年6月</span>
+    </div>
+    <div class="avatar" style="background: #E87461;">强</div>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 20px 80px; display: flex; flex-direction: column; gap: 16px;">
+
+    <!-- Stat Cards -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+      <div class="stat-card" style="background: linear-gradient(135deg, #4CAF50, #66BB6A);">
+        <div style="font-size: 11px; opacity: 0.9; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          收入
+        </div>
+        <div style="font-size: 20px; font-weight: 700;">¥8,450</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #F44336, #EF5350);">
+        <div style="font-size: 11px; opacity: 0.9; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+          支出
+        </div>
+        <div style="font-size: 20px; font-weight: 700;">¥5,230</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #2196F3, #42A5F5);">
+        <div style="font-size: 11px; opacity: 0.9; margin-bottom: 6px;">结余</div>
+        <div style="font-size: 20px; font-weight: 700;">¥3,220</div>
+      </div>
+    </div>
+
+    <!-- Expense Chart -->
+    <div class="card" style="padding: 16px;">
+      <div style="font-size: 15px; font-weight: 600; color: #1E1E1E; margin-bottom: 14px;">支出分类</div>
+      <div style="display: flex; align-items: flex-end; gap: 8px; height: 120px; padding-bottom: 4px;">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div class="chart-bar" style="width: 100%; height: 80px; background: #E87461;"></div>
+          <span style="font-size: 10px; color: #999;">餐饮</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div class="chart-bar" style="width: 100%; height: 55px; background: #FF9800;"></div>
+          <span style="font-size: 10px; color: #999;">交通</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div class="chart-bar" style="width: 100%; height: 65px; background: #4CAF50;"></div>
+          <span style="font-size: 10px; color: #999;">购物</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div class="chart-bar" style="width: 100%; height: 40px; background: #2196F3;"></div>
+          <span style="font-size: 10px; color: #999;">水电</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div class="chart-bar" style="width: 100%; height: 30px; background: #9C27B0;"></div>
+          <span style="font-size: 10px; color: #999;">娱乐</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Todos -->
+    <div class="card" style="padding: 16px;">
+      <div style="font-size: 15px; font-weight: 600; color: #1E1E1E; margin-bottom: 12px;">近期待办</div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #E87461; flex-shrink: 0;"></div>
+          <span style="font-size: 13px; color: #444;">购买周末食材</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #E87461; flex-shrink: 0;"></div>
+          <span style="font-size: 13px; color: #444;">预约家政服务</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 18px; height: 18px; border-radius: 50%; background: #4CAF50; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span style="font-size: 13px; color: #AAA; text-decoration: line-through;">支付水电费</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forum Highlights -->
+    <div class="card" style="padding: 16px;">
+      <div style="font-size: 15px; font-weight: 600; color: #1E1E1E; margin-bottom: 12px;">论坛热点</div>
+      <div style="font-size: 13px; color: #444; line-height: 1.8;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          周末聚餐建议 · 12条评论
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="2" stroke-linecap="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+          空调维修推荐 · 8条评论
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item active">
+      <svg class="tab-svg-fill" width="20" height="20" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>仪表盘</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>记账</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+      <span>待办</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>愿望</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面3: 记账本页 ==================== -->
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <div style="width: 14px; height: 10px; border: 1.5px solid #1E1E1E; border-radius: 2px; position: relative;"><div style="width: 8px; height: 6px; background: #1E1E1E; position: absolute; bottom: 0; left: 1px; border-radius: 1px;"></div></div>
+      <div style="width: 20px; height: 10px; background: #1E1E1E; border-radius: 2px;"></div>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="top-bar-title" style="font-size: 16px;">2025年6月</span>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <div class="avatar" style="background: #E87461;">强</div>
+    </div>
+  </div>
+
+  <!-- Summary Bar -->
+  <div style="background: #FFF; padding: 10px 20px; display: flex; justify-content: space-around; border-bottom: 0.5px solid rgba(0,0,0,0.06);">
+    <div style="text-align: center;">
+      <div style="font-size: 11px; color: #999;">收入</div>
+      <div style="font-size: 15px; font-weight: 600; color: #4CAF50;">+8,450</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 11px; color: #999;">支出</div>
+      <div style="font-size: 15px; font-weight: 600; color: #F44336;">-5,230</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 11px; color: #999;">结余</div>
+      <div style="font-size: 15px; font-weight: 600; color: #2196F3;">3,220</div>
+    </div>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 0 20px 80px;">
+
+    <!-- Today -->
+    <div style="padding: 14px 0 8px; font-size: 13px; font-weight: 600; color: #999;">今天 6月13日</div>
+
+    <div class="card" style="padding: 4px 16px; margin-bottom: 16px;">
+      <div class="record-item">
+        <div class="category-icon" style="background: #FFE0CC;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="1.8" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">午餐</div>
+          <div style="font-size: 12px; color: #999;">强哥 · 餐饮</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 15px; font-weight: 600; color: #F44336;">-38.00</div>
+        </div>
+      </div>
+      <div class="record-item">
+        <div class="category-icon" style="background: #E0F2FE;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="1.8" stroke-linecap="round"><path d="M14 16H9a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">打车回家</div>
+          <div style="font-size: 12px; color: #999;">强哥 · 交通</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 15px; font-weight: 600; color: #F44336;">-25.00</div>
+        </div>
+      </div>
+      <div class="record-item">
+        <div class="category-icon" style="background: #E8F5E9;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">工资收入</div>
+          <div style="font-size: 12px; color: #999;">强哥 · 工资</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 15px; font-weight: 600; color: #4CAF50;">+8,000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Yesterday -->
+    <div style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #999;">昨天 6月12日</div>
+
+    <div class="card" style="padding: 4px 16px;">
+      <div class="record-item">
+        <div class="category-icon" style="background: #FFE0CC;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">超市购物</div>
+          <div style="font-size: 12px; color: #999;">丽丽 · 购物</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 15px; font-weight: 600; color: #F44336;">-156.80</div>
+        </div>
+      </div>
+      <div class="record-item">
+        <div class="category-icon" style="background: #E0F2FE;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="1.8" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">电费</div>
+          <div style="font-size: 12px; color: #999;">小明 · 水电</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 15px; font-weight: 600; color: #F44336;">-89.50</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB -->
+  <button class="fab">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>仪表盘</span>
+    </div>
+    <div class="tab-item active">
+      <svg class="tab-svg-fill" width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>记账</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+      <span>待办</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>愿望</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面4: 待办管理页 ==================== -->
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <div style="width: 14px; height: 10px; border: 1.5px solid #1E1E1E; border-radius: 2px; position: relative;"><div style="width: 8px; height: 6px; background: #1E1E1E; position: absolute; bottom: 0; left: 1px; border-radius: 1px;"></div></div>
+      <div style="width: 20px; height: 10px; background: #1E1E1E; border-radius: 2px;"></div>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <span class="top-bar-title">待办管理</span>
+    <div class="avatar" style="background: #E87461;">强</div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div style="background: #FFF; padding: 10px 20px; display: flex; gap: 8px; border-bottom: 0.5px solid rgba(0,0,0,0.06);">
+    <button class="filter-tab active" style="border: none;">全部</button>
+    <button class="filter-tab inactive">进行中</button>
+    <button class="filter-tab inactive">已完成</button>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 20px 80px; display: flex; flex-direction: column; gap: 12px;">
+
+    <!-- Task 1 -->
+    <div class="card" style="padding: 14px 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #DDD; flex-shrink: 0;"></div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E; margin-bottom: 4px;">购买周末食材</div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span class="priority-badge" style="background: #FFF0EB; color: #E87461; display: flex; align-items: center; gap: 4px;"><span class="priority-dot" style="background: #E87461;"></span> 紧急</span>
+            <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              今天 18:00
+            </span>
+          </div>
+        </div>
+        <div class="avatar avatar-sm" style="background: #E87461;">强</div>
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="card" style="padding: 14px 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #DDD; flex-shrink: 0;"></div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E; margin-bottom: 4px;">预约周末家政服务</div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span class="priority-badge" style="background: #FFEBEE; color: #E53935; display: flex; align-items: center; gap: 4px;"><span class="priority-dot" style="background: #E53935;"></span> 重要</span>
+            <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              明天 10:00
+            </span>
+          </div>
+        </div>
+        <div class="avatar avatar-sm" style="background: #4CAF50;">丽</div>
+      </div>
+    </div>
+
+    <!-- Task 3 (Completed) -->
+    <div class="card" style="padding: 14px 16px; opacity: 0.55;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: #4CAF50; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 400; color: #999; margin-bottom: 4px; text-decoration: line-through;">支付6月水电费</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="font-size: 12px; color: #CCC; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              已完成
+            </span>
+          </div>
+        </div>
+        <div class="avatar avatar-sm" style="background: #2196F3;">明</div>
+      </div>
+    </div>
+
+    <!-- Task 4 -->
+    <div class="card" style="padding: 14px 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #DDD; flex-shrink: 0;"></div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 500; color: #1E1E1E; margin-bottom: 4px;">整理儿童房衣柜</div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span class="priority-badge" style="background: #FFF8E1; color: #FF9800; display: flex; align-items: center; gap: 4px;"><span class="priority-dot" style="background: #FF9800;"></span> 普通</span>
+            <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              本周日
+            </span>
+          </div>
+        </div>
+        <div class="avatar avatar-sm" style="background: #9C27B0;">强</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>仪表盘</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>记账</span>
+    </div>
+    <div class="tab-item active">
+      <svg class="tab-svg-fill" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="#FFF"/><polyline points="9 11 12 14 22 4" stroke="#E87461" stroke-width="2"/></svg>
+      <span>待办</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>愿望</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面5: 愿望清单页 ==================== -->
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <div style="width: 14px; height: 10px; border: 1.5px solid #1E1E1E; border-radius: 2px; position: relative;"><div style="width: 8px; height: 6px; background: #1E1E1E; position: absolute; bottom: 0; left: 1px; border-radius: 1px;"></div></div>
+      <div style="width: 20px; height: 10px; background: #1E1E1E; border-radius: 2px;"></div>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <span class="top-bar-title">愿望清单</span>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="2" stroke-linecap="round" style="cursor: pointer;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div class="avatar" style="background: #E87461;">强</div>
+    </div>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 20px 80px; display: flex; flex-direction: column; gap: 16px;">
+
+    <!-- My Wishes -->
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 15px; font-weight: 600; color: #1E1E1E;">我的愿望</span>
+        <span style="font-size: 13px; color: #E87461; cursor: pointer;">查看全部 ›</span>
+      </div>
+      <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px;">
+        <!-- Wish Card 1 -->
+        <div class="wish-card" style="background: linear-gradient(135deg, #FFE0CC, #FFD4B3);">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: 36px;">
+            <circle cx="20" cy="18" r="8" fill="#E87461" opacity="0.2"/>
+            <path d="M12 30C12 24 16 20 20 20C24 20 28 24 28 30" stroke="#E87461" stroke-width="2" fill="none"/>
+            <circle cx="30" cy="10" r="3" fill="#FF9800" opacity="0.5"/>
+            <circle cx="10" cy="8" r="2" fill="#FF9800" opacity="0.3"/>
+          </svg>
+          <div>
+            <div style="font-size: 14px; font-weight: 600; color: #1E1E1E; margin-bottom: 4px;">夏日海岛游</div>
+            <div style="font-size: 11px; color: #888; margin-bottom: 8px;">12人已投票</div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.6); border-radius: 3px;">
+              <div style="width: 65%; height: 100%; background: #E87461; border-radius: 3px;"></div>
+            </div>
+            <div style="font-size: 11px; color: #E87461; margin-top: 4px; font-weight: 500;">65% 支持率</div>
+          </div>
+        </div>
+        <!-- Wish Card 2 -->
+        <div class="wish-card" style="background: linear-gradient(135deg, #E0F2FE, #B5D4F4);">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: 36px;">
+            <rect x="8" y="6" width="24" height="28" rx="2" fill="#2196F3" opacity="0.15" stroke="#2196F3" stroke-width="1.5"/>
+            <line x1="13" y1="14" x2="27" y2="14" stroke="#2196F3" stroke-width="1.5"/>
+            <line x1="13" y1="19" x2="27" y2="19" stroke="#2196F3" stroke-width="1.5"/>
+            <line x1="13" y1="24" x2="22" y2="24" stroke="#2196F3" stroke-width="1.5"/>
+          </svg>
+          <div>
+            <div style="font-size: 14px; font-weight: 600; color: #1E1E1E; margin-bottom: 4px;">家庭图书角</div>
+            <div style="font-size: 11px; color: #888; margin-bottom: 8px;">8人已投票</div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.6); border-radius: 3px;">
+              <div style="width: 40%; height: 100%; background: #2196F3; border-radius: 3px;"></div>
+            </div>
+            <div style="font-size: 11px; color: #2196F3; margin-top: 4px; font-weight: 500;">40% 支持率</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Family Wishes -->
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 15px; font-weight: 600; color: #1E1E1E;">家庭愿望池</span>
+        <span style="font-size: 13px; color: #E87461; cursor: pointer; display: flex; align-items: center; gap: 2px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新建
+        </span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="card" style="padding: 14px 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: #FFE0CC; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="11" r="0.5" fill="#E87461"/><circle cx="17" cy="13" r="0.5" fill="#E87461"/><circle cx="19" cy="11" r="0.5" fill="#E87461"/></svg>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">购买游戏主机</div>
+              <div style="font-size: 12px; color: #999; margin-top: 2px;">发起人：小明 · 3票</div>
+            </div>
+            <button style="padding: 5px 14px; background: #E87461; color: #FFF; border: none; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              投票
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 14px 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: #E0F2FE; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="8" r="1.5"/><circle cx="19" cy="8" r="1.5"/><path d="M3 14s-1 2.5 2 2.5c2 0 3-2 4-2s2 2 4 2 2-2 4-2 2 2.5 2 2.5"/></svg>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">养一只金毛犬</div>
+              <div style="font-size: 12px; color: #999; margin-top: 2px;">发起人：丽丽 · 5票</div>
+            </div>
+            <button style="padding: 5px 14px; background: #E87461; color: #FFF; border: none; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              投票
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 14px 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 14px; background: #F3E5F5; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9C27B0" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 14px; font-weight: 500; color: #1E1E1E;">重新装修客厅</div>
+              <div style="font-size: 12px; color: #999; margin-top: 2px;">发起人：强哥 · 2票</div>
+            </div>
+            <button style="padding: 5px 14px; background: #F0F0F0; color: #999; border: none; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: default; display: flex; align-items: center; gap: 3px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              已投
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>仪表盘</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>记账</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+      <span>待办</span>
+    </div>
+    <div class="tab-item active">
+      <svg class="tab-svg-fill" width="20" height="20" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#FFF"/></svg>
+      <span>愿望</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面6: 家庭论坛页 ==================== -->
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <div style="width: 14px; height: 10px; border: 1.5px solid #1E1E1E; border-radius: 2px; position: relative;"><div style="width: 8px; height: 6px; background: #1E1E1E; position: absolute; bottom: 0; left: 1px; border-radius: 1px;"></div></div>
+      <div style="width: 20px; height: 10px; background: #1E1E1E; border-radius: 2px;"></div>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <span class="top-bar-title">家庭论坛</span>
+    <div style="display: flex; gap: 14px; align-items: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" style="cursor: pointer;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <div class="avatar" style="background: #E87461;">强</div>
+    </div>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 12px 20px 80px; display: flex; flex-direction: column; gap: 12px;">
+
+    <!-- Topic 1 -->
+    <div class="topic-card">
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div class="avatar" style="background: #E87461; width: 38px; height: 38px; font-size: 13px;">丽</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 15px; font-weight: 500; color: #1E1E1E;">周末聚餐建议</div>
+          <div style="font-size: 11px; color: #BBB; margin-top: 2px;">丽丽 · 2小时前</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 10px;">大家觉得这周末是在家吃火锅还是出去吃日料？我倾向在家，可以边吃边看电影</div>
+      <div style="display: flex; gap: 18px; align-items: center;">
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          12
+        </span>
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          5
+        </span>
+      </div>
+    </div>
+
+    <!-- Topic 2 -->
+    <div class="topic-card">
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div class="avatar" style="background: #4CAF50; width: 38px; height: 38px; font-size: 13px;">明</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 15px; font-weight: 500; color: #1E1E1E;">空调维修师傅推荐</div>
+          <div style="font-size: 11px; color: #BBB; margin-top: 2px;">小明 · 5小时前</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 10px;">客厅空调不制冷了，有没有靠谱的维修师傅推荐？最好是上门服务的。</div>
+      <div style="display: flex; gap: 18px; align-items: center;">
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          8
+        </span>
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          2
+        </span>
+      </div>
+    </div>
+
+    <!-- Topic 3 (Pinned) -->
+    <div class="topic-card" style="border-left: 3px solid #E87461;">
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div class="avatar" style="background: #2196F3; width: 38px; height: 38px; font-size: 13px;">强</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 15px; font-weight: 500; color: #1E1E1E; display: flex; align-items: center; gap: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#E87461" stroke="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#FFF"/></svg>
+            家庭公约更新投票
+          </div>
+          <div style="font-size: 11px; color: #BBB; margin-top: 2px;">强哥 · 1天前</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 12px;">我更新了家庭公约草案，增加了关于家务分工的条款，请大家查看并投票。</div>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <button style="padding: 5px 14px; background: #E87461; color: #FFF; border: none; border-radius: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>
+          同意 8
+        </button>
+        <button style="padding: 5px 14px; background: #F5F5F5; color: #888; border: none; border-radius: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/></svg>
+          反对 2
+        </button>
+      </div>
+      <div style="display: flex; gap: 18px; align-items: center;">
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          15
+        </span>
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          8
+        </span>
+      </div>
+    </div>
+
+    <!-- Topic 4 -->
+    <div class="topic-card">
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div class="avatar" style="background: #9C27B0; width: 38px; height: 38px; font-size: 13px;">妈</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 15px; font-weight: 500; color: #1E1E1E;">分享一首好听的歌</div>
+          <div style="font-size: 11px; color: #BBB; margin-top: 2px;">妈妈 · 2天前</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 10px;">今天听到一首很温暖的歌，分享给大家《小幸运》</div>
+      <div style="display: flex; gap: 18px; align-items: center;">
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          6
+        </span>
+        <span style="font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          12
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>仪表盘</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>记账</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+      <span>待办</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>论坛</span>
+    </div>
+    <div class="tab-item active">
+      <svg class="tab-svg-fill" width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4" fill="#FFF"/></svg>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面7: 个人中心页 ==================== -->
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <div style="width: 14px; height: 10px; border: 1.5px solid #1E1E1E; border-radius: 2px; position: relative;"><div style="width: 8px; height: 6px; background: #1E1E1E; position: absolute; bottom: 0; left: 1px; border-radius: 1px;"></div></div>
+      <div style="width: 20px; height: 10px; background: #1E1E1E; border-radius: 2px;"></div>
+    </div>
+  </div>
+
+  <!-- User Profile Header -->
+  <div style="background: linear-gradient(135deg, #E87461 0%, #F0A085 100%); padding: 24px 20px 32px; position: relative;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 26px; font-weight: 600; border: 2px solid rgba(255,255,255,0.5);">强</div>
+      <div>
+        <div style="font-size: 20px; font-weight: 600; color: #FFF;">强哥</div>
+        <div style="font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px;">管理员 · 家庭主人</div>
+      </div>
+    </div>
+    <!-- Stats -->
+    <div style="display: flex; justify-content: space-around; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2);">
+      <div style="text-align: center;">
+        <div style="font-size: 18px; font-weight: 700; color: #FFF;">128</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.7);">记账</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 18px; font-weight: 700; color: #FFF;">24</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.7);">待办</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 18px; font-weight: 700; color: #FFF;">5</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.7);">愿望</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 20px 80px; display: flex; flex-direction: column; gap: 12px;">
+
+    <!-- Menu Section 1 -->
+    <div class="card" style="padding: 0;">
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #FFE0CC;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#E87461" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">个人信息</span>
+        <span style="font-size: 14px; color: #CCC;">›</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #E0F2FE;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">成员管理</span>
+        <span style="font-size: 14px; color: #CCC;">›</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #E8F5E9;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">分类管理</span>
+        <span style="font-size: 14px; color: #CCC;">›</span>
+      </div>
+    </div>
+
+    <!-- Menu Section 2 -->
+    <div class="card" style="padding: 0;">
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #FFF3E0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">通知设置</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 12px; color: #999;">已开启</span>
+          <span style="font-size: 14px; color: #CCC;">›</span>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #F3E5F5;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#9C27B0" stroke-width="1.8" stroke-linecap="round"><circle cx="13.5" cy="6.5" r="0.5" fill="#9C27B0"/><circle cx="17.5" cy="10.5" r="0.5" fill="#9C27B0"/><circle cx="8.5" cy="7.5" r="0.5" fill="#9C27B0"/><circle cx="6.5" cy="12.5" r="0.5" fill="#9C27B0"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">主题切换</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 12px; color: #999;">暖橙</span>
+          <span style="font-size: 14px; color: #CCC;">›</span>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #E0F7FA;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">帮助与反馈</span>
+        <span style="font-size: 14px; color: #CCC;">›</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-icon" style="background: #F5F5F5;">
+          <svg width="20" height="20" viewBox="0 0 32 32">
+            <use href="#icon-warmisle-logo"/>
+          </svg>
+        </div>
+        <span style="font-size: 14px; color: #1E1E1E; flex: 1;">关于暖屿</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 12px; color: #999;">V1.0.0</span>
+          <span style="font-size: 14px; color: #CCC;">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Button -->
+    <button style="width: 100%; height: 48px; background: #FFF; color: #F44336; border: 1.5px solid #FFCDD2; border-radius: 14px; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      退出登录
+    </button>
+
+    <div style="text-align: center; font-size: 11px; color: #CCC; padding: 8px 0; display: flex; align-items: center; justify-content: center; gap: 3px;">
+      Made with
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="#CCC" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      by 暖屿团队
+    </div>
+
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>仪表盘</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>记账</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+      <span>待办</span>
+    </div>
+    <div class="tab-item">
+      <svg class="tab-svg" width="20" height="20" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>论坛</span>
+    </div>
+    <div class="tab-item active">
+      <svg class="tab-svg-fill" width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4" fill="#FFF"/></svg>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

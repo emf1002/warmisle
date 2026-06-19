@@ -1,0 +1,118 @@
+sequenceDiagram
+    actor Admin as 管理员
+    participant FE as 前端 (Vue)
+    participant H as BackupHandler
+    participant S as BackupService
+    participant R as BackupRepo
+    participant C as Crypto
+    participant DB as SQLite
+    participant AP as AlipanClient
+    participant AL as 阿里云盘 OAuth
+    participant Cloud as 阿里云盘
+
+    rect rgb(230, 245, 255)
+        Note over Admin,AL: === OAuth2 授权流程 ===
+        Admin->>FE: 填写 app_id + app_secret + redirect_uri
+        FE->>H: PUT /api/backup/config
+        H->>S: SaveConfig(app_id, app_secret, redirect_uri)
+        S->>C: Encrypt(app_secret, BACKUP_ENCRYPTION_KEY)
+        C-->>S: encrypted_secret
+        S->>R: SaveConfig(cfg)
+        R-->>S: OK, status=unconfigured
+        S-->>H: OK
+        H-->>FE: {code:0}
+
+        Admin->>FE: 点击「授权阿里云盘」
+        FE->>H: GET /api/backup/auth-url
+        H->>S: GetAuthURL()
+        S->>S: 生成随机 state
+        S->>S: 构造授权 URL
+        S->>R: 暂存 state
+        S-->>H: {auth_url, state}
+        H-->>FE: {auth_url, state}
+
+        FE->>AL: 跳转授权页面
+        Admin->>AL: 登录并授权
+        AL->>H: POST /api/backup/callback?code=xxx&state=yyy
+        H->>S: HandleCallback(code, state)
+        S->>S: 校验 state
+        S->>AL: POST /oauth/access_token
+        AL-->>S: {access_token, refresh_token, expires_in}
+        S->>C: Encrypt(refresh_token)
+        C-->>S: encrypted_token
+        S->>R: SaveConfig(status=authorized)
+        R-->>S: OK
+        S-->>H: OK
+        H-->>AL: 重定向到 /backup
+    end
+
+    rect rgb(255, 245, 230)
+        Note over Admin,Cloud: === 手动备份流程 ===
+        Admin->>FE: 点击「立即备份」
+        FE->>H: POST /api/backup/trigger
+        H->>S: TriggerBackup()
+
+        Note over S: 1. 完整性检查
+        S->>DB: PRAGMA integrity_check
+        DB-->>S: "ok"
+
+        Note over S: 2. 在线备份
+        S->>DB: VACUUM INTO 'backups/warmisle_backup_YYYYMMDD_HHmmss.db'
+        DB-->>S: 备份文件生成
+
+        Note over S: 3. 获取 Token
+        S->>R: GetConfig()
+        R-->>S: config
+        S->>AP: GetAccessToken()
+        AP-->>S: access_token
+
+        Note over S: 4. 上传云端
+        S->>AP: Upload(本地路径, BackupDir)
+        AP->>Cloud: PUT 分片上传
+        Cloud-->>AP: {file_id, file_name, size}
+        AP-->>S: CloudFileInfo
+
+        Note over S: 5. 记录 + 清理
+        S->>R: CreateRecord(completed)
+        R-->>S: BackupRecord
+        S->>S: CleanExpiredBackups()
+        S-->>H: BackupRecord
+        H-->>FE: {code:0, data: BackupRecord}
+    end
+
+    rect rgb(255, 230, 230)
+        Note over Admin,DB: === 恢复备份流程 ===
+        Admin->>FE: 选择云端备份，点击「恢复」
+        FE->>FE: 弹出二次确认弹窗
+        Admin->>FE: 输入「我已了解风险，确认恢复」
+        FE->>H: POST /api/backup/restore/:cloudFileId
+        H->>H: 校验确认文字
+        H->>S: RestoreBackup(cloudFileID, confirm)
+
+        Note over S: 1. 检查并发锁
+        S->>S: 获取恢复锁
+
+        Note over S: 2. 下载
+        S->>AP: Download(cloudFileID, temp_file)
+        AP->>Cloud: GET 下载
+        Cloud-->>AP: 文件内容
+        AP-->>S: 本地临时文件
+
+        Note over S: 3. 校验下载
+        S->>S: 文件大小校验
+        S->>S: SQLite 有效性验证
+
+        Note over S: 4. 紧急备份 (BR-BK08)
+        S->>DB: VACUUM INTO 'warmisle_pre_restore_YYYYMMDD_HHmmss.db'
+        DB-->>S: pre_restore 文件
+        S->>R: CreateRecord(pre_restore)
+
+        Note over S: 5. 替换数据库
+        S->>S: 关闭 DB 连接
+        S->>S: 替换 warmisle.db
+        S->>S: 写入 .restore_complete 标记
+
+        Note over S,DB: 6. 重启服务 (BR-BK09)
+        S->>S: os.Exit(0)
+        Note over S,DB: systemd/Docker 自动拉起新进程
+    end

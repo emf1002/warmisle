@@ -54,6 +54,10 @@
           <template #icon><Icon name="FolderOpen" :size="18" /></template>
           <span>分类管理</span>
         </a-menu-item>
+        <a-menu-item key="Backup" v-if="isAdmin">
+          <template #icon><Icon name="Cloud" :size="18" /></template>
+          <span>网盘备份</span>
+        </a-menu-item>
         <a-menu-item key="Profile">
           <template #icon><Icon name="UserCircle" :size="18" /></template>
           <span>个人中心</span>
@@ -233,6 +237,7 @@ const routeTitleMap: Record<string, string> = {
   TopicDetail: '家庭论坛',
   Members: '成员管理',
   Categories: '分类管理',
+  Backup: '网盘备份',
   Profile: '个人中心',
 }
 

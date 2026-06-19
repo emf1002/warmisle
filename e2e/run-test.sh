@@ -36,6 +36,8 @@ while netstat -an 2>/dev/null | grep -q ":${PORT} .*LISTEN"; do
 done
 
 DB_PATH="$SCRIPT_DIR/e2e-data/test-${PORT}.db"
+# Convert to Windows path for the .exe binary (env vars are NOT auto-converted by MSYS2)
+DB_PATH_WIN=$(cygpath -w "$DB_PATH" 2>/dev/null || echo "$DB_PATH")
 BASE_URL="http://localhost:${PORT}"
 
 # Clean stale DB
@@ -50,7 +52,7 @@ fi
 
 # Start server in background
 echo "[run-test] Starting server on :${PORT} ..."
-HC_PORT="$PORT" HC_DB_PATH="$DB_PATH" HC_TEST_MODE=true "$BINARY" &
+HC_PORT="$PORT" HC_DB_PATH="$DB_PATH_WIN" HC_TEST_MODE=true "$BINARY" &
 SERVER_PID=$!
 
 # Cleanup on exit

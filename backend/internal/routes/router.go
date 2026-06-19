@@ -1,14 +1,17 @@
+// Package routes registers all API routes.
 package routes
 
 import (
 	"os"
 	"warmisle/internal/handler"
 	"warmisle/internal/middleware"
+	"warmisle/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Register(r *gin.Engine) {
+// Register sets up all API routes on the given Gin engine.
+func Register(r *gin.Engine, backupSvc *service.BackupService) {
 	api := r.Group("/api")
 
 	// 测试重置端点（仅测试模式可用）
@@ -28,6 +31,7 @@ func Register(r *gin.Engine) {
 	wish := handler.NewWishHandler()
 	forum := handler.NewForumHandler()
 	tag := handler.NewTagHandler()
+	backupHandler := handler.NewBackupHandler(backupSvc)
 
 	// Auth & Init
 	api.GET("/init/check", auth.InitCheck)
@@ -124,4 +128,22 @@ func Register(r *gin.Engine) {
 	api.POST("/tags", authRequired, adminRequired, tag.Create)
 	api.PUT("/tags/:id", authRequired, adminRequired, tag.Update)
 	api.DELETE("/tags/:id", authRequired, adminRequired, tag.Delete)
+
+	// Backup management
+	backupGroup := api.Group("/backup")
+	backupGroup.Use(authRequired, adminRequired)
+	{
+		backupGroup.GET("/config", backupHandler.GetConfig)
+		backupGroup.PUT("/config", backupHandler.SaveConfig)
+		backupGroup.GET("/auth-url", backupHandler.GetAuthURL)
+		backupGroup.POST("/trigger", backupHandler.TriggerBackup)
+		backupGroup.GET("/cloud-files", backupHandler.ListCloudFiles)
+		backupGroup.POST("/restore/:cloudFileId", backupHandler.RestoreBackup)
+		backupGroup.GET("/history", backupHandler.ListHistory)
+		backupGroup.DELETE("/history/:id", backupHandler.DeleteHistory)
+		backupGroup.GET("/schedule", backupHandler.GetSchedule)
+		backupGroup.PUT("/schedule", backupHandler.SaveSchedule)
+	}
+	// OAuth2 callback from Aliyun Drive (GET with query params, no JWT)
+	api.Any("/backup/callback", backupHandler.Callback)
 }

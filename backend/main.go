@@ -1,3 +1,4 @@
+// Package main is the entry point for warmisle backend.
 package main
 
 import (
@@ -22,7 +23,9 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"warmisle/internal/pkg"
+	"warmisle/internal/repository"
 	"warmisle/internal/routes"
+	"warmisle/internal/service"
 )
 
 //go:embed frontend/dist/*
@@ -62,9 +65,6 @@ func main() {
 	// 如需添加字段，创建新的 goose 迁移文件
 
 	r := gin.Default()
-
-	// API 路由
-	routes.Register(r)
 
 	// 前端静态文件（从 embed 提供）
 	dist, _ := fs.Sub(frontendFS, "frontend/dist")
@@ -106,6 +106,35 @@ func main() {
 		c.Data(http.StatusOK, getContentType(path), data)
 		c.Abort()
 	})
+
+	// 初始化备份加密密钥
+	dataDir := filepath.Dir(dbPath)
+	backupDataDir := filepath.Join(dataDir, "backups")
+	if err := os.MkdirAll(backupDataDir, 0755); err != nil {
+		log.Printf("创建备份目录失败: %v", err)
+	}
+	if err := pkg.InitBackupCrypto(dataDir); err != nil {
+		log.Printf("初始化备份加密密钥失败: %v", err)
+	}
+
+	// 初始化备份服务与定时调度器
+	backupRepo := repository.NewBackupRepo(pkg.DB)
+	backupSvc := service.NewBackupService(backupRepo, pkg.DB, dbPath)
+	backupScheduler := service.NewBackupScheduler(backupSvc)
+	// 插件在首次触发备份时懒初始化
+	backupScheduler.Start()
+
+	// API 路由
+	routes.Register(r, backupSvc)
+
+	// 处理恢复标记
+	restoreMark := filepath.Join(dataDir, ".restore_complete")
+	if _, err := os.Stat(restoreMark); err == nil {
+		log.Println("检测到恢复标记文件，清理中...")
+		if err := os.Remove(restoreMark); err != nil {
+			log.Printf("清理恢复标记文件失败: %v", err)
+		}
+	}
 
 	log.Printf("Server starting on :%s", port)
 	if err := r.Run(":" + port); err != nil {
@@ -190,12 +219,17 @@ func backupDB(dbPath string) error {
 		}
 		return err
 	}
-	defer src.Close()
+	defer src.Close() //nolint:errcheck // read-only Close
+
 	dst, err := os.Create(backupFile)
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
+	defer func() {
+		if err := dst.Close(); err != nil {
+			log.Printf("warning: close backup file failed: %v", err)
+		}
+	}()
 	_, err = io.Copy(dst, src)
 	return err
 }
@@ -212,10 +246,14 @@ func runMigrations(dbPath string) error {
 	if err != nil {
 		return err
 	}
-	defer sqlDB.Close()
+	defer func() {
+		if err := sqlDB.Close(); err != nil {
+			log.Printf("warning: close db failed: %v", err)
+		}
+	}()
 
 	goose.SetBaseFS(migrationFS)
-	goose.SetDialect("sqlite3")
+	_ = goose.SetDialect("sqlite3") //nolint:errcheck // best-effort, SetDialect always returns nil for sqlite3
 	if err := goose.Up(sqlDB, "migrations"); err != nil {
 		return fmt.Errorf("migration failed: %w", err)
 	}
@@ -230,6 +268,6 @@ func cleanupBackups() {
 	// 按文件名排序（含时间戳），保留最近 7 份
 	sort.Strings(entries)
 	for _, f := range entries[:len(entries)-7] {
-		os.Remove(f)
+		_ = os.Remove(f) //nolint:errcheck // best-effort cleanup
 	}
 }

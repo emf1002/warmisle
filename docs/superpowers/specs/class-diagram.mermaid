@@ -1,0 +1,106 @@
+classDiagram
+    class CloudDriveConfig {
+        +uint ID
+        +string Provider
+        +string AppID
+        +string EncryptedSecret
+        +string RedirectURI
+        +string EncryptedToken
+        +time.Time TokenExpiry
+        +string Status
+        +string BackupDir
+        +bool ScheduleEnabled
+        +string ScheduleTime
+        +int RetentionDays
+    }
+
+    class BackupRecord {
+        +uint ID
+        +string FileName
+        +string CloudFileID
+        +int64 FileSize
+        +string BackupType
+        +string UploadStatus
+        +bool IntegrityOK
+        +string ErrorMessage
+        +bool IsPreRestore
+        +time.Time CreatedAt
+    }
+
+    class CloudDrive {
+        <<interface>>
+        +Upload(localPath, cloudDir) CloudFileInfo
+        +Download(fileID, localPath) error
+        +List(cloudDir) []CloudFileInfo
+        +Delete(fileID) error
+    }
+
+    class TokenProvider {
+        <<interface>>
+        +GetAccessToken() string
+        +GetAuthURL(state) string
+        +ExchangeCode(code) error
+    }
+
+    class AlipanClient {
+        +appID string
+        +appSecret string
+        +redirectURI string
+        +accessToken string
+        +refreshToken string
+    }
+
+    class BackupRepo {
+        +GetConfig() CloudDriveConfig
+        +SaveConfig(cfg) error
+        +CreateRecord(r) error
+        +ListRecords(page,size) []BackupRecord
+        +DeleteRecord(id) error
+        +CountRecords() int64
+        +GetRecordByID(id) BackupRecord
+        +ListExpiredRecords(days) []BackupRecord
+    }
+
+    class BackupService {
+        -repo *BackupRepo
+        -drive CloudDrive
+        -tokenProvider TokenProvider
+        +GetConfig() CloudDriveConfig
+        +SaveConfig() error
+        +GetAuthURL() string
+        +HandleCallback(code,state) error
+        +TriggerBackup() BackupRecord
+        +ScheduleBackup()
+        +ListCloudFiles() []CloudFileInfo
+        +RestoreBackup(cloudFileID,confirm) error
+        +CleanExpiredBackups()
+    }
+
+    class BackupScheduler {
+        -svc *BackupService
+        -ticker *time.Ticker
+        +Start()
+        +Stop()
+        +Reconfigure()
+    }
+
+    class BackupHandler {
+        -svc *BackupService
+    }
+
+    class Crypto {
+        +Encrypt(plaintext,key) ciphertext
+        +Decrypt(ciphertext,key) plaintext
+        +GenerateKey() key
+    }
+
+    CloudDriveConfig "1" --> "1" CloudDriveConfig : 单行配置
+    BackupRecord --> CloudDriveConfig : 属于
+    AlipanClient ..|> CloudDrive : 实现
+    AlipanClient ..|> TokenProvider : 实现
+    BackupService --> BackupRepo : 使用
+    BackupService --> CloudDrive : 调用
+    BackupService --> TokenProvider : 调用
+    BackupService --> Crypto : 加解密
+    BackupScheduler --> BackupService : 触发
+    BackupHandler --> BackupService : 调用
