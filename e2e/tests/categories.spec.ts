@@ -1,6 +1,7 @@
 // e2e/tests/categories.spec.ts
 import { test, expect } from '../fixtures/auth.fixture';
 import { CategoriesPage } from '../pages/categories.page';
+import { LedgerPage } from '../pages/ledger.page';
 
 test.describe('分类管理', () => {
   test('页面加载显示预置分类', async ({ authenticated }) => {
@@ -84,12 +85,12 @@ test.describe('分类管理', () => {
 
   test('有关联记录的分类不可删除', async ({ authenticated }) => {
     const { page } = authenticated;
-    await page.goto('/#/ledger');
-    await page.getByTestId('add-btn').click();
-    await page.locator('.category-pick-item', { hasText: '餐饮' }).click();
-    await page.locator('.ant-modal:visible').getByRole('spinbutton').click();
-    await page.locator('.ant-modal:visible').getByRole('spinbutton').fill('10');
-    await page.getByTestId('submit-btn').click();
+    const ledger = new LedgerPage(page);
+    await ledger.goto();
+    await ledger.openCreate();
+    await ledger.pickCategory('餐饮');
+    await ledger.fillAmount('10');
+    await ledger.submit();
     const categories = new CategoriesPage(page);
     await categories.goto();
     await categories.deleteCategory(0);
@@ -109,10 +110,9 @@ test.describe('分类管理', () => {
     await categories.selectType('支出');
     await categories.fillName('测试分类');
     // Submit without waiting for modal close (duplicate will be rejected)
-    await page.locator('.ant-modal-footer .ant-btn-primary').click();
-    await page.waitForTimeout(500);
+    await page.getByTestId('modal-submit-btn').click();
     // Modal should still be visible (submit rejected)
-    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await categories.expectModalVisible();
     await categories.expectExpenseCategoryCount(16);
   });
 

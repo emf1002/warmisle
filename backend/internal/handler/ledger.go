@@ -29,6 +29,7 @@ func (h *LedgerHandler) List(c *gin.Context) {
 		EndDate    string `form:"end_date"`
 		CategoryID *uint  `form:"category_id"`
 		CreatorID  *uint  `form:"creator_id"`
+		Note       string `form:"note"`
 		Limit      int    `form:"limit"`
 		Cursor     string `form:"cursor"`
 	}
@@ -55,6 +56,7 @@ func (h *LedgerHandler) List(c *gin.Context) {
 		EndDate:    req.EndDate,
 		CategoryID: req.CategoryID,
 		CreatorID:  req.CreatorID,
+		Note:       req.Note,
 		Limit:      req.Limit,
 	}
 

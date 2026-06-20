@@ -28,7 +28,7 @@ test.describe('愿望清单', () => {
     const wish = new WishPage(page);
     await wish.goto();
     await wish.switchType('家庭');
-    // 应切换到家庭愿望视图
+    await expect(page.locator('.ant-segmented-item-selected').first()).toContainText('家庭愿望');
   });
 
   // === 投票 ===
@@ -122,7 +122,6 @@ test.describe('愿望清单', () => {
     await wish.changeWishStatus(0, '标记为同意');
     await wish.expectWishCount(2);
     await wish.filterByStatus('已同意');
-    await page.waitForTimeout(500);
     await wish.expectWishCount(1);
   });
 
@@ -203,7 +202,36 @@ test.describe('愿望清单', () => {
     await wish.goto();
     await wish.openCreate();
     await wish.fillTitle('');
+    // Don't call wish.submit() — it expects modal to close, but empty title keeps it open
+    await page.getByTestId('modal-submit-btn').click();
+    // Error toast shown, modal stays open
+    await wish.expectToast('请输入标题');
+    await wish.expectModalVisible();
+  });
+
+  // P2: a-segmented 组件提升后重新挂载 + 弹窗遮挡。promoteToFamily 已处理弹窗关闭，测试简化
+  test('个人愿望提升为家庭愿望', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const wish = new WishPage(page);
+    await wish.goto();
+    await wish.openCreate();
+    await wish.fillTitle('想买新电脑');
     await wish.submit();
-    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await wish.expectWishCount(1);
+    await wish.promoteToFamily(0);
+    // Wait for list refresh and segmented control re-render
+    await page.waitForLoadState('networkidle');
+    await wish.switchType('家庭');
+    await wish.expectWishCount(1);
+    await expect(page.getByTestId(/^wish-card-/).first()).toContainText('想买新电脑');
+  });
+
+  // === 响应式 ===
+
+  test('移动端愿望列表', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page } = authenticated;
+    const wish = new WishPage(page);
+    await wish.goto();
+    await expect(page.getByTestId('empty-state')).toBeVisible();
   });
 });

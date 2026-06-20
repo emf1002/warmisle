@@ -14,7 +14,7 @@
       :size="size * 0.55"
       color="#fff"
     />
-    <span v-else class="user-avatar-emoji" :style="{ fontSize: (size * 0.55) + 'px' }">
+    <span v-else class="user-avatar-emoji" :style="{ fontSize: (size * 0.55) + 'px' }" :data-testid="'avatar-icon-' + icon">
       {{ icon || '...' }}
     </span>
   </div>

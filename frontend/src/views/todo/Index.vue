@@ -343,6 +343,7 @@ function confirmDelete(todo: TodoItem) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteTodo(todo.id)

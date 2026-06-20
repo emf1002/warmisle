@@ -40,7 +40,7 @@ test.describe('成员管理', () => {
     await members.fillName('待禁用');
     await members.submit();
     await members.disableMember(1);
-    // 成员状态应变为"已禁用"
+    await members.expectMemberStatus(1, '已禁用');
   });
 
 

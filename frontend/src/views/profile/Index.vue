@@ -15,7 +15,7 @@
       <!-- User Info Header -->
       <div class="profile-header">
         <UserAvatar :icon="profile.avatar || 'User'" :member-id="profile.id" :size="64" />
-        <div class="profile-name">{{ profile.name }}</div>
+        <div class="profile-name" data-testid="profile-name">{{ profile.name }}</div>
         <a-tag :color="profile.role === 'admin' ? 'blue' : 'default'" class="profile-role-tag">
           {{ profile.role === 'admin' ? '管理员' : '成员' }}
         </a-tag>
@@ -95,6 +95,7 @@
       :confirm-loading="submitting"
       cancel-text="取消"
       ok-text="保存"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
     >
       <div data-testid="profile-modal">
       <a-form ref="profileFormRef" :model="form" :rules="profileRules" layout="vertical">
@@ -122,6 +123,7 @@
       :confirm-loading="pwdSubmitting"
       cancel-text="取消"
       ok-text="保存"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
     >
       <div data-testid="pwd-modal">
       <a-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" layout="vertical">
@@ -236,6 +238,7 @@ function confirmLogout() {
     okText: '退出',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     onOk() {
       authStore.logout()
       message.success('✅ 已退出登录')

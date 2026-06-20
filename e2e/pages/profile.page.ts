@@ -16,12 +16,12 @@ export class ProfilePage extends BasePage {
 
   async openEditProfile() {
     await this.page.getByTestId('edit-profile-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async openChangePassword() {
     await this.page.getByTestId('change-pwd-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async fillName(name: string) {
@@ -37,20 +37,20 @@ export class ProfilePage extends BasePage {
   }
 
   async submitProfile() {
-    await this.page.locator('.ant-modal:visible .ant-modal-footer .ant-btn-primary').click();
+    await this.submitModal();
   }
 
   async submitPassword() {
-    await this.page.locator('.ant-modal:visible .ant-modal-footer .ant-btn-primary').click();
+    await this.submitModal();
   }
 
   async logout() {
     await this.page.getByTestId('logout-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
+    await this.confirmModal();
   }
 
   async expectProfileName(name: string) {
-    await expect(this.page.locator('.profile-header')).toContainText(name);
+    await expect(this.page.getByTestId('profile-name')).toContainText(name);
   }
 
   async selectAvatar(avatar: string) {
@@ -63,18 +63,18 @@ export class ProfilePage extends BasePage {
   }
 
   async expectOldPasswordError() {
-    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("当前密码") .ant-form-item-explain')).toContainText('原密码错误');
+    await expect(this.page.locator('.ant-form-item-explain-error').filter({ hasText: '原密码错误' })).toBeVisible();
   }
 
   async expectPasswordMismatchError() {
-    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("确认新密码") .ant-form-item-explain')).toContainText('两次输入的密码不一致');
+    await expect(this.page.locator('.ant-form-item-explain-error').filter({ hasText: '两次输入的密码不一致' })).toBeVisible();
   }
 
   async expectSamePasswordError() {
-    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("新密码") .ant-form-item-explain')).toContainText('新密码不能与旧密码相同');
+    await expect(this.page.locator('.ant-form-item-explain-error').filter({ hasText: '新密码不能与旧密码相同' })).toBeVisible();
   }
 
   async expectNameTooLongError() {
-    await expect(this.page.locator('.ant-modal:visible .ant-form-item:has-text("姓名") .ant-form-item-explain')).toContainText('请输入1-20字符');
+    await expect(this.page.locator('.ant-form-item-explain-error').filter({ hasText: '请输入1-20字符' })).toBeVisible();
   }
 }

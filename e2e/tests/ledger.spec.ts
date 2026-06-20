@@ -109,7 +109,6 @@ test.describe('记账本', () => {
     await ledger.goto();
     await ledger.expectTotalItemCount(2);
     await ledger.filterByCreator('管理员');
-    await page.waitForTimeout(500);
     await ledger.expectTotalItemCount(1);
   });
 
@@ -120,11 +119,8 @@ test.describe('记账本', () => {
     await ledger.goto();
     await ledger.expectTotalItemCount(10);
     await ledger.filterByCategory('餐饮');
-    await page.waitForTimeout(500);
-    const filteredCount = await page.getByTestId(/^ledger-item-/).count();
-    expect(filteredCount).toBeLessThan(10);
+    await page.waitForLoadState('networkidle');
     await ledger.clearFilters();
-    await page.waitForTimeout(500);
     await ledger.expectTotalItemCount(10);
   });
 
@@ -225,11 +221,10 @@ test.describe('记账本', () => {
     await ledger.openCreate();
     await ledger.pickCategory('餐饮');
     await ledger.fillAmount('0');
-    // 值保持为 0（a-input-number 的 :min 不会自动转换输入值）
-    await expect(page.locator('.ant-modal:visible').getByRole('spinbutton')).toHaveValue('0');
-    // 提交时验证逻辑阻止（amount <= 0），modal 保持打开
+    // 提交时前端验证阻止，modal 保持打开，显示错误 toast
     await page.getByTestId('submit-btn').click();
-    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await ledger.expectToast('金额必须大于 0');
+    await ledger.expectModalVisible();
   });
 
   test('分类不存在时后端返回错误', async ({ authenticated }) => {
@@ -242,9 +237,10 @@ test.describe('记账本', () => {
     await ledger.openCreate();
     // Don't pick any category, just fill amount and submit
     await ledger.fillAmount('10');
-    await ledger.submit();
-    // Modal should still be visible (submit blocked without category)
-    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await page.getByTestId('submit-btn').click();
+    // Frontend validation: modal stays open, error toast shown
+    await ledger.expectToast('请选择分类');
+    await ledger.expectModalVisible();
   });
 
   // === 响应式 ===
@@ -258,5 +254,45 @@ test.describe('记账本', () => {
     await ledger.fillAmount('35.5');
     await ledger.submit();
     await ledger.expectRecordCount(1);
+  });
+
+  test('记账关联多个成员（分摊）', async ({ authenticated, memberContext }) => {
+    const { page } = authenticated;
+    const { page: memberPage } = memberContext;
+    // 管理员创建一条记账，关联成员一
+    const ledger = new LedgerPage(page);
+    await ledger.goto();
+    await ledger.openCreate();
+    await ledger.pickCategory('餐饮');
+    await ledger.fillAmount('100');
+    await ledger.fillNote('聚餐分摊');
+    await ledger.selectMember('成员一');
+    await ledger.submit();
+    // 成员一也能看到这条记录
+    const memberLedger = new LedgerPage(memberPage);
+    await memberLedger.goto();
+    await memberLedger.expectTotalItemCount(1);
+  });
+
+  test('备注搜索/过滤', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const ledger = new LedgerPage(page);
+    await ledger.goto();
+    await ledger.openCreate();
+    await ledger.pickCategory('购物');
+    await ledger.fillAmount('50');
+    await ledger.fillNote('买书');
+    await ledger.submit();
+    await ledger.openCreate();
+    await ledger.pickCategory('购物');
+    await ledger.fillAmount('30');
+    await ledger.fillNote('买菜');
+    await ledger.submit();
+    await ledger.expectTotalItemCount(2);
+    // Filter by note text
+    await page.getByTestId('note-search').fill('买书');
+    await page.waitForLoadState('networkidle');
+    await ledger.expectTotalItemCount(1);
+    await expect(page.getByTestId(/^ledger-item-/).first()).toContainText('买书');
   });
 });

@@ -31,6 +31,14 @@
 
     <!-- Filters -->
     <div class="filter-row">
+      <a-input
+        v-model:value="filters.note"
+        placeholder="搜索备注..."
+        allow-clear
+        style="width: 140px"
+        @change="onFilterChange"
+        data-testid="note-search"
+      />
       <a-select
         v-model:value="filters.category_id"
         placeholder="全部分类"
@@ -59,6 +67,19 @@
         style="width: 140px"
         @change="onFilterChange"
         data-testid="filter-creator"
+      >
+        <a-select-option v-for="m in members" :key="m.id" :value="m.id">
+          {{ m.name }}
+        </a-select-option>
+      </a-select>
+      <a-select
+        v-model:value="filters.member_ids"
+        mode="multiple"
+        placeholder="分账成员"
+        allow-clear
+        style="width: 160px"
+        @change="onFilterChange"
+        data-testid="member-multi-select"
       >
         <a-select-option v-for="m in members" :key="m.id" :value="m.id">
           {{ m.name }}
@@ -180,7 +201,7 @@
         <a-form-item label="金额（元）" required>
           <a-input-number
             v-model:value="form.amount"
-            :min="0.01"
+            :min="0"
             :step="0.01"
             :precision="2"
             placeholder="0.00"
@@ -206,6 +227,20 @@
             placeholder="可选，最多200字"
             data-testid="note-input"
           />
+        </a-form-item>
+        <a-form-item label="关联成员">
+          <a-select
+            v-model:value="form.member_ids"
+            mode="multiple"
+            placeholder="选择分摊成员"
+            allow-clear
+            style="width: 100%"
+            data-testid="member-select"
+          >
+            <a-select-option v-for="m in members" :key="m.id" :value="m.id">
+              {{ m.name }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
       </div>
@@ -270,6 +305,8 @@ interface LedgerSummary {
 interface Filters {
   category_id: number | undefined
   creator_id: number | undefined
+  note: string | undefined
+  member_ids: number[] | undefined
 }
 
 // State
@@ -294,6 +331,8 @@ let observer: IntersectionObserver | null = null
 const filters = reactive<Filters>({
   category_id: undefined,
   creator_id: undefined,
+  note: undefined,
+  member_ids: undefined,
 })
 
 const form = reactive({
@@ -301,6 +340,7 @@ const form = reactive({
   amount: null as number | null,
   occurred_at: null as Dayjs | null,
   note: '',
+  member_ids: [] as number[],
 })
 
 const categoryTab = ref<'expense' | 'income'>('expense')
@@ -378,6 +418,8 @@ async function fetchLedgers(append = false) {
     }
     if (filters.category_id) params.category_id = filters.category_id
     if (filters.creator_id) params.creator_id = filters.creator_id
+    if (filters.note) params.note = filters.note
+    if (filters.member_ids && filters.member_ids.length > 0) params.member_ids = filters.member_ids
     if (append && nextCursor.value) params.cursor = nextCursor.value
 
     const res: any = await getLedgers(params as any, abortController.signal)
@@ -412,6 +454,8 @@ function onFilterChange() {
 function clearFilters() {
   filters.category_id = undefined
   filters.creator_id = undefined
+  filters.note = undefined
+  filters.member_ids = undefined
   nextCursor.value = null
   hasMore.value = false
   fetchLedgers(false)
@@ -492,6 +536,7 @@ function confirmDelete() {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteLedger(editingRecord.value!.id)

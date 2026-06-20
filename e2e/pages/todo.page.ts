@@ -16,7 +16,7 @@ export class TodoPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async fillTitle(title: string) {
@@ -29,13 +29,12 @@ export class TodoPage extends BasePage {
 
   async selectPriority(priority: string) {
     await this.page.getByTestId('priority-select').click();
-    await this.page.locator('.ant-select-item-option', { hasText: priority }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: priority }).click();
   }
 
   async submit() {
     await this.page.getByTestId('submit-btn').click();
-    // Wait for modal to close and data to refresh
-    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await this.expectModalHidden();
   }
 
   async toggleTodo(index: number) {
@@ -56,12 +55,12 @@ export class TodoPage extends BasePage {
   async deleteTodo(index: number) {
     const items = this.page.getByTestId(/^todo-item-/);
     await items.nth(index).getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
+    await this.confirmModal();
   }
 
   async filterByStatus(status: string) {
     await this.page.getByTestId('status-filter').click();
-    await this.page.locator('.ant-select-item-option', { hasText: status }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: status }).click();
   }
 
   async clearFilters() {
@@ -79,7 +78,7 @@ export class TodoPage extends BasePage {
   /** 选择指派成员 */
   async selectAssignee(name: string) {
     await this.page.getByTestId('assignee-select').click();
-    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: name }).first().click();
   }
 
   /** 认领第 n 条未指派的待办 */
@@ -91,14 +90,14 @@ export class TodoPage extends BasePage {
   /** 按指派成员筛选 */
   async filterByAssignee(name: string) {
     await this.page.getByTestId('assignee-filter').click();
-    await this.page.locator('.ant-select-dropdown:visible .ant-select-item-option', { hasText: name }).click();
+    await this.page.locator('.ant-select-dropdown:visible .ant-select-item').filter({ hasText: name }).first().click({ timeout: 5000 });
   }
 
   /** 编辑第 n 条待办 */
   async editTodo(index: number) {
     const items = this.page.getByTestId(/^todo-item-/);
     await items.nth(index).getByTestId('edit-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   /** 断言第 n 条待办的优先级标签 */

@@ -17,7 +17,7 @@ export class LedgerPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   /** 在弹窗网格选择器中点击分类（按文本匹配，自动切换 tab） */
@@ -27,7 +27,6 @@ export class LedgerPage extends BasePage {
     if (await item.count() === 0) {
       // Switch to income tab
       await this.page.locator('.ant-modal:visible').locator('.ant-tabs-tab', { hasText: '收入' }).click();
-      await this.page.waitForTimeout(200);
     }
     await this.page.locator('.category-pick-item', { hasText: name }).click();
   }
@@ -42,10 +41,17 @@ export class LedgerPage extends BasePage {
     await this.page.getByTestId('note-input').fill(note);
   }
 
+  async selectMember(name: string) {
+    await this.page.getByTestId('member-select').click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: name }).click();
+    // Close the select dropdown by clicking the modal title area
+    await this.page.locator('.ant-modal-header').click();
+    await this.page.waitForTimeout(200);
+  }
+
   async submit() {
     await this.page.getByTestId('submit-btn').click();
-    // Wait for modal to close and data to refresh
-    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await this.expectModalHidden();
   }
 
   async expectRecordCount(count: number) {
@@ -60,23 +66,26 @@ export class LedgerPage extends BasePage {
 
   async deleteRecord() {
     await this.page.getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
+    await this.confirmModal();
   }
 
   async clearFilters() {
     await this.page.getByTestId('clear-filters').click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   /** 通过滤选栏选择分类 */
   async filterByCategory(name: string) {
     await this.page.getByTestId('filter-category').click();
-    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: name }).click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   /** 通过滤选栏选择创建者 */
   async filterByCreator(name: string) {
     await this.page.getByTestId('filter-creator').click();
-    await this.page.locator('.ant-select-item-option', { hasText: name }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: name }).click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   /** 滚动到 sentinel 触发无限加载 */
@@ -123,7 +132,7 @@ export class LedgerPage extends BasePage {
   async editRecord(index: number) {
     const items = this.page.getByTestId(/^ledger-item-/);
     await items.nth(index).click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   /** 断言第 n 条记录显示指定的金额文本（如 "+35.50" 或 "-35.50"） */

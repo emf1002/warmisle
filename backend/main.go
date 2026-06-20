@@ -257,7 +257,7 @@ func runMigrations(dbPath string) error {
 	// 清理旧备份（保留最近 7 份）
 	cleanupBackups()
 
-	sqlDB, err := sql.Open("sqlite", dbPath)
+	sqlDB, err := sql.Open("sqlite", dbPath+"?_busy_timeout=5000")
 	if err != nil {
 		return err
 	}

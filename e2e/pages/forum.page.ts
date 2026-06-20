@@ -16,12 +16,12 @@ export class ForumPage extends BasePage {
 
   async openCreatePost() {
     await this.page.getByTestId('create-post-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async openCreateTopic() {
     await this.page.getByTestId('create-topic-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async fillPostContent(content: string) {
@@ -38,13 +38,13 @@ export class ForumPage extends BasePage {
 
   async selectTopicTag(tag: string) {
     await this.page.getByTestId('topic-tag').click();
-    await this.page.locator('.ant-select-item-option', { hasText: tag }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: tag }).click();
   }
 
   async submitModal() {
-    await this.page.locator('.ant-modal-footer .ant-btn-primary').click();
+    await super.submitModal();
     // Wait for modal close animation to finish
-    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await this.expectModalHidden();
   }
 
   async expectFeedCount(count: number) {
@@ -55,6 +55,12 @@ export class ForumPage extends BasePage {
   async likePost(index: number) {
     const items = this.page.getByTestId(/^feed-card-/);
     await items.nth(index).getByTestId('like-btn').click();
+  }
+
+  async expectLikeCount(index: number, count: number) {
+    const items = this.page.getByTestId(/^feed-card-/);
+    // like-btn text includes the count: "❤️ 1" or "🤍 0"
+    await expect(items.nth(index).getByTestId('like-btn')).toContainText(String(count));
   }
 
   async goToDetail(index: number) {
@@ -68,15 +74,13 @@ export class ForumPage extends BasePage {
 
   async openCreateAnnouncement() {
     await this.page.getByTestId('create-announcement-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async unpinAnnouncement(index: number) {
     const items = this.page.getByTestId(/^feed-card-/);
-    // Open the dropdown menu first by clicking the ⋯ trigger
-    await items.nth(index).locator('.ant-dropdown-trigger').click();
-    await this.page.locator('.ant-dropdown:visible').getByTestId('unpin-btn').click();
-    await this.page.waitForTimeout(300);
+    await items.nth(index).getByTestId('dropdown-trigger').click();
+    await this.page.getByTestId('dropdown-menu').getByTestId('unpin-btn').click();
   }
 
   async expectAnnouncementPinned(index: number) {
@@ -88,7 +92,7 @@ export class ForumPage extends BasePage {
 
   async openCreatePoll() {
     await this.page.getByTestId('create-poll-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async fillPollTitle(title: string) {
@@ -126,71 +130,62 @@ export class ForumPage extends BasePage {
     await this.goToDetail(feedIndex);
     await this.page.getByTestId('comment-input').fill(text);
     await this.page.getByTestId('comment-submit').click();
-    await this.page.waitForTimeout(300);
+    await expect(this.page.getByTestId('comment-list')).toContainText(text);
   }
 
   async replyToComment(commentIndex: number, text: string) {
-    const comments = this.page.locator('.comment-item, .reply-item');
+    const comments = this.page.getByTestId(/^comment-item-/);
     await comments.nth(commentIndex).getByTestId('reply-btn').click();
     await this.page.getByTestId('reply-input').fill(text);
     await this.page.getByTestId('reply-submit').click();
-    await this.page.waitForTimeout(300);
+    // reply-item is a CSS class, not a testid
+    await expect(this.page.locator('.reply-item')).toBeVisible();
   }
 
   async expectNoReplyButton(commentIndex: number) {
-    const comments = this.page.locator('.comment-item, .reply-item');
+    const comments = this.page.getByTestId(/^comment-item-/);
     await expect(comments.nth(commentIndex).getByTestId('reply-btn')).not.toBeVisible();
   }
 
   async deleteComment(commentIndex: number) {
-    const comments = this.page.locator('.comment-item, .reply-item');
-    // Use .first() because a parent comment may contain a nested reply's delete button
+    const comments = this.page.getByTestId(/^comment-item-/);
     await comments.nth(commentIndex).getByTestId('delete-comment-btn').first().click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
-    await this.page.waitForTimeout(300);
+    await this.confirmModal();
   }
 
   async expectCommentCount(count: number) {
-    await expect(this.page.locator('.comment-item, .reply-item')).toHaveCount(count);
+    await expect(this.page.getByTestId(/^comment-item-/)).toHaveCount(count);
   }
 
   // === 内容管理 ===
 
   async deletePost(feedIndex: number) {
     const items = this.page.getByTestId(/^feed-card-/);
-    // Open dropdown menu first
-    await items.nth(feedIndex).locator('.ant-dropdown-trigger').click();
-    await this.page.locator('.ant-dropdown:visible').getByTestId('delete-feed-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
-    await this.page.waitForTimeout(300);
+    await items.nth(feedIndex).getByTestId('dropdown-trigger').click();
+    await this.page.getByTestId('dropdown-menu').getByTestId('delete-feed-btn').click();
+    await this.confirmModal();
   }
 
   // === 标签管理 ===
 
   async openManageTags() {
     await this.page.getByTestId('manage-tags-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async addTag(name: string) {
     await this.page.getByTestId('add-tag-btn').click();
     await this.page.getByTestId('tag-name-input').fill(name);
     await this.page.getByTestId('tag-submit-btn').click();
-    await this.page.waitForTimeout(300);
+    await expect(this.page.getByTestId('tag-item').filter({ hasText: name })).toBeVisible();
   }
 
   async deleteTag(name: string) {
-    await this.page.locator('.ant-modal-wrap:visible')
-      .locator(`[data-testid="tag-item"]`, { hasText: name })
-      .getByTestId('delete-tag-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
-    await this.page.waitForTimeout(300);
+    await this.page.getByTestId('tag-item').filter({ hasText: name }).getByTestId('delete-tag-btn').click();
+    await this.confirmModal();
   }
 
   async expectTagDeleteDisabled(name: string) {
-    const btn = this.page.locator('.ant-modal-wrap:visible')
-      .locator(`[data-testid="tag-item"]`, { hasText: name })
-      .getByTestId('delete-tag-btn');
-    await expect(btn).toBeDisabled();
+    await expect(this.page.getByTestId('tag-item').filter({ hasText: name }).getByTestId('delete-tag-btn')).toBeDisabled();
   }
 }

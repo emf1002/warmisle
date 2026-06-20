@@ -21,6 +21,7 @@ e2e/node_modules/
 e2e/reports/
 e2e-data/
 e2e/.e2e-port-map.json
+e2e/playwright-report/
 
 # IDE
 .idea/

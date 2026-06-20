@@ -21,7 +21,8 @@ export class LoginPage extends BasePage {
   }
 
   async expectLoginError(message: string) {
-    await expect(this.page.locator('.ant-form-item-explain')).toContainText(message);
+    // Login errors are shown via Ant Design message.toast, not inline form errors
+    await expect(this.page.locator('.ant-message').first()).toContainText(message);
   }
 
   async expectOnLoginPage() {

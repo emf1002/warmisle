@@ -37,10 +37,10 @@
             <a-button v-if="authStatus === 'pending_auth'" type="primary" @click="getAuthUrl" :loading="authLoading" data-testid="authorize-btn">
               授权阿里云盘
             </a-button>
-            <a-tag v-if="authStatus === 'authorized'" color="success">已授权</a-tag>
-            <a-tag v-else-if="authStatus === 'token_expired'" color="error">授权已过期</a-tag>
-            <a-tag v-else-if="authStatus === 'pending_auth'" color="warning">待授权</a-tag>
-            <a-tag v-else-if="authStatus === 'unconfigured'">未配置</a-tag>
+            <a-tag v-if="authStatus === 'authorized'" color="success" data-testid="status-tag">已授权</a-tag>
+            <a-tag v-else-if="authStatus === 'token_expired'" color="error" data-testid="status-tag">授权已过期</a-tag>
+            <a-tag v-else-if="authStatus === 'pending_auth'" color="warning" data-testid="status-tag">待授权</a-tag>
+            <a-tag v-else-if="authStatus === 'unconfigured'" data-testid="status-tag">未配置</a-tag>
           </a-space>
         </a-form-item>
       </a-form>
@@ -51,7 +51,7 @@
       <a-row :gutter="24">
         <a-col :span="6">
           <a-form-item label="启用自动备份">
-            <a-switch v-model:checked="scheduleForm.schedule_enabled" />
+            <a-switch v-model:checked="scheduleForm.schedule_enabled" data-testid="schedule-switch" />
           </a-form-item>
         </a-col>
         <a-col :span="8">
@@ -61,7 +61,7 @@
         </a-col>
         <a-col :span="6">
           <a-form-item label="保留天数">
-            <a-input-number v-model:value="scheduleForm.retention_days" :min="1" :max="365" />
+            <a-input-number v-model:value="scheduleForm.retention_days" :min="1" :max="365" data-testid="retention-input" />
           </a-form-item>
         </a-col>
         <a-col :span="4">
@@ -93,6 +93,9 @@
         @change="onHistoryPageChange"
         data-testid="history-table"
       >
+        <template #emptyText>
+          <div data-testid="empty-state">暂无备份记录</div>
+        </template>
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'file_name'">
             {{ record.file_name || '-' }}

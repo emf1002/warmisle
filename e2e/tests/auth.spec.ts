@@ -70,4 +70,16 @@ test.describe('认证流程', () => {
     await initPage.setup('另一个管理员', 'admin', 'test456');
     await initPage.expectOnInitPage();
   });
+
+  // P2: 默认密码强制修改功能尚未在后端实现
+  test.skip('默认密码登录后提示修改', async ({ page }) => {
+    await resetDatabase(page);
+    await initAdmin();
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('admin', 'test123');
+    await expect(page).toHaveURL(/\/#\/$/);
+    // 首次登录后应自动弹出修改密码提示
+    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
+  });
 });

@@ -53,9 +53,9 @@
           <span class="action-stat">💬 {{ topic.comment_count }}</span>
 
           <a-dropdown v-if="canManage" :trigger="['click']">
-            <a-button type="text" size="small" class="more-btn">···</a-button>
+            <a-button type="text" size="small" class="more-btn" data-testid="dropdown-trigger">···</a-button>
             <template #overlay>
-              <a-menu>
+              <a-menu data-testid="dropdown-menu">
                 <a-menu-item @click="openEditDialog">编辑</a-menu-item>
                 <a-menu-item v-if="authStore.isAdmin" data-testid="unpin-btn" @click="handleTogglePin">
                   {{ topic.is_pinned ? '取消置顶' : '置顶' }}
@@ -106,7 +106,7 @@
             v-for="comment in comments"
             :key="comment.id"
             class="comment-item"
-            :data-testid="'comment-' + comment.id"
+            :data-testid="'comment-item-' + comment.id"
           >
             <!-- Top-level comment -->
             <div class="comment-body">
@@ -162,7 +162,7 @@
                     v-for="child in comment.children"
                     :key="child.id"
                     class="reply-item"
-                    :data-testid="'comment-' + child.id"
+                    :data-testid="'comment-item-' + child.id"
                   >
                     <UserAvatar :icon="child.creator.avatar || 'User'" :member-id="child.creator.id" :size="28" />
                     <div class="reply-main">
@@ -201,6 +201,7 @@
       cancel-text="取消"
       :confirm-loading="editSubmitting"
       width="520px"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
       @ok="handleEditSubmit"
       @cancel="editDialogOpen = false"
     >
@@ -460,6 +461,7 @@ function confirmDeleteComment(comment: CommentItem) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteComment(comment.id)
@@ -517,6 +519,7 @@ function confirmDelete() {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteTopic(topicId.value)

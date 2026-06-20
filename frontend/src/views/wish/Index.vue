@@ -127,6 +127,7 @@
       ok-text="保存"
       cancel-text="取消"
       :confirm-loading="submitting"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
       width="480px"
       @ok="handleSubmit"
       @cancel="dialogOpen = false"
@@ -403,6 +404,7 @@ async function handlePromote(wish: WishItem) {
     content: '提升后将展示给所有成员且不可撤回，确定继续吗？',
     okText: '确定',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await promoteWish(wish.id)
@@ -438,6 +440,7 @@ async function handleVote(wish: WishItem) {
         content: '你已经投过票了，要取消投票吗？',
         okText: '取消投票',
         cancelText: '算了',
+        okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
         async onOk() {
           try {
             await unvoteWish(wish.id)
@@ -457,6 +460,7 @@ function confirmDelete(wish: WishItem) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteWish(wish.id)

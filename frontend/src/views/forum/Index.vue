@@ -61,9 +61,9 @@
               <Icon name="MessageCircle" :size="14" /> {{ item.comment_count || 0 }}
             </span>
             <a-dropdown v-if="canManage(item)" trigger="click">
-              <span class="feed-action" @click.stop>⋯</span>
+              <span class="feed-action" @click.stop data-testid="dropdown-trigger">⋯</span>
               <template #overlay>
-                <a-menu @click="(e: any) => onMenuClick(e, item)">
+                <a-menu @click="(e: any) => onMenuClick(e, item)" data-testid="dropdown-menu">
                   <a-menu-item v-if="authStore.isAdmin" key="pin" data-testid="unpin-btn">
                     {{ item.is_pinned ? '取消置顶' : '置顶' }}
                   </a-menu-item>
@@ -100,9 +100,9 @@
                 <Icon name="MessageCircle" :size="14" /> {{ item.comment_count || 0 }}
               </span>
               <a-dropdown v-if="canManage(item)" trigger="click">
-                <span class="feed-action" @click.stop>⋯</span>
+                <span class="feed-action" @click.stop data-testid="dropdown-trigger">⋯</span>
                 <template #overlay>
-                  <a-menu @click="(e: any) => onMenuClick(e, item)">
+                  <a-menu @click="(e: any) => onMenuClick(e, item)" data-testid="dropdown-menu">
                     <a-menu-item key="edit">编辑</a-menu-item>
                     <a-menu-item key="delete" danger data-testid="delete-feed-btn">删除</a-menu-item>
                   </a-menu>
@@ -135,9 +135,9 @@
                 <Icon name="MessageCircle" :size="14" /> {{ item.comment_count || 0 }}
               </span>
               <a-dropdown v-if="canManage(item)" trigger="click">
-                <span class="feed-action" @click.stop>⋯</span>
+                <span class="feed-action" @click.stop data-testid="dropdown-trigger">⋯</span>
                 <template #overlay>
-                  <a-menu @click="(e: any) => onMenuClick(e, item)">
+                  <a-menu @click="(e: any) => onMenuClick(e, item)" data-testid="dropdown-menu">
                     <a-menu-item v-if="authStore.isAdmin" key="pin" data-testid="unpin-btn">
                       {{ item.is_pinned ? '取消置顶' : '置顶' }}
                     </a-menu-item>
@@ -231,6 +231,7 @@
       ok-text="发布"
       cancel-text="取消"
       :confirm-loading="postSubmitting"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
       @ok="handlePostSubmit"
       @cancel="postDialogOpen = false"
     >
@@ -285,6 +286,7 @@
       cancel-text="取消"
       :confirm-loading="topicSubmitting"
       width="520px"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
       @ok="handleTopicSubmit"
       @cancel="topicDialogOpen = false"
     >
@@ -337,6 +339,7 @@
       cancel-text="取消"
       :confirm-loading="pollSubmitting"
       width="520px"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
       @ok="handlePollSubmit"
       @cancel="pollDialogOpen = false"
     >
@@ -709,6 +712,7 @@ function confirmDeletePost(item: FeedItem) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deletePost(item.id)
@@ -796,6 +800,7 @@ function confirmDeleteTopic(item: FeedItem) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteTopic(item.id)
@@ -847,6 +852,7 @@ function handleDeleteTag(tag: TagInfo) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteTag(tag.id)

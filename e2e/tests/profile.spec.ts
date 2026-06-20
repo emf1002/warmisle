@@ -27,8 +27,9 @@ test.describe('个人中心', () => {
     await profile.openChangePassword();
     await profile.fillOldPassword('test123');
     await profile.fillNewPassword('newpass123');
+    await profile.fillConfirmPassword('newpass123');
     await profile.submitPassword();
-    // 密码修改成功提示
+    await profile.expectToast('✅ 密码修改成功');
   });
 
   test('退出登录', async ({ authenticated }) => {
@@ -48,7 +49,7 @@ test.describe('个人中心', () => {
     await profile.openEditProfile();
     await profile.selectAvatar('PawPrint');
     await profile.submitProfile();
-    await expect(page.locator('.ant-message')).toContainText('修改成功');
+    await profile.expectToast('✅ 修改成功');
   });
 
   // === 错误路径 ===
@@ -97,6 +98,20 @@ test.describe('个人中心', () => {
     await profile.fillName('这是一个超过二十个字符的很长很长很长的姓名');
     await profile.submitProfile();
     await profile.expectNameTooLongError();
+  });
+
+  test('头像修改后刷新持久化', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const profile = new ProfilePage(page);
+    await profile.goto();
+    await profile.openEditProfile();
+    await profile.selectAvatar('Smile');
+    await profile.submitProfile();
+    await profile.expectToast('✅ 修改成功');
+    // Refresh and verify avatar persists (Smile is a pre-set icon, rendered via Icon component)
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.user-avatar', { timeout: 10000 });
+    await expect(page.locator('.user-avatar').first()).toBeVisible();
   });
 
   // === 响应式 ===

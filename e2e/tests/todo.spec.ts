@@ -30,7 +30,7 @@ test.describe('待办管理', () => {
     await todo.fillTitle('洗碗');
     await todo.submit();
     await todo.toggleTodo(0);
-    // 待办应标记为已完成
+    await todo.expectTodoCompleted(0);
   });
 
   test('删除待办', async ({ authenticated }) => {
@@ -108,7 +108,6 @@ test.describe('待办管理', () => {
     await todo.submit();
     await todo.toggleTodo(0);
     await todo.filterByStatus('已完成');
-    await page.waitForTimeout(500);
     await todo.expectTodoCount(1);
   });
 
@@ -125,7 +124,6 @@ test.describe('待办管理', () => {
     await todo.submit();
     await todo.expectTodoCount(2);
     await todo.filterByAssignee('成员一');
-    await page.waitForTimeout(500);
     await todo.expectTodoCount(1);
   });
 
@@ -211,8 +209,11 @@ test.describe('待办管理', () => {
     await todo.goto();
     await todo.openCreate();
     await todo.fillTitle('');
-    await todo.submit();
-    await expect(page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    // Don't call todo.submit() — it expects modal to close, but empty title keeps it open
+    await page.getByTestId('submit-btn').click();
+    // Error toast shown, modal stays open
+    await todo.expectToast('请输入标题');
+    await todo.expectModalVisible();
   });
 
   test('过期待办高亮', async ({ authenticated }) => {
@@ -225,5 +226,14 @@ test.describe('待办管理', () => {
     await todo.submit();
     await todo.expectTodoCount(1);
     await todo.expectOverdueHighlight(0);
+  });
+
+  // === 响应式 ===
+
+  test('移动端待办列表', { tag: '@mobile' }, async ({ authenticated }) => {
+    const { page } = authenticated;
+    const todo = new TodoPage(page);
+    await todo.goto();
+    await expect(page.getByTestId('empty-state')).toBeVisible();
   });
 });

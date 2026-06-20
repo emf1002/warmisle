@@ -45,6 +45,7 @@ type LedgerFilter struct {
 	EndDate    string // "2026-06-01" (exclusive upper bound)
 	CategoryID *uint
 	CreatorID  *uint
+	Note       string // fuzzy match on ledger note
 	Limit      int         // page size, default 20
 	Cursor     *CursorData // nil = first page
 }
@@ -85,6 +86,9 @@ func (r *LedgerRepo) applyOptionalFilters(query *gorm.DB, filter LedgerFilter) *
 	}
 	if filter.CreatorID != nil {
 		query = query.Where("ledgers.creator_id = ?", *filter.CreatorID)
+	}
+	if filter.Note != "" {
+		query = query.Where("ledgers.note LIKE ?", "%"+filter.Note+"%")
 	}
 	return query
 }

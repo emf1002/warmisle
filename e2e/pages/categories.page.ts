@@ -16,12 +16,12 @@ export class CategoriesPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async selectType(type: string) {
     await this.page.getByTestId('type-select').click();
-    await this.page.locator('.ant-select-item-option', { hasText: type }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: type }).click();
   }
 
   async fillName(name: string) {
@@ -29,9 +29,8 @@ export class CategoriesPage extends BasePage {
   }
 
   async submit() {
-    await this.page.locator('.ant-modal-footer .ant-btn-primary').click();
-    // 等待弹窗关闭，确认提交成功
-    await expect(this.page.locator('.ant-modal-wrap:visible')).not.toBeVisible();
+    await this.submitModal();
+    await this.expectModalHidden();
   }
 
   async expectExpenseCategoryCount(count: number) {
@@ -52,21 +51,21 @@ export class CategoriesPage extends BasePage {
   async deleteCategory(index: number) {
     const cards = this.page.getByTestId(/^category-card-/);
     await cards.nth(index).getByTestId('delete-btn').click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
+    await this.confirmModal();
   }
 
   async changeCategoryType(type: string) {
-    await this.page.locator('.ant-modal-wrap:visible').getByTestId('type-select').click();
-    await this.page.locator('.ant-select-item-option', { hasText: type }).click();
+    await this.page.getByTestId('type-select').click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: type }).click();
   }
 
   async fillEditName(name: string) {
-    await this.page.locator('.ant-modal-wrap:visible').getByTestId('name-input').fill(name);
+    await this.page.getByTestId('name-input').fill(name);
   }
 
   async submitEdit() {
-    await this.page.locator('.ant-modal:visible .ant-modal-footer .ant-btn-primary').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).not.toBeVisible();
+    await this.submitModal();
+    await this.expectModalHidden();
   }
 
   async expectDeleteDisabled(index: number) {

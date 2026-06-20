@@ -1,6 +1,8 @@
 // e2e/tests/dashboard.spec.ts
 import { test, expect } from '../fixtures/auth.fixture';
 import { DashboardPage } from '../pages/dashboard.page';
+import { WishPage } from '../pages/wish.page';
+import { ForumPage } from '../pages/forum.page';
 
 test.describe('仪表盘', () => {
   test('页面加载显示统计区域', async ({ authenticated }) => {
@@ -25,10 +27,11 @@ test.describe('仪表盘', () => {
   test('愿望趋势区域可见', async ({ authenticated }) => {
     const { page } = authenticated;
     // Create a wish so the section has data
-    await page.goto('/#/wish');
-    await page.getByTestId('add-btn').click();
-    await page.getByTestId('title-input').fill('测试愿望');
-    await page.locator('.ant-modal-footer .ant-btn-primary').click();
+    const wish = new WishPage(page);
+    await wish.goto();
+    await wish.openCreate();
+    await wish.fillTitle('测试愿望');
+    await wish.submit();
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.expectWishTrendsVisible();
@@ -37,11 +40,12 @@ test.describe('仪表盘', () => {
   test('论坛热门区域可见', async ({ authenticated }) => {
     const { page } = authenticated;
     // Create a topic so the section has data
-    await page.goto('/#/forum');
-    await page.getByTestId('create-topic-btn').click();
-    await page.getByTestId('topic-title').fill('测试话题');
-    await page.getByTestId('topic-content').fill('内容');
-    await page.locator('.ant-modal-footer .ant-btn-primary').click();
+    const forum = new ForumPage(page);
+    await forum.goto();
+    await forum.openCreateTopic();
+    await forum.fillTopicTitle('测试话题');
+    await forum.fillTopicContent('内容');
+    await forum.submitModal();
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.expectForumHotVisible();
@@ -57,6 +61,16 @@ test.describe('仪表盘', () => {
     await dashboard.goPrevMonth();
     const newMonthText = await page.getByPlaceholder('请选择月份').inputValue();
     expect(newMonthText).not.toBe(monthText);
+  });
+
+  test('无数据时显示零值', async ({ authenticated }) => {
+    const { page } = authenticated;
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    // 新系统无数据时，汇总应显示 ¥0.00
+    await expect(page.getByTestId('summary-income')).toContainText('¥0.00');
+    await expect(page.getByTestId('summary-expense')).toContainText('¥0.00');
+    await expect(page.getByTestId('summary-balance')).toContainText('¥0.00');
   });
 
   test('汇总数据正确性', async ({ authenticated }) => {
@@ -93,25 +107,29 @@ test.describe('仪表盘', () => {
 
   test('愿望动态数据', async ({ authenticated }) => {
     const { page } = authenticated;
-    await page.goto('/#/wish');
-    await page.getByTestId('add-btn').click();
-    await page.getByTestId('title-input').fill('测试愿望');
-    await page.locator('.ant-modal-footer .ant-btn-primary').click();
+    const wish = new WishPage(page);
+    await wish.goto();
+    await wish.openCreate();
+    await wish.fillTitle('测试愿望');
+    await wish.submit();
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.expectWishTrendsVisible();
+    await dashboard.expectWishTrendCount(1);
   });
 
   test('论坛热点数据', async ({ authenticated }) => {
     const { page } = authenticated;
-    await page.goto('/#/forum');
-    await page.getByTestId('create-topic-btn').click();
-    await page.getByTestId('topic-title').fill('测试话题');
-    await page.getByTestId('topic-content').fill('内容');
-    await page.locator('.ant-modal-footer .ant-btn-primary').click();
+    const forum = new ForumPage(page);
+    await forum.goto();
+    await forum.openCreateTopic();
+    await forum.fillTopicTitle('测试话题');
+    await forum.fillTopicContent('内容');
+    await forum.submitModal();
     const dashboard = new DashboardPage(page);
     await dashboard.goto();
     await dashboard.expectForumHotVisible();
+    await dashboard.expectForumHotCount(1);
   });
 
 

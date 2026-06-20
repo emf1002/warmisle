@@ -16,7 +16,7 @@ export class WishPage extends BasePage {
 
   async openCreate() {
     await this.page.getByTestId('add-btn').click();
-    await expect(this.page.locator('.ant-modal-wrap:visible')).toBeVisible();
+    await this.expectModalVisible();
   }
 
   async fillTitle(title: string) {
@@ -29,11 +29,11 @@ export class WishPage extends BasePage {
 
   async selectCategory(category: string) {
     await this.page.getByTestId('category-select').click();
-    await this.page.locator('.ant-select-item-option', { hasText: category }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: category }).click();
   }
 
   async fillAmount(amount: string) {
-    const input = this.page.locator('.ant-modal:visible').getByRole('spinbutton');
+    const input = this.page.getByTestId('amount-input');
     await input.click();
     await input.fill(amount);
   }
@@ -43,10 +43,9 @@ export class WishPage extends BasePage {
       (resp) => resp.url().includes('/api/wishes') && ['POST', 'PUT'].includes(resp.request().method()),
       { timeout: 5000 },
     ).catch(() => null);
-    await this.page.locator('.ant-modal-footer .ant-btn-primary').click();
+    await super.submitModal();
     await responsePromise;
-    // Wait for modal close animation to finish
-    await this.page.locator('.ant-modal-wrap:visible').waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await this.expectModalHidden();
   }
 
   async expectWishCount(count: number) {
@@ -55,12 +54,12 @@ export class WishPage extends BasePage {
   }
 
   async switchType(type: string) {
-    await this.page.getByTestId('type-switch').locator(`text=${type}`).click();
+    await this.page.getByTestId('type-switch').getByText(type, { exact: false }).click({ timeout: 5000 });
   }
 
   async filterByStatus(status: string) {
     await this.page.getByTestId('status-filter').click();
-    await this.page.locator('.ant-select-item-option', { hasText: status }).click();
+    await this.page.locator('.ant-select-item-option').filter({ hasText: status }).click();
   }
 
   async voteWish(index: number) {
@@ -71,7 +70,6 @@ export class WishPage extends BasePage {
   /** 取消投票（再次点击投票按钮，触发已投票→取消投票流程） */
   async unvoteWish(index: number) {
     const items = this.page.getByTestId(/^wish-card-/);
-    // Set up listener BEFORE click: vote fails → modal appears → confirm triggers DELETE /api/wishes/:id/vote → fetchWishes
     const unvotePromise = this.page.waitForResponse(
       (resp) => resp.url().includes('/vote') && resp.request().method() === 'DELETE',
       { timeout: 5000 },
@@ -83,9 +81,9 @@ export class WishPage extends BasePage {
       { timeout: 5000 },
     ).catch(() => null);
     // Wait for the unvote confirmation modal
-    await this.page.waitForSelector('.ant-modal-confirm:visible', { timeout: 5000 }).catch(() => {});
+    await this.expectModalVisible();
     // Confirm the unvote
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn-primary').click();
+    await this.confirmModal();
     // Wait for the unvote API call to complete
     await unvotePromise;
     // Wait for list refresh to complete
@@ -105,8 +103,8 @@ export class WishPage extends BasePage {
   async changeWishStatus(index: number, status: string) {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('status-action').click();
-    await this.page.getByRole('menuitem', { name: status }).click();
-    await this.page.waitForTimeout(300);
+    await this.page.locator('.ant-dropdown-menu-item').filter({ hasText: status }).click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   /** 断言愿望状态 */
@@ -119,24 +117,35 @@ export class WishPage extends BasePage {
   async abandonWish(index: number) {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('status-action').click();
-    await this.page.getByRole('menuitem', { name: '标记为放弃' }).click();
+    await this.page.locator('.ant-dropdown-menu-item').filter({ hasText: '标记为放弃' }).click();
+  }
+
+  /** 将个人愿望提升为家庭愿望 */
+  async promoteToFamily(index: number) {
+    const items = this.page.getByTestId(/^wish-card-/);
+    await items.nth(index).getByTestId('status-action').click();
+    await this.page.locator('.ant-dropdown-menu-item').filter({ hasText: '提升为家庭愿望' }).click();
+    // 提升成功可能弹出确认/提示弹窗，关闭后继续
+    await this.page.waitForTimeout(500);
+    await this.confirmModal().catch(() => {});
+    await this.expectModalHidden().catch(() => {});
   }
 
   /** 删除愿望 */
   async deleteWish(index: number) {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('status-action').click();
-    await this.page.getByRole('menuitem', { name: '删除' }).click();
-    await this.page.locator('.ant-modal-confirm-btns .ant-btn:last-child').click();
+    await this.page.locator('.ant-dropdown-menu-item').filter({ hasText: '删除' }).click();
+    await this.confirmModal();
   }
 
   /** 评论愿望 */
   async commentOnWish(index: number, text: string) {
     const items = this.page.getByTestId(/^wish-card-/);
     await items.nth(index).getByTestId('status-action').click();
-    await this.page.getByRole('menuitem', { name: '评论' }).click();
+    await this.page.locator('.ant-dropdown-menu-item').filter({ hasText: '评论' }).click();
     await this.page.getByTestId('comment-input').fill(text);
     await this.page.getByTestId('comment-submit').click();
-    await this.page.waitForTimeout(300);
+    await expect(this.page.getByTestId('comment-list')).toContainText(text);
   }
 }

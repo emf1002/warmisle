@@ -61,6 +61,7 @@
       cancel-text="取消"
       @ok="handleSubmit"
       :confirm-loading="submitting"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
     >
       <div data-testid="category-modal">
       <a-form :model="form" layout="vertical">
@@ -205,6 +206,7 @@ function confirmDelete(record: any) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteCategory(record.id)

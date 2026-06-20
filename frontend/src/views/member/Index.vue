@@ -78,6 +78,7 @@
       cancel-text="取消"
       @ok="handleSubmit"
       :confirm-loading="submitting"
+      :ok-button-props="({ 'data-testid': 'modal-submit-btn' } as any)"
     >
       <div data-testid="member-modal">
       <a-form :model="form" layout="vertical">
@@ -243,6 +244,7 @@ function confirmDelete(record: any) {
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await deleteMember(record.id)
@@ -262,6 +264,7 @@ function confirmDisable(record: any) {
     okText: '禁用',
     okType: 'danger',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await disableMember(record.id)
@@ -290,6 +293,7 @@ function confirmResetPwd(record: any) {
     content: `确定要将成员「${record.name}」的密码重置为默认密码吗？`,
     okText: '确认',
     cancelText: '取消',
+    okButtonProps: { 'data-testid': 'modal-confirm-btn' } as any,
     async onOk() {
       try {
         await resetPassword(record.id)

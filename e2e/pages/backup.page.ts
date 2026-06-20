@@ -53,8 +53,7 @@ export class BackupPage extends BasePage {
   }
 
   async setRetentionDays(days: number) {
-    const input = this.scheduleCard.locator('.ant-input-number input');
-    await input.fill(String(days));
+    await this.scheduleCard.locator('.ant-input-number-input').fill(String(days));
   }
 
   async saveSchedule() {
@@ -73,7 +72,7 @@ export class BackupPage extends BasePage {
   get historyTable(): Locator { return this.page.getByTestId('history-table'); }
 
   async expectHistoryEmpty() {
-    await expect(this.historyTable.locator('.ant-empty')).toBeVisible();
+    await expect(this.historyTable.locator('[data-testid="empty-state"]')).toBeVisible();
   }
 
   // --- Cloud Files ---
@@ -84,6 +83,6 @@ export class BackupPage extends BasePage {
 
   // --- Status Tags ---
   async expectStatusTag(text: string) {
-    await expect(this.configCard.locator('.ant-tag').filter({ hasText: text })).toBeVisible();
+    await expect(this.configCard.getByTestId('status-tag').filter({ hasText: text })).toBeVisible();
   }
 }

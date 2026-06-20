@@ -21,6 +21,30 @@ cd backend && go build -o ../dist/warmisle .
 > 注意：Windows 下 `make` 不可用，需直接执行上述命令。`air` 热重载工具未预装，开发时用 `go run` 替代。
 > 前端 Vite dev server (port 3000) 自动代理 `/api` 到后端 `localhost:8080`。
 
+## 并行执行多脚本任务
+
+**推荐方式：同一条消息发多个 foreground Bash 调用，系统自动并行执行，所有结果在当前轮直接返回，无需两轮。**
+
+```bash
+# 同一条消息里发 6 个独立 Bash 调用 → 自动并行跑，全部当前轮返回
+bash e2e/run-test.sh --port 8081 tests/auth.spec.ts
+bash e2e/run-test.sh --port 8082 tests/members.spec.ts
+bash e2e/run-test.sh --port 8083 tests/categories.spec.ts
+bash e2e/run-test.sh --port 8084 tests/todo.spec.ts
+bash e2e/run-test.sh --port 8085 tests/wish.spec.ts
+bash e2e/run-test.sh --port 8086 tests/profile.spec.ts
+# 总耗时 = 最慢那个任务的耗时（如 47s），而非串行累加
+```
+
+注意：每个任务用不同端口避免端口冲突。timeout 设足够大（如 180s）防止长任务超时。
+
+### 备选方案：两轮后台任务（不推荐，需用户发两次消息）
+
+如果任务跑得太久（> 默认 timeout），才用 `run_in_background`：
+
+1. **第一轮**：同一条消息发多个带 `run_in_background: true` 的 Bash 调用 → 返回 task_id 列表，**当前轮结束**
+2. **第二轮**：用户再发一条消息 → AI 逐一 `TaskOutput(task_id, block=true)` 等待并获取结果
+
 ## 技术栈
 
 | 层 | 技术 |

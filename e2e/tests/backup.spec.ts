@@ -30,15 +30,6 @@ test.describe('网盘备份', () => {
 
     test('保存云盘配置后刷新验证持久化', async ({ authenticated }) => {
       const { page } = authenticated;
-      
-      // Intercept API responses for debugging
-      const apiResponses: any[] = [];
-      page.on('response', async (res) => {
-        if (res.url().includes('/api/backup/config')) {
-          const body = await res.text().catch(() => '');
-          apiResponses.push({ method: res.request().method(), url: res.url(), status: res.status(), body });
-        }
-      });
 
       const backup = new BackupPage(page);
       await backup.goto();
@@ -47,23 +38,18 @@ test.describe('网盘备份', () => {
       await backup.fillAppId('78bb8cec0642495d8c71f1c8aaeee4b6');
       await backup.fillRedirectUri('http://127.0.0.1:8080/api/backup/callback');
       await backup.saveConfig();
-      await page.waitForTimeout(1000);
-
-      // Log API responses
-      console.log('[DEBUG] API Responses:', JSON.stringify(apiResponses, null, 2));
+      await page.waitForLoadState('networkidle');
 
       // Reload and check
       await page.reload();
       await page.waitForSelector('[data-testid="backup-page"]');
-      await page.waitForTimeout(1500);
-
-      console.log('[DEBUG] After reload responses:', JSON.stringify(apiResponses, null, 2));
+      await page.waitForLoadState('networkidle');
 
       const appIdInput = backup.configCard.locator('input').nth(0);
       await expect(appIdInput).toHaveValue('78bb8cec0642495d8c71f1c8aaeee4b6');
     });
 
-  test('定时备份配置开关默认关闭', async ({ authenticated }) => {
+    test('定时备份配置开关默认关闭', async ({ authenticated }) => {
       const { page } = authenticated;
       const backup = new BackupPage(page);
       await backup.goto();
@@ -81,24 +67,24 @@ test.describe('网盘备份', () => {
       await backup.toggleSchedule(true);
       await backup.setRetentionDays(60);
       await backup.saveSchedule();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
 
       // Verify switch is on immediately after save
-      const switchEl = backup.scheduleCard.locator('.ant-switch');
+      let switchEl = backup.scheduleCard.locator('.ant-switch');
       await expect(switchEl).toHaveAttribute('aria-checked', 'true');
 
       // Toggle off
       await backup.toggleSchedule(false);
       await backup.saveSchedule();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
 
       // Reload and verify persistence
       await page.reload();
       await page.waitForSelector('[data-testid="backup-page"]');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
 
-      const switchEl2 = backup.scheduleCard.locator('.ant-switch');
-      await expect(switchEl2).toHaveAttribute('aria-checked', 'false');
+      switchEl = backup.scheduleCard.locator('.ant-switch');
+      await expect(switchEl).toHaveAttribute('aria-checked', 'false');
     });
 
     test('获取授权链接', async ({ authenticated }) => {
@@ -110,10 +96,10 @@ test.describe('网盘备份', () => {
       await backup.fillAppId('78bb8cec0642495d8c71f1c8aaeee4b6');
       await backup.fillRedirectUri('http://127.0.0.1:8080/api/backup/callback');
       await backup.saveConfig();
-      await page.waitForTimeout(800);
+      await page.waitForLoadState('networkidle');
 
-      // Check that the page is still functional
-      await expect(backup.configCard).toBeVisible();
+      // Authorize button should now be enabled
+      await expect(backup.authorizeBtn).toBeEnabled();
     });
 
     test('未授权时触发备份应失败', async ({ authenticated }) => {
@@ -125,15 +111,14 @@ test.describe('网盘备份', () => {
       await backup.fillAppId('78bb8cec0642495d8c71f1c8aaeee4b6');
       await backup.fillRedirectUri('http://127.0.0.1:8080/api/backup/callback');
       await backup.saveConfig();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
 
       // Trigger button may be disabled since not authorized
       const isDisabled = await backup.triggerBackupBtn.getAttribute('disabled');
       if (isDisabled === null || isDisabled === 'false') {
         await backup.triggerBackup();
-        await page.waitForTimeout(500);
         // Should show an error message (not authorized)
-        await expect(page.locator('.ant-message-error')).toBeVisible({ timeout: 3000 });
+        await expect(page.getByTestId('error-toast')).toBeVisible({ timeout: 3000 });
       } else {
         // Button is disabled as expected
         await expect(backup.triggerBackupBtn).toBeDisabled();
@@ -155,10 +140,7 @@ test.describe('网盘备份', () => {
       await page.goto('/#/backup');
 
       // Non-admin should be redirected away from backup page
-      await page.waitForTimeout(2000);
-      const url = page.url();
-      // Should not be on the backup route
-      expect(url).not.toContain('/backup');
+      await expect(page).not.toHaveURL(/\/#\/backup/, { timeout: 5000 });
       // Should see dashboard (redirect destination for non-admin)
       await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 5000 });
     });

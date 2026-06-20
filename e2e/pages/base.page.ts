@@ -33,6 +33,26 @@ export class BasePage {
   }
 
   async expectToast(message: string) {
-    await expect(this.page.locator('.ant-message')).toContainText(message);
+    await expect(this.page.locator('.ant-message').first()).toContainText(message);
+  }
+
+  /** 断言弹窗可见 */
+  async expectModalVisible() {
+    await expect(this.page.locator('.ant-modal-wrap:visible').first()).toBeVisible();
+  }
+
+  /** 断言弹窗已关闭 */
+  async expectModalHidden() {
+    await expect(this.page.locator('.ant-modal-wrap:visible')).not.toBeVisible();
+  }
+
+  /** 确认弹窗的确认按钮（如删除确认） */
+  async confirmModal() {
+    await this.page.getByTestId('modal-confirm-btn').click();
+  }
+
+  /** 提交弹窗表单 */
+  async submitModal() {
+    await this.page.getByTestId('modal-submit-btn').click();
   }
 }
